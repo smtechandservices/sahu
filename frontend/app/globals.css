@@ -1,0 +1,86 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #EAB308;
+  --color-primary-light: #FEF9C3;
+  --color-primary-dark: #A16207;
+  
+  --color-secondary: #34D399;
+  --color-secondary-light: #D1FAE5;
+  --color-secondary-dark: #059669;
+  
+  --color-bg-section: #FFFBEB;
+  --color-bg-footer: #111827;
+  --color-bg-muted: #F9FAFB;
+  
+  --font-sans: var(--font-inter), 'Poppins', ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-poppins), 'Inter', ui-sans-serif, system-ui, sans-serif;
+
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-base: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+
+  --radius-lg: 1rem;
+  --radius-md: 0.75rem;
+  --radius-base: 0.5rem;
+}
+
+@layer base {
+  body {
+    @apply antialiased text-gray-900 bg-white;
+    font-family: var(--font-sans);
+  }
+
+  /* Custom Scrollbar */
+  ::-webkit-scrollbar {
+    width: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #F9FAFB;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #EAB308;
+    border-radius: 10px;
+    border: 2px solid #F9FAFB;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #A16207;
+  }
+
+  /* Firefox support */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #EAB308 #F9FAFB;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-primary text-white px-6 py-3 font-semibold hover:bg-primary-dark transition-colors inline-block text-center;
+  }
+  
+  .btn-outline {
+    @apply border border-primary text-primary px-6 py-3 font-semibold hover:bg-primary-light transition-all inline-block text-center;
+  }
+  
+  .container-custom {
+    @apply max-w-[1350px] mx-auto px-6;
+  }
+  
+  .section-padding {
+    @apply py-20;
+  }
+}
+
+@layer utilities {
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}

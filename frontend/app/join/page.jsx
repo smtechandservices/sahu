@@ -1,0 +1,181 @@
+'use client';
+
+import React from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { Users, BookOpen, ChevronRight, Mail } from 'lucide-react';
+
+export default function JoinCommunity() {
+  return (
+    <div className="min-h-screen bg-white font-sans selection:bg-primary/30">
+      <div className="px-8 py-8 lg:py-16">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24 items-start">
+          
+          {/* Left Column: Branding & Info */}
+          <div className="flex flex-col space-y-10">
+            {/* Logo */}
+            <Link href="/" className="inline-block transition-transform active:scale-95 duration-300">
+              <Image 
+                src="/assets/logo.png" 
+                alt="Sahu Sabha Logo" 
+                width={120} 
+                height={120}
+              />
+            </Link>
+
+            <div className="space-y-6">
+              <h1 className="text-2xl lg:text-4xl font-bold text-gray-900 leading-[1.15] tracking-tight">
+                Preserving values,<br />
+                <span className="text-primary">empowering community.</span>
+              </h1>
+              <p className="text-lg text-gray-600 max-w-lg leading-relaxed font-medium">
+                Join thousands of members dedicated to heritage, administrative growth, and mutual support across generations.
+              </p>
+            </div>
+
+            {/* Illustration */}
+            <div className="relative w-full h-[250px] bg-[#F3F4F6] rounded-2xl overflow-hidden group">
+              <Image 
+                src="/assets/community_illustration.png" 
+                alt="Community Illustration" 
+                fill
+                className="object-cover transition-transform duration-700 group-hover:scale-105"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            </div>
+
+            {/* Features */}
+            <div className="space-y-6">
+              <div className="flex items-start space-x-4 p-4 rounded-xl hover:bg-gray-50 transition-colors duration-300 group">
+                <div className="flex-shrink-0 w-12 h-12 bg-primary-light flex items-center justify-center rounded-lg group-hover:scale-110 transition-transform duration-300">
+                  <Users className="text-primary w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-gray-900">Community Network</h3>
+                  <p className="text-gray-600 font-medium">Connect with families and professionals to strengthen our shared cultural bonds.</p>
+                </div>
+              </div>
+
+              <div className="flex items-start space-x-4 p-4 rounded-xl hover:bg-gray-50 transition-colors duration-300 group">
+                <div className="flex-shrink-0 w-12 h-12 bg-primary-light flex items-center justify-center rounded-lg group-hover:scale-110 transition-transform duration-300">
+                  <BookOpen className="text-primary w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-gray-900">Digital Magazine Access</h3>
+                  <p className="text-gray-600 font-medium">Read exclusive articles, news, and updates curated for the Sahu Sabha members.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Column: Registration Form */}
+          <div className="relative">
+            <div className="absolute -bottom-10 -left-10 w-64 h-64 bg-secondary-light rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse delay-700" />
+
+            <div className="relative bg-white border border-yellow-200 rounded-md shadow-md overflow-hidden">
+              {/* Curve Decoration at top right */}
+              <div className="absolute top-0 right-0 w-48 h-48 bg-[#FFFBEB] rounded-bl-[100%] z-0 transform translate-x-12 -translate-y-12" />
+              
+              <div className="relative z-10 p-8 lg:p-12">
+                <div className="mb-10">
+                  <h2 className="text-3xl font-bold text-gray-900 mb-2">Create your account</h2>
+                  <p className="text-gray-500 font-medium">Please fill in your details to register as a new member.</p>
+                </div>
+
+                <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
+                  <div className="space-y-2">
+                    <label className="text-sm font-bold text-gray-700 ml-1">Full Name</label>
+                    <input 
+                      type="text" 
+                      placeholder="Enter your full name"
+                      className="w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-300 placeholder:text-gray-400 font-medium"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-bold text-gray-700 ml-1">Phone Number</label>
+                    <div className="relative">
+                      <span className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-500 font-bold border-r border-gray-300 pr-3">+91</span>
+                      <input 
+                        type="tel" 
+                        placeholder="00000 00000"
+                        className="w-full pl-20 pr-5 py-4 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-300 placeholder:text-gray-400 font-medium"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-bold text-gray-700 ml-1">City</label>
+                    <input 
+                      type="text" 
+                      placeholder="Your current city"
+                      className="w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-300 placeholder:text-gray-400 font-medium"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-bold text-gray-700 ml-1">Reason for Joining</label>
+                    <textarea 
+                      rows={4}
+                      placeholder="Briefly tell us why you want to join Sahu Sabha..."
+                      className="w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-300 placeholder:text-gray-400 font-medium resize-none"
+                    />
+                  </div>
+
+                  <button className="w-full bg-primary hover:bg-primary-dark text-white font-bold py-5 rounded-xl transition-all duration-300 transform active:scale-[0.98] shadow-lg shadow-primary/20 cursor-pointer">
+                    <span>Register Now</span>
+                  </button>
+
+                  <div className="relative py-4">
+                    <div className="absolute inset-0 flex items-center">
+                      <div className="w-full border-t border-gray-200"></div>
+                    </div>
+                    <div className="relative flex justify-center text-xs uppercase tracking-widest font-bold">
+                      <span className="bg-white px-4 text-gray-400">Or join with</span>
+                    </div>
+                  </div>
+
+                  <button className="w-full bg-white hover:bg-gray-50 border border-gray-200 text-gray-700 font-bold py-4 rounded-xl transition-all duration-300 flex items-center justify-center space-x-3 shadow-sm active:scale-[0.98]">
+                    <svg className="w-5 h-5" viewBox="0 0 24 24">
+                      <path
+                        fill="currentColor"
+                        d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                      />
+                      <path
+                        fill="currentColor"
+                        d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                      />
+                      <path
+                        fill="currentColor"
+                        d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"
+                      />
+                      <path
+                        fill="currentColor"
+                        d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                      />
+                    </svg>
+                    <span>Continue with Google</span>
+                  </button>
+                </form>
+
+                <p className="mt-8 text-center text-gray-500 text-sm font-medium">
+                  Already have an account? <Link href="/login" className="text-primary font-bold hover:underline">Log in</Link>
+                </p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+      
+      {/* Footer-like simple copyright */}
+      <div className="p-8 border-t border-gray-100 flex flex-col md:flex-row justify-between items-center text-gray-400 text-sm font-medium gap-4">
+        <p>© {new Date().getFullYear()} Sahu Sabha Digital Heritage. All rights reserved.</p>
+        <div className="flex space-x-6">
+          <Link href="/terms" className="hover:text-primary transition-colors">Terms of Service</Link>
+          <Link href="/privacy" className="hover:text-primary transition-colors">Privacy Policy</Link>
+        </div>
+      </div>
+    </div>
+  );
+}
