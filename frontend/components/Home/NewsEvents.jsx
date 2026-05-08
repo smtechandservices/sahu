@@ -65,7 +65,7 @@ const NewsEvents = () => {
             {/* Scrollable Container - Can scroll across full width on desktop */}
             <div className="flex overflow-x-auto flex-nowrap scrollbar-hide gap-8 pb-8 snap-x snap-mandatory relative z-0 lg:pr-[40%]">
               {events.map((event, index) => (
-                <div key={index} className="min-w-[450px] bg-white rounded-xl border border-yellow-100 overflow-hidden group hover:shadow-lg transition-all duration-300 flex flex-col snap-start">
+                <div key={index} className="min-w-[450px] bg-[#FFFBF7] rounded-md border border-yellow-200 shadow-sm overflow-hidden group hover:shadow-md transition-all duration-300 flex flex-col snap-start">
                   <div className="relative h-56 w-full overflow-hidden">
                     <Image 
                       src={event.image} 
@@ -100,7 +100,7 @@ const NewsEvents = () => {
             
             <div className="space-y-6 flex-1 bg-white">
               {news.map((item, index) => (
-                <div key={index} className="bg-white p-8 rounded-xl border border-yellow-100 hover:shadow-md transition-all duration-300 group cursor-pointer">
+                <div key={index} className="bg-[#FFFBF7] rounded-md p-8 border border-yellow-200 shadow-sm hover:shadow-md transition-all duration-300 group cursor-pointer">
                   <div className="text-slate-500 text-sm mb-2 flex items-center gap-2">
                     <span className="font-medium text-slate-700">{item.category}</span>
                     <span>•</span>

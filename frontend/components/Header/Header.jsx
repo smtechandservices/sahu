@@ -16,7 +16,7 @@ const Header = () => {
   ];
 
   return (
-    <header className="h-24 flex items-center bg-white shadow-sm sticky top-0 z-[1000]">
+    <header className="h-24 flex items-center bg-[#FFFBF7] shadow-sm sticky top-0 z-[1000]">
       <div className="px-12 flex justify-between items-center w-full h-full">
         <Link href="/" className="flex items-center gap-4">
           <Image src="/assets/logo.png" alt="Sahu Sabha Logo" width={120} height={60} priority />

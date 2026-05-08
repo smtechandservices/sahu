@@ -9,7 +9,7 @@ const figures = [
   {
     name: 'Baba Badal Nayak',
     title: 'Legendary Leader',
-    image: '/assets/figures/badal_nayak.jpg',
+    image: '/assets/figures/badal_nayak.png',
   },
   {
     name: 'Maa Karma',
@@ -24,12 +24,12 @@ const Inspirational = () => {
       <div className="px-8">
         <div className="text-center mb-12">
           <h2 className="text-4xl font-bold mb-4">Inspirational Figures</h2>
-          <p className="text-lg text-gray-600">Our community's pride and eternal guiding lights</p>
+          <p className="text-xl text-[#564337]">community's pride and eternal guiding lights</p>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
           {figures.map((figure, index) => (
-            <div key={index} className="bg-white overflow-hidden shadow-base hover:-translate-y-2 hover:shadow-md transition-all duration-300">
+            <div key={index} className="bg-[#FFFBF7] overflow-hidden shadow-base hover:-translate-y-2 hover:shadow-md transition-all duration-300">
               <div className="relative h-[650px] w-full">
                 <Image src={figure.image} alt={figure.name} fill className="object-cover" />
               </div>
