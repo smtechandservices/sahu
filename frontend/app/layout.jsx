@@ -62,10 +62,16 @@ export const metadata = {
   },
 };
 
+import { AuthProvider } from "../context/AuthContext";
+
 export default function RootLayout({ children }) {
   return (
     <html lang="en" className={`${inter.variable} ${poppins.variable}`}>
-      <body>{children}</body>
+      <body>
+        <AuthProvider>
+          {children}
+        </AuthProvider>
+      </body>
     </html>
   );
 }

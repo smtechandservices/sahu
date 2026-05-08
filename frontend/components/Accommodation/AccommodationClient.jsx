@@ -1,53 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Header from "../Header/Header";
 import Footer from "../Footer/Footer";
 import AccommodationHero from "./AccommodationHero";
 import AccommodationFilterSidebar from "./AccommodationFilterSidebar";
 import AccommodationCard from "./AccommodationCard";
 
-const accommodations = [
-  {
-    id: 1,
-    type: "Hostel",
-    badge: "Hostel Facility",
-    image: "/assets/event1.png",
-    title: "Sahu Vidyarthi Bhavan",
-    description:
-      "Safe, disciplined, and affordable accommodation for students pursuing higher education. Includes mess facilities, study halls, and 24/7 security.",
-    priceLabel: "Starting from",
-    price: "₹2,500",
-    unit: "/ month",
-    location: "New Delhi Central",
-  },
-  {
-    id: 2,
-    type: "Community Hall",
-    badge: "Event Space",
-    image: "/assets/event2.png",
-    title: "Heritage Grand Hall",
-    description:
-      "A spacious, fully air-conditioned venue perfect for weddings, community gatherings, and large meetings. Features an attached dining area and ample parking.",
-    priceLabel: "Member Rate",
-    price: "₹15,000",
-    unit: "/ day",
-    location: "Jaipur Heritage",
-  },
-  {
-    id: 3,
-    type: "Guest Rooms",
-    badge: "Accommodation",
-    image: "/assets/event3.png",
-    title: "Sabha Atithi Griha",
-    description:
-      "Clean and comfortable short-stay rooms for community members visiting the city for medical, business, or personal reasons. Twin sharing available.",
-    priceLabel: "Starting from",
-    price: "₹800",
-    unit: "/ night",
-    location: "Mumbai Suburban",
-  },
-];
+// removed hardcoded accommodations array
 
 const serviceTypes = ["Hostel", "Community Hall", "Guest Rooms"];
 const locations = [
@@ -73,6 +33,17 @@ export default function AccommodationClient() {
     "Guest Rooms": true,
   });
   const [selectedLocation, setSelectedLocation] = useState("All Locations");
+  const [accommodations, setAccommodations] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    import('../../lib/api').then(({ fetchApi }) => {
+      fetchApi('/accommodations/')
+        .then(data => setAccommodations(data))
+        .catch(err => console.error(err))
+        .finally(() => setLoading(false));
+    });
+  }, []);
 
   const toggleType = (type) => {
     setSelectedTypes((prev) => ({ ...prev, [type]: !prev[type] }));

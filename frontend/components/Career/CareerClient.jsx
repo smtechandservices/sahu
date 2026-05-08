@@ -1,72 +1,54 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Header from "../Header/Header";
 import Footer from "../Footer/Footer";
 import CareerHero from "./CareerHero";
 import JobCard from "./JobCard";
 import AdCard from "./AdCard";
 
-const jobs = [
-  {
-    id: 1,
-    title: "Senior Accountant",
-    company: "Gupta Enterprises Ltd.",
-    badge: "Full-time",
-    badgeColor: { bg: "#DBEAFE", text: "#1E40AF" },
-    location: "Mumbai, MH",
-    detail: "₹8L – ₹12L / yr",
-    detailIcon: "salary",
-  },
-  {
-    id: 2,
-    title: "Administrative Assistant",
-    company: "Sahu Community Trust",
-    badge: "Part-time",
-    badgeColor: { bg: "#F3F4F6", text: "#374151" },
-    location: "Delhi, NCR",
-    detail: "Min 2 yrs exp.",
-    detailIcon: "exp",
-  },
-  {
-    id: 3,
-    title: "Software Developer",
-    company: "Tech Innovations Sahu",
-    badge: "Remote",
-    badgeColor: { bg: "#78350F", text: "#FFFFFF" },
-    location: "Anywhere",
-    detail: "React, Node.js",
-    detailIcon: "tech",
-  },
-];
-
-const ads = [
-  {
-    id: 1,
-    image: "/assets/event2.png",
-    name: "Shreeji Silks & Sarees",
-    category: "Apparel",
-    categoryColor: { bg: "#FEF3C7", text: "#92400E" },
-    description:
-      "Premium silk sarees and traditional wear for all occasions. Exclusive 15% discount for Sahu Sabha members this festive season.",
-    cta: "Visit Store",
-    ctaIcon: "store",
-    secondaryIcon: "phone",
-  },
-  {
-    id: 2,
-    image: "/assets/event3.png",
-    name: "Naman Daily Mart",
-    category: "Grocery",
-    categoryColor: { bg: "#F3F4F6", text: "#374151" },
-    description:
-      "Your trusted neighborhood grocery store. Free home delivery within 5km for orders above ₹1000. Quality guaranteed.",
-    cta: "Order Online",
-    ctaIcon: "cart",
-    secondaryIcon: "location",
-  },
-];
-
 export default function CareerClient() {
+  const [jobs, setJobs] = useState([]);
+  const [ads, setAds] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    import('../../lib/api').then(({ fetchApi }) => {
+      Promise.all([
+        fetchApi('/career/jobs/'),
+        fetchApi('/career/ads/')
+      ]).then(([jobsData, adsData]) => {
+        // map data if needed
+        const formattedJobs = jobsData.map(job => ({
+          id: job.id,
+          title: job.title,
+          company: job.company,
+          badge: job.type,
+          badgeColor: { bg: "#DBEAFE", text: "#1E40AF" }, // placeholder
+          location: job.location,
+          detail: "View details", // placeholder
+          detailIcon: "tech",
+        }));
+        
+        const formattedAds = adsData.map(ad => ({
+          id: ad.id,
+          image: ad.image,
+          name: ad.company,
+          category: ad.title,
+          categoryColor: { bg: "#FEF3C7", text: "#92400E" },
+          description: ad.description,
+          cta: "Visit",
+          ctaIcon: "store",
+          secondaryIcon: "phone",
+        }));
+
+        setJobs(formattedJobs);
+        setAds(formattedAds);
+      }).catch(err => console.error(err))
+      .finally(() => setLoading(false));
+    });
+  }, []);
+
   return (
     <>
       <Header />
@@ -85,7 +67,7 @@ export default function CareerClient() {
               </div>
 
               <div className="grid gap-6">
-                {jobs.map((job) => (
+                {jobs.length === 0 ? <p>No jobs available.</p> : jobs.map((job) => (
                   <JobCard key={job.id} job={job} />
                 ))}
               </div>
@@ -100,7 +82,7 @@ export default function CareerClient() {
               </div>
 
               <div className="grid gap-8">
-                {ads.map((ad) => (
+                {ads.length === 0 ? <p>No ads available.</p> : ads.map((ad) => (
                   <AdCard key={ad.id} ad={ad} />
                 ))}
               </div>
