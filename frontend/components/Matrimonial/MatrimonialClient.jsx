@@ -53,7 +53,7 @@ export default function MatrimonialClient() {
             religion: "Hindu", // Hardcoded
             marital: "Never Married",
             gothra: "Sahu",
-            avatar: p.photo || (p.gender === 'Male' ? "/assets/avatar_male.png" : "/assets/avatar_female.png"),
+            avatar: p.photo ? `data:${p.photo_mimetype || 'image/jpeg'};base64,${p.photo}` : (p.gender === 'Male' ? "/assets/avatar_male.png" : "/assets/avatar_female.png"),
             bgColor: p.gender === 'Male' ? "#1a7a6e" : "#1a2a4a",
           }));
           setProfiles(formatted);

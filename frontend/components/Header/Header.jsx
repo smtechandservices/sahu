@@ -3,14 +3,20 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
+import { useAuth } from '../../context/AuthContext';
+import { User as UserIcon, LogOut, Settings, ChevronDown } from 'lucide-react';
+import { useState } from 'react';
 
 const Header = () => {
   const pathname = usePathname();
+  const { user, logout } = useAuth();
+  const [showDropdown, setShowDropdown] = useState(false);
 
   const navLinks = [
     { href: '/', label: 'Home' },
     { href: '/about', label: 'About Us' },
     { href: '/accommodation', label: 'Accommodation' },
+    { href: '/events', label: 'Events' },
     { href: '/matrimonial', label: 'Matrimonial' },
     { href: '/magazine', label: 'Magazine' },
   ];
@@ -19,7 +25,7 @@ const Header = () => {
     <header className="h-24 flex items-center bg-[#FFFBF7] shadow-sm sticky top-0 z-[1000]">
       <div className="px-12 flex justify-between items-center w-full h-full">
         <Link href="/" className="flex items-center gap-4">
-          <Image src="/assets/logo.png" alt="Sahu Sabha Logo" width={120} height={60} priority />
+          <Image src="/assets/logo.png" alt="Sahu Sabha Logo" width={120} height={60} style={{ height: 'auto' }} priority />
         </Link>
         
         <nav className="hidden md:block h-full">
@@ -48,10 +54,69 @@ const Header = () => {
         </nav>
         
         <div className="flex items-center gap-6">
-          <Link href="/login" className="text-gray-600 hover:text-primary font-bold transition-colors">Login</Link>
+          {user ? (
+            <div className="relative">
+              <button 
+                onClick={() => setShowDropdown(!showDropdown)}
+                className="flex items-center gap-2 p-1 rounded-full transition-all group"
+              >
+                <div className="w-10 h-10 rounded-full bg-primary/10 border-2 border-primary/20 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all overflow-hidden">
+                  {user.profile_photo ? (
+                    <Image 
+                      src={`data:${user.profile_photo_mimetype || 'image/jpeg'};base64,${user.profile_photo}`}
+                      alt={user.name}
+                      width={40}
+                      height={40}
+                      className="object-cover"
+                    />
+                  ) : (
+                    <UserIcon size={20} />
+                  )}
+                </div>
+                <div className="hidden lg:block text-left cursor-pointer">
+                  <p className="text-xs font-bold text-gray-900 leading-none mb-1">{user.name}</p>
+                  <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wider leading-none">Member</p>
+                </div>
+                <ChevronDown size={14} className={`text-gray-400 transition-transform ${showDropdown ? 'rotate-180' : ''}`} />
+              </button>
+
+              {showDropdown && (
+                <>
+                  <div 
+                    className="fixed inset-0 z-10" 
+                    onClick={() => setShowDropdown(false)}
+                  />
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-20 overflow-hidden">
+                    <div className="px-4 py-2 border-b border-gray-50 mb-1">
+                      <p className="text-xs font-bold text-gray-900">{user.name}</p>
+                      <p className="text-[10px] text-gray-400 truncate">{user.phone}</p>
+                    </div>
+                    <Link 
+                      href="/profile" 
+                      onClick={() => setShowDropdown(false)}
+                      className="flex items-center gap-3 px-4 py-2 text-sm text-gray-600 hover:bg-gray-50 hover:text-primary transition-all"
+                    >
+                      <Settings size={16} />
+                      My Profile
+                    </Link>
+                    <button 
+                      onClick={() => { logout(); setShowDropdown(false); }}
+                      className="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-500 hover:bg-red-50 transition-all border-t border-gray-50"
+                    >
+                      <LogOut size={16} />
+                      Logout
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          ) : (
+            <Link href="/login" className="text-gray-600 hover:text-primary font-bold transition-colors">Login</Link>
+          )}
+          
           <div className="flex gap-4">
             <Link href="/donate" className="btn-outline !py-2">Donate</Link>
-            <Link href="/join" className="btn-primary !py-2">Join Community</Link>
+            {!user && <Link href="/join" className="btn-primary !py-2">Join Community</Link>}
           </div>
         </div>
       </div>

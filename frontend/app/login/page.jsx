@@ -64,7 +64,9 @@ export default function LoginPage() {
                 src="/assets/logo.png" 
                 alt="Sahu Sabha Logo" 
                 width={120} 
-                height={120} 
+                height={60} 
+                style={{ height: 'auto' }}
+                priority
               />
             </Link>
             

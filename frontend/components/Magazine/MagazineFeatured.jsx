@@ -1,33 +1,38 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 
-const articles = [
-  {
-    category: "Heritage",
-    title: "The Legacy of Sahu Community: From Roots to Global Presence",
-    author: "Dr. Vinay Sahu",
-    date: "May 15, 2024",
-    image: "/assets/event1.png",
-  },
-  {
-    category: "Achievement",
-    title: "Youth Icons: Empowering the Next Generation of Professionals",
-    author: "Anjali Sahu",
-    date: "May 10, 2024",
-    image: "/assets/event2.png",
-  },
-  {
-    category: "Culture",
-    title: "Traditional Festivals: Celebrating Unity through Diversity",
-    author: "Rakesh Sahu",
-    date: "May 05, 2024",
-    image: "/assets/event3.png",
-  }
-];
-
 const MagazineFeatured = () => {
+  const [articles, setArticles] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const { fetchApi } = await import('../../lib/api');
+        const data = await fetchApi('/articles/?category=Magazine');
+        setArticles(data);
+      } catch (err) {
+        console.error("Error fetching magazine articles:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadData();
+  }, []);
+
+  const formatDate = (dateStr) => {
+    return new Date(dateStr).toLocaleDateString('en-US', {
+      month: 'short',
+      day: '2-digit',
+      year: 'numeric'
+    });
+  };
+
+  if (loading) return null;
+
   return (
     <section className="section-padding bg-white">
       <div className="container-custom">
@@ -55,9 +60,10 @@ const MagazineFeatured = () => {
             >
               <div className="relative aspect-[4/3] overflow-hidden rounded-2xl mb-6 shadow-md group-hover:shadow-xl transition-all">
                 <Image 
-                  src={article.image} 
+                  src={article.image ? `data:${article.image_mimetype || 'image/jpeg'};base64,${article.image}` : '/assets/event1.png'} 
                   alt={article.title} 
                   fill 
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                   className="object-cover group-hover:scale-105 transition-transform duration-500"
                 />
                 <div className="absolute top-4 left-4">
@@ -67,15 +73,15 @@ const MagazineFeatured = () => {
                 </div>
               </div>
               <div className="flex items-center gap-2 text-sm text-gray-500 mb-3">
-                <span className="font-semibold text-gray-900">{article.author}</span>
+                <span className="font-semibold text-gray-900">Sahu Sabha Editorial</span>
                 <span>•</span>
-                <span>{article.date}</span>
+                <span>{formatDate(article.published_at)}</span>
               </div>
               <h3 className="text-xl font-bold text-gray-900 group-hover:text-primary transition-colors leading-tight mb-3">
                 {article.title}
               </h3>
               <p className="text-gray-600 text-sm line-clamp-2">
-                Discover the deep-rooted traditions and the modern advancements that define our vibrant community today.
+                {article.content}
               </p>
             </motion.div>
           ))}

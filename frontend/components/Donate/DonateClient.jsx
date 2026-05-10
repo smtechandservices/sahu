@@ -8,7 +8,12 @@ import DonateTiers from './DonateTiers';
 import DonateForm from './DonateForm';
 import DonateSidebar from './DonateSidebar';
 
+import { useAuth } from '../../context/AuthContext';
+import Link from 'next/link';
+import { Lock } from 'lucide-react';
+
 const DonateClient = () => {
+  const { user, loading } = useAuth();
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
@@ -17,6 +22,8 @@ const DonateClient = () => {
   });
 
   const [selectedTier, setSelectedTier] = useState(null);
+
+  if (loading) return <div className="min-h-screen bg-gray-50 flex items-center justify-center">Loading...</div>;
 
   const handleSelectTier = (amount) => {
     if (amount === 'Custom') {
@@ -42,7 +49,6 @@ const DonateClient = () => {
       <Header />
       <main className="bg-gray-50 min-h-screen pb-20">
         <DonateHero />
-
         <div className="px-8 mt-12">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
             

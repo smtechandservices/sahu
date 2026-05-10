@@ -1,0 +1,64 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #EAB308;
+  --color-primary-light: #FEF9C3;
+  --color-primary-dark: #A16207;
+  
+  --color-secondary: #34D399;
+  --color-secondary-light: #D1FAE5;
+  --color-secondary-dark: #059669;
+  
+  --color-bg-sidebar: #111827;
+  --color-bg-muted: #F9FAFB;
+  
+  --font-sans: var(--font-inter), 'Poppins', ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-poppins), 'Inter', ui-sans-serif, system-ui, sans-serif;
+
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-base: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+
+  --radius-lg: 1rem;
+  --radius-md: 0.75rem;
+  --radius-base: 0.5rem;
+}
+
+@layer base {
+  body {
+    @apply antialiased text-gray-900 bg-[#F3F4F6];
+    font-family: var(--font-sans);
+  }
+
+  /* Custom Scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #EAB308;
+    border-radius: 10px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #A16207;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-primary text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-primary-dark transition-all inline-flex items-center justify-center gap-2 shadow-sm;
+  }
+  
+  .card {
+    @apply bg-white rounded-xl border border-gray-100 shadow-sm p-6;
+  }
+  
+  .input-field {
+    @apply w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all;
+  }
+}

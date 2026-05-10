@@ -7,9 +7,10 @@ const AccommodationCard = ({ item }) => {
       {/* Image with badge */}
       <div className="relative h-56 w-full overflow-hidden">
         <Image
-          src={item.image}
-          alt={item.title}
+          src={item.image ? `data:${item.image_mimetype || 'image/jpeg'};base64,${item.image}` : '/placeholder.png'}
+          alt={item.title || 'Accommodation'}
           fill
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           className="object-cover transition-transform duration-500 group-hover:scale-105"
         />
         {/* Badge */}
@@ -31,7 +32,7 @@ const AccommodationCard = ({ item }) => {
         <div className="flex items-end justify-between mb-6">
           <div>
             <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">
-              {item.priceLabel}
+              {item.price_label}
             </p>
             <p className="text-2xl font-bold text-primary leading-none">
               {item.price}

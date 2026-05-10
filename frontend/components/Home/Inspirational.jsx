@@ -31,7 +31,13 @@ const Inspirational = () => {
           {figures.map((figure, index) => (
             <div key={index} className="bg-[#FFFBF7] overflow-hidden shadow-base hover:-translate-y-2 hover:shadow-md transition-all duration-300">
               <div className="relative h-[650px] w-full">
-                <Image src={figure.image} alt={figure.name} fill className="object-cover" />
+                <Image 
+                  src={figure.image} 
+                  alt={figure.name} 
+                  fill 
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                  className="object-cover" 
+                />
               </div>
               <div className="p-8 text-center">
                 <h3 className="text-xl font-bold mb-2 text-gray-900">{figure.name}</h3>

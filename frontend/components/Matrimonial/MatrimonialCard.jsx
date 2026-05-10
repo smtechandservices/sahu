@@ -12,6 +12,7 @@ const MatrimonialCard = ({ profile, liked, onLike, onView }) => {
           src={profile.avatar} 
           alt={profile.name} 
           fill 
+          sizes="(max-width: 768px) 100vw, 200px"
           className="object-cover transition-transform duration-500 group-hover:scale-105" 
         />
         <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-md px-2 py-1 rounded-full flex items-center gap-1 shadow-sm">
