@@ -54,9 +54,13 @@ const Header = () => {
         </nav>
         
         <div className="flex items-center gap-6">
+          <div className="flex gap-4">
+            <Link href="/donate" className="btn-outline !py-2">Donate</Link>
+            {!user && <Link href="/join" className="btn-primary !py-2">Join Community</Link>}
+          </div>
           {user ? (
             <div className="relative">
-              <button 
+              <button
                 onClick={() => setShowDropdown(!showDropdown)}
                 className="flex items-center gap-2 p-1 rounded-full transition-all group"
               >
@@ -94,14 +98,14 @@ const Header = () => {
                     <Link 
                       href="/profile" 
                       onClick={() => setShowDropdown(false)}
-                      className="flex items-center gap-3 px-4 py-2 text-sm text-gray-600 hover:bg-gray-50 hover:text-primary transition-all"
+                      className="cursor-pointer flex items-center gap-3 px-4 py-2 text-sm text-gray-600 hover:bg-gray-50 hover:text-primary transition-all"
                     >
                       <Settings size={16} />
                       My Profile
                     </Link>
                     <button 
                       onClick={() => { logout(); setShowDropdown(false); }}
-                      className="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-500 hover:bg-red-50 transition-all border-t border-gray-50"
+                      className="cursor-pointer w-full flex items-center gap-3 px-4 py-2 text-sm text-red-500 hover:bg-red-50 transition-all border-t border-gray-50"
                     >
                       <LogOut size={16} />
                       Logout
@@ -113,11 +117,6 @@ const Header = () => {
           ) : (
             <Link href="/login" className="text-gray-600 hover:text-primary font-bold transition-colors">Login</Link>
           )}
-          
-          <div className="flex gap-4">
-            <Link href="/donate" className="btn-outline !py-2">Donate</Link>
-            {!user && <Link href="/join" className="btn-primary !py-2">Join Community</Link>}
-          </div>
         </div>
       </div>
     </header>

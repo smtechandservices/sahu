@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import Header from "../Header/Header";
 import Footer from "../Footer/Footer";
-import { Calendar as CalendarIcon, MapPin, ChevronLeft, ChevronRight, Clock, ExternalLink, CheckCircle, LogIn } from "lucide-react";
+import { Calendar as CalendarIcon, MapPin, ChevronLeft, ChevronRight, Clock, ExternalLink, CheckCircle, LogIn, Newspaper } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "../../context/AuthContext";
 import { fetchApi } from "../../lib/api";
@@ -20,6 +20,7 @@ export default function EventsClient() {
   const [userRegistrations, setUserRegistrations] = useState([]);
   const [registeringId, setRegisteringId] = useState(null);
   const [confirmingEvent, setConfirmingEvent] = useState(null);
+  const [news, setNews] = useState([]);
   
   const { user } = useAuth();
   const router = useRouter();
@@ -30,16 +31,18 @@ export default function EventsClient() {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const data = await fetchApi('/events/');
-        setEvents(data);
+        const eventsData = await fetchApi('/events/');
+        setEvents(eventsData);
+        
+        const newsData = await fetchApi('/articles/?category=News');
+        setNews(newsData);
         
         if (user) {
             const regs = await fetchApi('/event-registrations/');
-            // Ensure we only mark as registered if the registration belongs to THIS user
             setUserRegistrations(regs.filter(r => r.user === user.id).map(r => r.event));
         }
       } catch (err) {
-        console.error("Error fetching event data:", err);
+        console.error("Error fetching data:", err);
       } finally {
         setLoading(false);
       }
@@ -127,9 +130,32 @@ export default function EventsClient() {
           </div>
         </div>
 
+        {/* News Marquee */}
+        {news.length > 0 && (
+          <div className="bg-white border-b border-gray-200 py-3 relative overflow-hidden">
+            <div className="absolute left-0 top-0 bottom-0 w-20 bg-gradient-to-r from-white to-transparent z-10" />
+            <div className="absolute right-0 top-0 bottom-0 w-20 bg-gradient-to-l from-white to-transparent z-10" />
+            <div className="flex animate-marquee whitespace-nowrap w-max">
+              {[...news, ...news, ...news].map((item, idx) => (
+                <div key={idx} className="flex items-center gap-6 px-12 border-r border-gray-100 group/item">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                    <span className="text-xs font-black text-primary uppercase tracking-[0.2em]">Latest News</span>
+                  </div>
+                  <span className="text-sm font-bold text-gray-700 hover:text-primary transition-all cursor-pointer">
+                    {item.title}
+                  </span>
+                  <span className="text-[10px] text-gray-300 font-medium">
+                    {new Date(item.published_at).toLocaleDateString('default', { month: 'short', day: 'numeric' })}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         <div className="px-8 py-12">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            
             {/* Calendar Grid Section */}
             <div className="lg:col-span-8 bg-white rounded-2xl shadow-md p-8 border border-gray-100">
               <div className="flex items-center justify-between mb-8">
@@ -321,7 +347,6 @@ export default function EventsClient() {
                 )}
               </div>
             </div>
-
           </div>
         </div>
 
