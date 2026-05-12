@@ -154,11 +154,34 @@ class AdvertisementViewSet(viewsets.ModelViewSet):
 class MatrimonialProfileViewSet(viewsets.ModelViewSet):
     serializer_class = MatrimonialProfileSerializer
     permission_classes = [permissions.IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, SearchFilter]
+    filterset_fields = ['gender', 'city', 'gotra', 'marital_status', 'manglik', 'complexion', 'family_type']
+    search_fields = ['user__name', 'city', 'occupation', 'education', 'gotra']
 
     def get_queryset(self):
+        qs = MatrimonialProfile.objects.all()
         if self.request.user.is_authenticated and getattr(self.request.user, 'is_admin', False):
-            return MatrimonialProfile.objects.all()
-        return MatrimonialProfile.objects.filter(is_approved=True) | MatrimonialProfile.objects.filter(user=self.request.user)
+            pass  # admins see all
+        else:
+            qs = qs.filter(is_approved=True) | qs.filter(user=self.request.user)
+
+        # Age range filter
+        age_min = self.request.query_params.get('age_min')
+        age_max = self.request.query_params.get('age_max')
+        if age_min:
+            qs = qs.filter(age__gte=int(age_min))
+        if age_max:
+            qs = qs.filter(age__lte=int(age_max))
+
+        # Height range filter (cm)
+        height_min = self.request.query_params.get('height_min')
+        height_max = self.request.query_params.get('height_max')
+        if height_min:
+            qs = qs.filter(height_cm__gte=int(height_min))
+        if height_max:
+            qs = qs.filter(height_cm__lte=int(height_max))
+
+        return qs.distinct()
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)

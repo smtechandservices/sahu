@@ -136,6 +136,23 @@ class Advertisement(models.Model):
 
 # --- Matrimonial Models ---
 class MatrimonialProfile(models.Model):
+    MARITAL_STATUS_CHOICES = (
+        ('Never Married', 'Never Married'),
+        ('Divorced', 'Divorced'),
+        ('Widowed', 'Widowed'),
+        ('Awaiting Divorce', 'Awaiting Divorce'),
+    )
+    MANGLIK_CHOICES = (
+        ('Yes', 'Yes'),
+        ('No', 'No'),
+        ('Partial', 'Partial'),
+    )
+    COMPLEXION_CHOICES = (
+        ('Fair', 'Fair'),
+        ('Wheatish', 'Wheatish'),
+        ('Dark', 'Dark'),
+    )
+
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='matrimonial_profile')
     age = models.IntegerField()
     gender = models.CharField(max_length=10, choices=(('Male', 'Male'), ('Female', 'Female')))
@@ -143,6 +160,14 @@ class MatrimonialProfile(models.Model):
     education = models.CharField(max_length=255)
     occupation = models.CharField(max_length=255)
     family_type = models.CharField(max_length=50)
+    # New fields
+    gotra = models.CharField(max_length=100, blank=True, null=True, help_text="Gotra / clan name")
+    marital_status = models.CharField(max_length=20, choices=MARITAL_STATUS_CHOICES, default='Never Married')
+    manglik = models.CharField(max_length=10, choices=MANGLIK_CHOICES, default='No')
+    complexion = models.CharField(max_length=20, choices=COMPLEXION_CHOICES, blank=True, null=True)
+    height_cm = models.IntegerField(blank=True, null=True, help_text="Height in centimeters")
+    annual_income = models.CharField(max_length=50, blank=True, null=True, help_text="e.g. 5-10 LPA")
+    mother_tongue = models.CharField(max_length=50, blank=True, null=True)
     photo = models.BinaryField()
     photo_mimetype = models.CharField(max_length=50, null=True, blank=True)
     bio = models.TextField()
