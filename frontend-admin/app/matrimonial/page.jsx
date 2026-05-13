@@ -14,6 +14,7 @@ export default function MatrimonialManager() {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterGender, setFilterGender] = useState('All');
   const [filterStatus, setFilterStatus] = useState('All');
+  const [filterGotra, setFilterGotra] = useState('All');
   const [selectedProfile, setSelectedProfile] = useState(null);
   const [processing, setProcessing] = useState(null);
 
@@ -65,7 +66,8 @@ export default function MatrimonialManager() {
     const matchStatus = filterStatus === 'All' ||
       (filterStatus === 'Approved' && p.is_approved) ||
       (filterStatus === 'Pending' && !p.is_approved);
-    return matchSearch && matchGender && matchStatus;
+    const matchGotra = filterGotra === 'All' || (p.gotra || '').toLowerCase() === filterGotra.toLowerCase();
+    return matchSearch && matchGender && matchStatus && matchGotra;
   });
 
   const pending = profiles.filter(p => !p.is_approved).length;
@@ -94,8 +96,8 @@ export default function MatrimonialManager() {
       </div>
 
       {/* Filters */}
-      <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex flex-col md:flex-row gap-4">
-        <div className="relative flex-1">
+      <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex flex-col md:flex-row gap-4 flex-wrap">
+        <div className="relative flex-1 min-w-[200px]">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
           <input
             type="text" placeholder="Search by name or city..."
@@ -103,15 +105,21 @@ export default function MatrimonialManager() {
             className="input-field pl-12"
           />
         </div>
-        <select value={filterGender} onChange={e => setFilterGender(e.target.value)} className="input-field md:w-40">
+        <select value={filterGender} onChange={e => setFilterGender(e.target.value)} className="input-field md:w-36">
           <option value="All">All Genders</option>
           <option value="Male">Male</option>
           <option value="Female">Female</option>
         </select>
-        <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)} className="input-field md:w-40">
+        <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)} className="input-field md:w-36">
           <option value="All">All Status</option>
           <option value="Pending">Pending</option>
           <option value="Approved">Approved</option>
+        </select>
+        <select value={filterGotra} onChange={e => setFilterGotra(e.target.value)} className="input-field md:w-40">
+          <option value="All">All Gotras</option>
+          {['Kashyap','Bharadwaj','Vashisht','Gautam','Atri','Vishwamitra','Jamadagni','Shandilya','Parashar','Garg','Angiras'].map(g => (
+            <option key={g} value={g}>{g}</option>
+          ))}
         </select>
       </div>
 
@@ -217,6 +225,12 @@ export default function MatrimonialManager() {
                     { icon: Users, label: 'Family Type', value: selectedProfile.family_type },
                     { icon: GraduationCap, label: 'Education', value: selectedProfile.education },
                     { icon: Briefcase, label: 'Occupation', value: selectedProfile.occupation },
+                    { icon: Users, label: 'Marital Status', value: selectedProfile.marital_status || '—' },
+                    { icon: Users, label: 'Gotra', value: selectedProfile.gotra || '—' },
+                    { icon: Users, label: 'Manglik', value: selectedProfile.manglik || '—' },
+                    { icon: Users, label: 'Complexion', value: selectedProfile.complexion || '—' },
+                    { icon: Briefcase, label: 'Annual Income', value: selectedProfile.annual_income || '—' },
+                    { icon: Users, label: 'Mother Tongue', value: selectedProfile.mother_tongue || '—' },
                   ].map(({ icon: Icon, label, value }) => (
                     <div key={label} className="bg-gray-50 rounded-xl p-3">
                       <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">{label}</p>

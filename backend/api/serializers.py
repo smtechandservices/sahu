@@ -73,6 +73,10 @@ class AdvertisementSerializer(serializers.ModelSerializer):
 class MatrimonialProfileSerializer(serializers.ModelSerializer):
     user_detail = UserSerializer(source='user', read_only=True)
     photo = Base64BinaryField()
+    # Expose choice display values as extra read-only fields
+    marital_status_display = serializers.CharField(source='get_marital_status_display', read_only=True)
+    manglik_display = serializers.CharField(source='get_manglik_display', read_only=True)
+    complexion_display = serializers.CharField(source='get_complexion_display', read_only=True)
 
     class Meta:
         model = MatrimonialProfile
