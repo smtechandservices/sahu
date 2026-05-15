@@ -238,6 +238,15 @@ class MatrimonialProfileViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
 
+    @action(detail=True, methods=['patch'])
+    def approve(self, request, pk=None):
+        if not getattr(request.user, 'is_admin', False):
+            return Response({'error': 'Unauthorized'}, status=status.HTTP_403_FORBIDDEN)
+        profile = self.get_object()
+        profile.is_approved = True
+        profile.save()
+        return Response({'message': 'Profile approved successfully'})
+
 # --- Magazine Views ---
 class ArticleViewSet(viewsets.ModelViewSet):
     queryset = Article.objects.filter(is_published=True).order_by('-published_at')

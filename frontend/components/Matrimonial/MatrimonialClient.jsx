@@ -25,7 +25,26 @@ export default function MatrimonialClient() {
   const [selectedProfile, setSelectedProfile] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [showMyInterest, setShowMyInterest] = useState(false);
+  const [shortlisted, setShortlisted] = useState([]);
+  const [liked, setLiked] = useState([]);
 
+  // Load liked and shortlisted from localStorage on mount
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const savedLiked = localStorage.getItem("matrimonial_liked");
+      const savedShortlisted = localStorage.getItem("matrimonial_shortlisted");
+      if (savedLiked) setLiked(JSON.parse(savedLiked));
+      if (savedShortlisted) setShortlisted(JSON.parse(savedShortlisted));
+    }
+  }, []);
+
+  // Save liked and shortlisted to localStorage when they change
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("matrimonial_liked", JSON.stringify(liked));
+      localStorage.setItem("matrimonial_shortlisted", JSON.stringify(shortlisted));
+    }
+  }, [liked, shortlisted]);
   // --- Filter States ---
   const [gender, setGender] = useState("Any");
   const [ageMin, setAgeMin] = useState("21");
@@ -39,11 +58,7 @@ export default function MatrimonialClient() {
   const [income, setIncome] = useState("Any");
   const [location, setLocation] = useState("");
 
-  // Applied filters (only applied when user clicks "Apply Filters")
-  const [appliedFilters, setAppliedFilters] = useState(null);
 
-  const [shortlisted, setShortlisted] = useState([]);
-  const [liked, setLiked] = useState([]);
 
   useEffect(() => {
     if (authLoading) return;
@@ -89,15 +104,6 @@ export default function MatrimonialClient() {
     });
   }, [user, authLoading]);
 
-  // Apply filters
-  const handleApply = () => {
-    setAppliedFilters({
-      gender, ageMin, ageMax, maritalStatus,
-      gotra, manglik, complexion, education,
-      occupation, income, location,
-    });
-  };
-
   const handleReset = () => {
     setGender("Any");
     setAgeMin("21");
@@ -110,13 +116,11 @@ export default function MatrimonialClient() {
     setOccupation("Any");
     setIncome("Any");
     setLocation("");
-    setAppliedFilters(null);
     setSearchQuery("");
   };
 
   // Derived filtered list
   const filteredProfiles = useMemo(() => {
-    const f = appliedFilters;
     return profiles.filter(p => {
       // Search
       if (searchQuery) {
@@ -134,41 +138,39 @@ export default function MatrimonialClient() {
         if (!shortlisted.includes(p.id) && !liked.includes(p.id)) return false;
       }
 
-      if (!f) return true;
-
       // Gender
-      if (f.gender !== "Any" && p.gender !== f.gender.toLowerCase()) return false;
+      if (gender !== "Any" && p.gender !== gender.toLowerCase()) return false;
 
       // Age
-      if (f.ageMin && p.age < parseInt(f.ageMin)) return false;
-      if (f.ageMax && p.age > parseInt(f.ageMax)) return false;
+      if (ageMin && p.age < parseInt(ageMin)) return false;
+      if (ageMax && p.age > parseInt(ageMax)) return false;
 
       // Marital status (multi-select)
-      if (f.maritalStatus.length > 0 && !f.maritalStatus.includes(p.marital)) return false;
+      if (maritalStatus.length > 0 && !maritalStatus.includes(p.marital)) return false;
 
       // Gotra
-      if (f.gotra !== "Any" && p.gothra !== f.gotra) return false;
+      if (gotra !== "Any" && p.gothra !== gotra) return false;
 
       // Manglik
-      if (f.manglik !== "Any" && p.manglik !== f.manglik) return false;
+      if (manglik !== "Any" && p.manglik !== manglik) return false;
 
       // Complexion
-      if (f.complexion !== "Any" && p.complexion !== f.complexion) return false;
+      if (complexion !== "Any" && p.complexion !== complexion) return false;
 
       // Education
-      if (f.education !== "Any" && !p.education.toLowerCase().includes(f.education.toLowerCase()))
+      if (education !== "Any" && !p.education.toLowerCase().includes(education.toLowerCase()))
         return false;
 
       // Occupation
-      if (f.occupation !== "Any" && !p.profession.toLowerCase().includes(f.occupation.toLowerCase()))
+      if (occupation !== "Any" && !p.profession.toLowerCase().includes(occupation.toLowerCase()))
         return false;
 
       // Location
-      if (f.location && !p.location.toLowerCase().includes(f.location.toLowerCase())) return false;
+      if (location && !p.location.toLowerCase().includes(location.toLowerCase())) return false;
 
       return true;
     });
-  }, [profiles, appliedFilters, searchQuery, showMyInterest, shortlisted, liked]);
+  }, [profiles, searchQuery, showMyInterest, shortlisted, liked, gender, ageMin, ageMax, maritalStatus, gotra, manglik, complexion, education, occupation, location]);
 
   if (authLoading || loading)
     return (
@@ -204,7 +206,6 @@ export default function MatrimonialClient() {
               occupation={occupation} setOccupation={setOccupation}
               income={income} setIncome={setIncome}
               location={location} setLocation={setLocation}
-              onApply={handleApply}
               onReset={handleReset}
             />
 
@@ -239,25 +240,23 @@ export default function MatrimonialClient() {
               </div>
 
               {/* Active Filter Pills */}
-              {appliedFilters && (
-                <div className="flex flex-wrap gap-2">
-                  {appliedFilters.gender !== "Any" && (
-                    <FilterPill label={`Gender: ${appliedFilters.gender}`} onRemove={() => { setGender("Any"); setAppliedFilters(f => ({ ...f, gender: "Any" })); }} />
-                  )}
-                  {appliedFilters.gotra !== "Any" && (
-                    <FilterPill label={`Gotra: ${appliedFilters.gotra}`} onRemove={() => { setGotra("Any"); setAppliedFilters(f => ({ ...f, gotra: "Any" })); }} />
-                  )}
-                  {appliedFilters.manglik !== "Any" && (
-                    <FilterPill label={`Manglik: ${appliedFilters.manglik}`} onRemove={() => { setManglik("Any"); setAppliedFilters(f => ({ ...f, manglik: "Any" })); }} />
-                  )}
-                  {appliedFilters.complexion !== "Any" && (
-                    <FilterPill label={`Complexion: ${appliedFilters.complexion}`} onRemove={() => { setComplexion("Any"); setAppliedFilters(f => ({ ...f, complexion: "Any" })); }} />
-                  )}
-                  {appliedFilters.maritalStatus.length > 0 && (
-                    <FilterPill label={`Status: ${appliedFilters.maritalStatus.join(", ")}`} onRemove={() => { setMaritalStatus([]); setAppliedFilters(f => ({ ...f, maritalStatus: [] })); }} />
-                  )}
-                </div>
-              )}
+              <div className="flex flex-wrap gap-2">
+                {gender !== "Any" && (
+                  <FilterPill label={`Gender: ${gender}`} onRemove={() => setGender("Any")} />
+                )}
+                {gotra !== "Any" && (
+                  <FilterPill label={`Gotra: ${gotra}`} onRemove={() => setGotra("Any")} />
+                )}
+                {manglik !== "Any" && (
+                  <FilterPill label={`Manglik: ${manglik}`} onRemove={() => setManglik("Any")} />
+                )}
+                {complexion !== "Any" && (
+                  <FilterPill label={`Complexion: ${complexion}`} onRemove={() => setComplexion("Any")} />
+                )}
+                {maritalStatus.length > 0 && maritalStatus[0] !== "Never Married" && (
+                  <FilterPill label={`Status: ${maritalStatus.join(", ")}`} onRemove={() => setMaritalStatus(["Never Married"])} />
+                )}
+              </div>
 
               {/* Cards Grid */}
               <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
@@ -322,6 +321,14 @@ export default function MatrimonialClient() {
           shortlisted={shortlisted}
           onShortlist={() =>
             setShortlisted(prev =>
+              prev.includes(selectedProfile.id)
+                ? prev.filter(x => x !== selectedProfile.id)
+                : [...prev, selectedProfile.id]
+            )
+          }
+          liked={liked}
+          onLike={() =>
+            setLiked(prev =>
               prev.includes(selectedProfile.id)
                 ? prev.filter(x => x !== selectedProfile.id)
                 : [...prev, selectedProfile.id]

@@ -1,8 +1,9 @@
 import React from 'react';
 import Image from 'next/image';
 
-const MatrimonialModal = ({ profile, shortlisted, onShortlist, onClose }) => {
+const MatrimonialModal = ({ profile, shortlisted, onShortlist, liked, onLike, onClose }) => {
   const isShortlisted = shortlisted.includes(profile.id);
+  const isLiked = liked?.includes(profile.id);
 
   const InfoRow = ({ label, value }) =>
     value && value !== '—' ? (
@@ -112,8 +113,15 @@ const MatrimonialModal = ({ profile, shortlisted, onShortlist, onClose }) => {
             <BookmarkIcon fill={isShortlisted ? 'currentColor' : 'none'} />
             {isShortlisted ? 'Shortlisted' : 'Shortlist'}
           </button>
-          <button className="btn-primary px-7 rounded-lg text-sm shadow-lg shadow-primary/20">
-            Send Interest
+          <button 
+            onClick={onLike}
+            className={`px-7 py-2.5 rounded-lg text-sm shadow-lg shadow-primary/20 transition-all font-bold ${
+              isLiked 
+                ? 'bg-primary/10 text-primary border border-primary/20 shadow-none' 
+                : 'btn-primary'
+            }`}
+          >
+            {isLiked ? 'Interest Sent ✓' : 'Send Interest'}
           </button>
         </div>
       </div>

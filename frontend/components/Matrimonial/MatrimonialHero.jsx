@@ -25,7 +25,7 @@ const MatrimonialHero = ({ onMyInterest, showMyInterest }) => {
             </Link>
             <button 
               onClick={onMyInterest} 
-              className={`btn-outline rounded-lg px-8 ${showMyInterest ? 'bg-primary/10 border-primary text-primary' : 'bg-white'}`}
+              className={`btn-outline rounded-lg px-8 py-3 ${showMyInterest ? 'bg-primary/10 border-primary text-primary' : 'bg-white'}`}
             >
               {showMyInterest ? 'Show All' : 'My Interest'}
             </button>

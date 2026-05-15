@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { fetchApi } from '../../lib/api';
 import {
-  Heart, Search, Check, X, Eye, Trash2,
+  Heart, Search, Check, X, Eye, Trash2, Edit,
   User, MapPin, GraduationCap, Briefcase, Users
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -16,6 +16,7 @@ export default function MatrimonialManager() {
   const [filterStatus, setFilterStatus] = useState('All');
   const [filterGotra, setFilterGotra] = useState('All');
   const [selectedProfile, setSelectedProfile] = useState(null);
+  const [editingProfile, setEditingProfile] = useState(null);
   const [processing, setProcessing] = useState(null);
 
   useEffect(() => { fetchProfiles(); }, []);
@@ -34,7 +35,7 @@ export default function MatrimonialManager() {
   const handleApprove = async (id) => {
     setProcessing(id);
     try {
-      await fetchApi(`/matrimonial/${id}/`, { method: 'PATCH', body: JSON.stringify({ is_approved: true }) });
+      await fetchApi(`/matrimonial/${id}/approve/`, { method: 'PATCH' });
       setProfiles(prev => prev.map(p => p.id === id ? { ...p, is_approved: true } : p));
       if (selectedProfile?.id === id) setSelectedProfile(p => ({ ...p, is_approved: true }));
     } catch (err) {
@@ -53,6 +54,24 @@ export default function MatrimonialManager() {
       if (selectedProfile?.id === id) setSelectedProfile(null);
     } catch (err) {
       alert('Failed to delete profile');
+    } finally {
+      setProcessing(null);
+    }
+  };
+
+  const handleEditSave = async (e) => {
+    e.preventDefault();
+    setProcessing('edit');
+    try {
+      const { id, city, bio, occupation, education } = editingProfile;
+      await fetchApi(`/matrimonial/${id}/`, { 
+        method: 'PATCH', 
+        body: JSON.stringify({ city, bio, occupation, education }) 
+      });
+      setProfiles(prev => prev.map(p => p.id === id ? { ...p, city, bio, occupation, education } : p));
+      setEditingProfile(null);
+    } catch (err) {
+      alert('Failed to save profile');
     } finally {
       setProcessing(null);
     }
@@ -171,6 +190,10 @@ export default function MatrimonialManager() {
                     className="flex-1 py-2 text-xs font-bold text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 transition-all flex items-center justify-center gap-1">
                     <Eye size={14} /> View
                   </button>
+                  <button onClick={() => setEditingProfile(profile)}
+                    className="flex-1 py-2 text-xs font-bold text-blue-600 border border-blue-200 rounded-lg hover:bg-blue-50 transition-all flex items-center justify-center gap-1">
+                    <Edit size={14} /> Edit
+                  </button>
                   {!profile.is_approved && (
                     <button onClick={() => handleApprove(profile.id)} disabled={processing === profile.id}
                       className="flex-1 py-2 text-xs font-bold text-green-600 border border-green-200 rounded-lg hover:bg-green-50 transition-all flex items-center justify-center gap-1 disabled:opacity-50">
@@ -263,6 +286,54 @@ export default function MatrimonialManager() {
                   Delete Profile
                 </button>
               </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Edit Profile Modal */}
+      <AnimatePresence>
+        {editingProfile && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              onClick={() => setEditingProfile(null)} className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
+            <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="relative bg-white w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
+              
+              <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                <h2 className="text-xl font-black text-gray-900">Edit Profile</h2>
+                <button onClick={() => setEditingProfile(null)} className="w-8 h-8 rounded-full hover:bg-gray-200 flex items-center justify-center text-gray-500 transition-all">
+                  <X size={16} />
+                </button>
+              </div>
+
+              <form onSubmit={handleEditSave} className="flex-1 overflow-y-auto p-6 space-y-4">
+                <div>
+                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">City</label>
+                  <input type="text" value={editingProfile.city} onChange={e => setEditingProfile({...editingProfile, city: e.target.value})} className="w-full border border-gray-200 rounded-lg p-2 text-sm focus:border-primary outline-none" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Occupation</label>
+                  <input type="text" value={editingProfile.occupation} onChange={e => setEditingProfile({...editingProfile, occupation: e.target.value})} className="w-full border border-gray-200 rounded-lg p-2 text-sm focus:border-primary outline-none" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Education</label>
+                  <input type="text" value={editingProfile.education} onChange={e => setEditingProfile({...editingProfile, education: e.target.value})} className="w-full border border-gray-200 rounded-lg p-2 text-sm focus:border-primary outline-none" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Bio</label>
+                  <textarea rows={3} value={editingProfile.bio} onChange={e => setEditingProfile({...editingProfile, bio: e.target.value})} className="w-full border border-gray-200 rounded-lg p-2 text-sm focus:border-primary outline-none" />
+                </div>
+              </form>
+
+              <div className="p-6 bg-gray-50 border-t border-gray-100 flex gap-3">
+                <button type="button" onClick={() => setEditingProfile(null)} className="flex-1 py-3 rounded-xl border border-gray-200 text-gray-500 font-bold text-sm hover:bg-white transition-all">Cancel</button>
+                <button onClick={handleEditSave} disabled={processing === 'edit'} className="flex-1 btn-primary rounded-xl py-3 disabled:opacity-60">
+                  {processing === 'edit' ? 'Saving...' : 'Save Changes'}
+                </button>
+              </div>
+
             </motion.div>
           </div>
         )}

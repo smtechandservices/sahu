@@ -45,7 +45,7 @@ const MatrimonialFilterSidebar = ({
   // Location
   location, setLocation,
   // Apply
-  onApply, onReset,
+  onReset,
 }) => {
   const inputClasses =
     'w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:border-primary outline-none transition-colors bg-white';
@@ -220,13 +220,6 @@ const MatrimonialFilterSidebar = ({
         placeholder="e.g. Mumbai, Raipur..."
         className={inputClasses}
       />
-
-      <button
-        onClick={onApply}
-        className="w-full btn-primary mt-6 py-3 rounded-lg text-sm shadow-md shadow-primary/10"
-      >
-        Apply Filters
-      </button>
     </aside>
   );
 };
