@@ -1,8 +1,9 @@
 import React from 'react';
 import Image from 'next/image';
 
-const MatrimonialModal = ({ profile, shortlisted, onShortlist, onClose }) => {
+const MatrimonialModal = ({ profile, shortlisted, onShortlist, liked, onLike, onClose, isOwn, onEdit }) => {
   const isShortlisted = shortlisted.includes(profile.id);
+  const isLiked = liked?.includes(profile.id);
 
   const InfoRow = ({ label, value }) =>
     value && value !== '—' ? (
@@ -100,21 +101,43 @@ const MatrimonialModal = ({ profile, shortlisted, onShortlist, onClose }) => {
 
         {/* Footer */}
         <div className="p-6 border-t border-gray-100 flex justify-end gap-3 bg-gray-50/50">
-          <button
-            onClick={onShortlist}
-            className={`
-              px-5 py-2.5 rounded-lg text-sm font-bold flex items-center gap-2 transition-all
-              ${isShortlisted
-                ? 'bg-primary/15 text-primary border border-primary'
-                : 'bg-white text-gray-500 border border-gray-200 hover:border-primary hover:text-primary'}
-            `}
-          >
-            <BookmarkIcon fill={isShortlisted ? 'currentColor' : 'none'} />
-            {isShortlisted ? 'Shortlisted' : 'Shortlist'}
-          </button>
-          <button className="btn-primary px-7 rounded-lg text-sm shadow-lg shadow-primary/20">
-            Send Interest
-          </button>
+          {isOwn ? (
+            <button
+              onClick={onEdit}
+              className="btn-primary px-7 py-2.5 rounded-lg text-sm font-bold flex items-center gap-2 shadow-lg shadow-primary/20"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
+                <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+              </svg>
+              Edit Profile
+            </button>
+          ) : (
+            <>
+              <button
+                onClick={onShortlist}
+                className={`
+                  px-5 py-2.5 rounded-lg text-sm font-bold flex items-center gap-2 transition-all
+                  ${isShortlisted
+                    ? 'bg-primary/15 text-primary border border-primary'
+                    : 'bg-white text-gray-500 border border-gray-200 hover:border-primary hover:text-primary'}
+                `}
+              >
+                <BookmarkIcon fill={isShortlisted ? 'currentColor' : 'none'} />
+                {isShortlisted ? 'Shortlisted' : 'Shortlist'}
+              </button>
+              <button
+                onClick={onLike}
+                className={`px-7 py-2.5 rounded-lg text-sm shadow-lg shadow-primary/20 transition-all font-bold ${
+                  isLiked
+                    ? 'bg-primary/10 text-primary border border-primary/20 shadow-none'
+                    : 'btn-primary'
+                }`}
+              >
+                {isLiked ? 'Interest Sent ✓' : 'Send Interest'}
+              </button>
+            </>
+          )}
         </div>
       </div>
     </div>

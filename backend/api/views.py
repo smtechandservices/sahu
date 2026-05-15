@@ -12,8 +12,8 @@ from django.db.models import Count
 import itertools
 
 from .models import (
-    User, OTPRecord, Accommodation, Booking, 
-    JobListing, Advertisement, MatrimonialProfile, 
+    User, OTPRecord, Accommodation, Booking,
+    JobListing, Advertisement, MatrimonialProfile, MatrimonialInterest,
     Article, Event, EventRegistration, SiteSettings,
     HeroCarouselImage
 )
@@ -313,6 +313,61 @@ class MatrimonialProfileViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+
+    def perform_update(self, serializer):
+        serializer.save(is_approved=False)
+
+    @action(detail=True, methods=['post', 'delete'])
+    def interest(self, request, pk=None):
+        to_profile = self.get_object()
+        try:
+            from_profile = request.user.matrimonial_profile
+        except MatrimonialProfile.DoesNotExist:
+            return Response({'error': 'You need a matrimonial profile to send interest.'}, status=status.HTTP_400_BAD_REQUEST)
+        if from_profile == to_profile:
+            return Response({'error': 'Cannot send interest to yourself.'}, status=status.HTTP_400_BAD_REQUEST)
+        if request.method == 'POST':
+            MatrimonialInterest.objects.get_or_create(from_profile=from_profile, to_profile=to_profile)
+            return Response({'status': 'interest_sent'})
+        else:
+            MatrimonialInterest.objects.filter(from_profile=from_profile, to_profile=to_profile).delete()
+            return Response({'status': 'interest_withdrawn'})
+
+    @action(detail=False, methods=['get'])
+    def received_interests(self, request):
+        try:
+            my_profile = request.user.matrimonial_profile
+        except MatrimonialProfile.DoesNotExist:
+            return Response([])
+        sent_ids = list(
+            MatrimonialInterest.objects.filter(from_profile=my_profile).values_list('to_profile_id', flat=True)
+        )
+        profiles = MatrimonialProfile.objects.filter(
+            sent_interests__to_profile=my_profile,
+            is_approved=True
+        ).exclude(id__in=sent_ids)
+        serializer = self.get_serializer(profiles, many=True)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['get'])
+    def my_sent_interests(self, request):
+        try:
+            my_profile = request.user.matrimonial_profile
+        except MatrimonialProfile.DoesNotExist:
+            return Response([])
+        profile_ids = list(
+            MatrimonialInterest.objects.filter(from_profile=my_profile).values_list('to_profile_id', flat=True)
+        )
+        return Response({'profile_ids': profile_ids})
+
+    @action(detail=True, methods=['patch'])
+    def approve(self, request, pk=None):
+        if not getattr(request.user, 'is_admin', False):
+            return Response({'error': 'Unauthorized'}, status=status.HTTP_403_FORBIDDEN)
+        profile = self.get_object()
+        profile.is_approved = True
+        profile.save()
+        return Response({'message': 'Profile approved successfully'})
 
 # --- Magazine Views ---
 class ArticleViewSet(viewsets.ModelViewSet):

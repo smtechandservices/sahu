@@ -1,6 +1,6 @@
 import React from 'react';
 
-const MatrimonialHero = () => {
+const MatrimonialHero = ({ onMyInterest, showMyInterest, onCreateProfile, onViewMyProfile, myProfile }) => {
   return (
     <section className="bg-white pt-12 pb-10 border-b border-gray-100">
       <div className="px-8">
@@ -13,17 +13,30 @@ const MatrimonialHero = () => {
               Community <span className="text-primary text-serif italic font-medium">Matrimony</span>
             </h1>
             <p className="text-lg text-gray-600 leading-relaxed">
-              Find your soulmate within our trusted community. 
+              Find your soulmate within our trusted community.
               Bridging traditions with modern preferences for a perfect match.
             </p>
           </div>
-          
+
           <div className="flex flex-col sm:flex-row gap-4">
-            <button className="btn-primary rounded-lg px-8 shadow-lg shadow-primary/20">
-              Create Profile
-            </button>
-            <button className="btn-outline rounded-lg px-8 bg-white">
-              My Interest
+            {myProfile ? (
+              <button onClick={() => onViewMyProfile(myProfile)} className="btn-primary rounded-lg px-8 py-3 shadow-lg shadow-primary/20 flex items-center gap-2 justify-center">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <circle cx="12" cy="8" r="4" />
+                  <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
+                </svg>
+                My Profile
+              </button>
+            ) : (
+              <button onClick={onCreateProfile} className="btn-primary rounded-lg px-8 py-3 shadow-lg shadow-primary/20 flex items-center justify-center">
+                Create Profile
+              </button>
+            )}
+            <button 
+              onClick={onMyInterest} 
+              className={`btn-outline rounded-lg px-8 py-3 ${showMyInterest ? 'bg-primary/10 border-primary text-primary' : 'bg-white'}`}
+            >
+              {showMyInterest ? 'Show All' : 'My Interest'}
             </button>
           </div>
         </div>

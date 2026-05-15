@@ -7,6 +7,8 @@ import MatrimonialHero from "./MatrimonialHero";
 import MatrimonialFilterSidebar from "./MatrimonialFilterSidebar";
 import MatrimonialCard from "./MatrimonialCard";
 import MatrimonialModal from "./MatrimonialModal";
+import CreateProfileModal from "./CreateProfileModal";
+import EditProfileModal from "./EditProfileModal";
 import { useAuth } from "../../context/AuthContext";
 
 // Helper: height_cm → display string e.g. "5' 7\""
@@ -23,8 +25,27 @@ export default function MatrimonialClient() {
   const [profiles, setProfiles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedProfile, setSelectedProfile] = useState(null);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [showMyInterest, setShowMyInterest] = useState(false);
+  const [shortlisted, setShortlisted] = useState([]);
+  const [liked, setLiked] = useState([]); // profile IDs we sent interest to (server-synced)
+  const [receivedProfiles, setReceivedProfiles] = useState([]); // profiles that sent interest to us
 
+  // Load shortlisted from localStorage
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("matrimonial_shortlisted");
+      if (saved) setShortlisted(JSON.parse(saved));
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("matrimonial_shortlisted", JSON.stringify(shortlisted));
+    }
+  }, [shortlisted]);
   // --- Filter States ---
   const [gender, setGender] = useState("Any");
   const [ageMin, setAgeMin] = useState("21");
@@ -38,11 +59,7 @@ export default function MatrimonialClient() {
   const [income, setIncome] = useState("Any");
   const [location, setLocation] = useState("");
 
-  // Applied filters (only applied when user clicks "Apply Filters")
-  const [appliedFilters, setAppliedFilters] = useState(null);
 
-  const [shortlisted, setShortlisted] = useState([]);
-  const [liked, setLiked] = useState([]);
 
   useEffect(() => {
     if (authLoading) return;
@@ -52,50 +69,48 @@ export default function MatrimonialClient() {
     }
 
     import("../../lib/api").then(({ fetchApi }) => {
-      fetchApi("/matrimonial/")
-        .then(data => {
-          const formatted = data.map(p => ({
-            id: p.id,
-            name: p.user_detail?.name || "Unknown",
-            age: p.age,
-            height: cmToFeet(p.height_cm),
-            height_cm: p.height_cm || null,
-            education: p.education,
-            profession: p.occupation,
-            location: p.city,
-            gender: (p.gender || "").toLowerCase(),
-            quote: p.bio ? p.bio.substring(0, 60) + "…" : "",
-            about: p.bio,
-            religion: "Hindu",
-            marital: p.marital_status || "Never Married",
-            gothra: p.gotra || "—",
-            manglik: p.manglik || "No",
-            complexion: p.complexion || "—",
-            annual_income: p.annual_income || "—",
-            mother_tongue: p.mother_tongue || "—",
-            family_type: p.family_type || "—",
-            avatar: p.photo
-              ? `data:${p.photo_mimetype || "image/jpeg"};base64,${p.photo}`
-              : p.gender === "Male"
-              ? "/assets/avatar_male.png"
-              : "/assets/avatar_female.png",
-            bgColor: p.gender === "Male" ? "#1a7a6e" : "#1a2a4a",
-          }));
-          setProfiles(formatted);
-        })
-        .catch(err => console.error(err))
+      const formatProfile = (p) => ({
+        id: p.id,
+        userId: p.user,
+        isApproved: p.is_approved,
+        name: p.user_detail?.name || "Unknown",
+        age: p.age,
+        height: cmToFeet(p.height_cm),
+        height_cm: p.height_cm || null,
+        education: p.education,
+        profession: p.occupation,
+        location: p.city,
+        gender: (p.gender || "").toLowerCase(),
+        quote: p.bio ? p.bio.substring(0, 60) + "…" : "",
+        about: p.bio,
+        religion: "Hindu",
+        marital: p.marital_status || "Never Married",
+        gothra: p.gotra || "—",
+        manglik: p.manglik || "No",
+        complexion: p.complexion || "—",
+        annual_income: p.annual_income || "—",
+        mother_tongue: p.mother_tongue || "—",
+        family_type: p.family_type || "—",
+        avatar: p.photo
+          ? `data:${p.photo_mimetype || "image/jpeg"};base64,${p.photo}`
+          : p.gender === "Male"
+          ? "/assets/avatar_male.png"
+          : "/assets/avatar_female.png",
+        bgColor: p.gender === "Male" ? "#1a7a6e" : "#1a2a4a",
+      });
+
+      Promise.all([
+        fetchApi("/matrimonial/"),
+        fetchApi("/matrimonial/my_sent_interests/").catch(() => ({ profile_ids: [] })),
+        fetchApi("/matrimonial/received_interests/").catch(() => []),
+      ]).then(([allData, sentData, receivedData]) => {
+        setProfiles(allData.map(formatProfile));
+        setLiked(sentData.profile_ids || []);
+        setReceivedProfiles(receivedData.map(formatProfile));
+      }).catch(err => console.error(err))
         .finally(() => setLoading(false));
     });
   }, [user, authLoading]);
-
-  // Apply filters
-  const handleApply = () => {
-    setAppliedFilters({
-      gender, ageMin, ageMax, maritalStatus,
-      gotra, manglik, complexion, education,
-      occupation, income, location,
-    });
-  };
 
   const handleReset = () => {
     setGender("Any");
@@ -109,14 +124,34 @@ export default function MatrimonialClient() {
     setOccupation("Any");
     setIncome("Any");
     setLocation("");
-    setAppliedFilters(null);
     setSearchQuery("");
+  };
+
+  // Toggle send interest — syncs with backend
+  const handleToggleInterest = async (profileId) => {
+    const alreadyLiked = liked.includes(profileId);
+    setLiked(prev => alreadyLiked ? prev.filter(x => x !== profileId) : [...prev, profileId]);
+    try {
+      const { fetchApi } = await import("../../lib/api");
+      await fetchApi(`/matrimonial/${profileId}/interest/`, {
+        method: alreadyLiked ? "DELETE" : "POST",
+      });
+    } catch (err) {
+      // Revert on failure
+      setLiked(prev => alreadyLiked ? [...prev, profileId] : prev.filter(x => x !== profileId));
+      console.error(err);
+    }
   };
 
   // Derived filtered list
   const filteredProfiles = useMemo(() => {
-    const f = appliedFilters;
-    return profiles.filter(p => {
+    const receivedIds = new Set(receivedProfiles.map(p => p.id));
+
+    const browseList = profiles.filter(p => {
+      // Exclude current user's own profile and unapproved profiles
+      if (p.userId === user?.id) return false;
+      if (!p.isApproved) return false;
+
       // Search
       if (searchQuery) {
         const q = searchQuery.toLowerCase();
@@ -127,41 +162,54 @@ export default function MatrimonialClient() {
         )
           return false;
       }
-      if (!f) return true;
+
+      // My Interest Filter — show only profiles I liked/shortlisted (received shown separately below)
+      if (showMyInterest) {
+        if (!shortlisted.includes(p.id) && !liked.includes(p.id)) return false;
+      }
 
       // Gender
-      if (f.gender !== "Any" && p.gender !== f.gender.toLowerCase()) return false;
+      if (gender !== "Any" && p.gender !== gender.toLowerCase()) return false;
 
       // Age
-      if (f.ageMin && p.age < parseInt(f.ageMin)) return false;
-      if (f.ageMax && p.age > parseInt(f.ageMax)) return false;
+      if (ageMin && p.age < parseInt(ageMin)) return false;
+      if (ageMax && p.age > parseInt(ageMax)) return false;
 
       // Marital status (multi-select)
-      if (f.maritalStatus.length > 0 && !f.maritalStatus.includes(p.marital)) return false;
+      if (maritalStatus.length > 0 && !maritalStatus.includes(p.marital)) return false;
 
       // Gotra
-      if (f.gotra !== "Any" && p.gothra !== f.gotra) return false;
+      if (gotra !== "Any" && p.gothra !== gotra) return false;
 
       // Manglik
-      if (f.manglik !== "Any" && p.manglik !== f.manglik) return false;
+      if (manglik !== "Any" && p.manglik !== manglik) return false;
 
       // Complexion
-      if (f.complexion !== "Any" && p.complexion !== f.complexion) return false;
+      if (complexion !== "Any" && p.complexion !== complexion) return false;
 
       // Education
-      if (f.education !== "Any" && !p.education.toLowerCase().includes(f.education.toLowerCase()))
+      if (education !== "Any" && !p.education.toLowerCase().includes(education.toLowerCase()))
         return false;
 
       // Occupation
-      if (f.occupation !== "Any" && !p.profession.toLowerCase().includes(f.occupation.toLowerCase()))
+      if (occupation !== "Any" && !p.profession.toLowerCase().includes(occupation.toLowerCase()))
         return false;
 
       // Location
-      if (f.location && !p.location.toLowerCase().includes(f.location.toLowerCase())) return false;
+      if (location && !p.location.toLowerCase().includes(location.toLowerCase())) return false;
 
       return true;
     });
-  }, [profiles, appliedFilters, searchQuery]);
+
+    // In "My Interest" mode, append received profiles (deduplicated)
+    if (showMyInterest) {
+      const browseIds = new Set(browseList.map(p => p.id));
+      const extraReceived = receivedProfiles.filter(p => !browseIds.has(p.id) && p.userId !== user?.id);
+      return [...browseList, ...extraReceived];
+    }
+
+    return browseList;
+  }, [profiles, receivedProfiles, searchQuery, showMyInterest, shortlisted, liked, gender, ageMin, ageMax, maritalStatus, gotra, manglik, complexion, education, occupation, location, user]);
 
   if (authLoading || loading)
     return (
@@ -177,7 +225,13 @@ export default function MatrimonialClient() {
     <>
       <Header />
       <main className="bg-gray-50 min-h-screen pb-20">
-        <MatrimonialHero />
+        <MatrimonialHero
+          showMyInterest={showMyInterest}
+          onMyInterest={() => setShowMyInterest(!showMyInterest)}
+          myProfile={profiles.find(p => p.userId === user?.id) || null}
+          onCreateProfile={() => setShowCreateModal(true)}
+          onViewMyProfile={(profile) => setSelectedProfile(profile)}
+        />
 
         <div className="px-8 mt-10">
           <div className="flex flex-col lg:flex-row gap-10">
@@ -194,7 +248,6 @@ export default function MatrimonialClient() {
               occupation={occupation} setOccupation={setOccupation}
               income={income} setIncome={setIncome}
               location={location} setLocation={setLocation}
-              onApply={handleApply}
               onReset={handleReset}
             />
 
@@ -229,25 +282,23 @@ export default function MatrimonialClient() {
               </div>
 
               {/* Active Filter Pills */}
-              {appliedFilters && (
-                <div className="flex flex-wrap gap-2">
-                  {appliedFilters.gender !== "Any" && (
-                    <FilterPill label={`Gender: ${appliedFilters.gender}`} onRemove={() => { setGender("Any"); setAppliedFilters(f => ({ ...f, gender: "Any" })); }} />
-                  )}
-                  {appliedFilters.gotra !== "Any" && (
-                    <FilterPill label={`Gotra: ${appliedFilters.gotra}`} onRemove={() => { setGotra("Any"); setAppliedFilters(f => ({ ...f, gotra: "Any" })); }} />
-                  )}
-                  {appliedFilters.manglik !== "Any" && (
-                    <FilterPill label={`Manglik: ${appliedFilters.manglik}`} onRemove={() => { setManglik("Any"); setAppliedFilters(f => ({ ...f, manglik: "Any" })); }} />
-                  )}
-                  {appliedFilters.complexion !== "Any" && (
-                    <FilterPill label={`Complexion: ${appliedFilters.complexion}`} onRemove={() => { setComplexion("Any"); setAppliedFilters(f => ({ ...f, complexion: "Any" })); }} />
-                  )}
-                  {appliedFilters.maritalStatus.length > 0 && (
-                    <FilterPill label={`Status: ${appliedFilters.maritalStatus.join(", ")}`} onRemove={() => { setMaritalStatus([]); setAppliedFilters(f => ({ ...f, maritalStatus: [] })); }} />
-                  )}
-                </div>
-              )}
+              <div className="flex flex-wrap gap-2">
+                {gender !== "Any" && (
+                  <FilterPill label={`Gender: ${gender}`} onRemove={() => setGender("Any")} />
+                )}
+                {gotra !== "Any" && (
+                  <FilterPill label={`Gotra: ${gotra}`} onRemove={() => setGotra("Any")} />
+                )}
+                {manglik !== "Any" && (
+                  <FilterPill label={`Manglik: ${manglik}`} onRemove={() => setManglik("Any")} />
+                )}
+                {complexion !== "Any" && (
+                  <FilterPill label={`Complexion: ${complexion}`} onRemove={() => setComplexion("Any")} />
+                )}
+                {maritalStatus.length > 0 && maritalStatus[0] !== "Never Married" && (
+                  <FilterPill label={`Status: ${maritalStatus.join(", ")}`} onRemove={() => setMaritalStatus(["Never Married"])} />
+                )}
+              </div>
 
               {/* Cards Grid */}
               <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
@@ -256,14 +307,9 @@ export default function MatrimonialClient() {
                     key={p.id}
                     profile={p}
                     liked={liked}
-                    onLike={() =>
-                      setLiked(prev =>
-                        prev.includes(p.id)
-                          ? prev.filter(x => x !== p.id)
-                          : [...prev, p.id]
-                      )
-                    }
+                    onLike={() => handleToggleInterest(p.id)}
                     onView={() => setSelectedProfile(p)}
+                    receivedInterest={showMyInterest && receivedProfiles.some(r => r.id === p.id)}
                   />
                 ))}
                 {filteredProfiles.length === 0 && (
@@ -305,6 +351,19 @@ export default function MatrimonialClient() {
 
       <Footer />
 
+      {/* Create Profile Modal */}
+      <CreateProfileModal
+        isOpen={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+      />
+
+      {/* Edit Profile Modal */}
+      <EditProfileModal
+        isOpen={showEditModal}
+        onClose={() => { setShowEditModal(false); setSelectedProfile(null); }}
+        profile={selectedProfile}
+      />
+
       {/* Profile Modal */}
       {selectedProfile && (
         <MatrimonialModal
@@ -317,6 +376,10 @@ export default function MatrimonialClient() {
                 : [...prev, selectedProfile.id]
             )
           }
+          liked={liked}
+          onLike={() => handleToggleInterest(selectedProfile.id)}
+          isOwn={selectedProfile?.userId === user?.id}
+          onEdit={() => { setShowEditModal(true); }}
           onClose={() => setSelectedProfile(null)}
         />
       )}

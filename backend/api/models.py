@@ -179,6 +179,19 @@ class MatrimonialProfile(models.Model):
     def __str__(self):
         return f"{self.user.name} - {self.city}"
 
+
+class MatrimonialInterest(models.Model):
+    from_profile = models.ForeignKey(MatrimonialProfile, on_delete=models.CASCADE, related_name='sent_interests')
+    to_profile = models.ForeignKey(MatrimonialProfile, on_delete=models.CASCADE, related_name='received_interests')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('from_profile', 'to_profile')
+
+    def __str__(self):
+        return f"{self.from_profile.user.name} → {self.to_profile.user.name}"
+
+
 # --- Magazine Models ---
 class Article(models.Model):
     title = models.CharField(max_length=255)
