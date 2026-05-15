@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ShieldCheck, LogIn, ChevronRight, ArrowLeft } from 'lucide-react';
@@ -13,7 +13,15 @@ export default function LoginPage() {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [resendCooldown, setResendCooldown] = useState(0);
+  const [resendLoading, setResendLoading] = useState(false);
   const { login } = useAuth();
+
+  useEffect(() => {
+    if (resendCooldown <= 0) return;
+    const t = setTimeout(() => setResendCooldown(c => c - 1), 1000);
+    return () => clearTimeout(t);
+  }, [resendCooldown]);
 
   const handleSendOtp = async (e) => {
     e.preventDefault();
@@ -26,10 +34,28 @@ export default function LoginPage() {
         body: JSON.stringify({ phone })
       });
       setStep(2);
+      setResendCooldown(30);
     } catch (err) {
       setError(err?.data?.error || 'Failed to send OTP');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleResendOtp = async () => {
+    setResendLoading(true);
+    setError('');
+    try {
+      await fetchApi('/auth/send-otp/', {
+        method: 'POST',
+        body: JSON.stringify({ phone })
+      });
+      setOtp('');
+      setResendCooldown(30);
+    } catch (err) {
+      setError(err?.data?.error || 'Failed to resend OTP');
+    } finally {
+      setResendLoading(false);
     }
   };
 
@@ -155,10 +181,20 @@ export default function LoginPage() {
 
                   {step === 2 && (
                     <div className="space-y-2">
-                      <label className="text-sm font-bold text-gray-700 ml-1">OTP (Mock: 123456)</label>
-                      <input 
-                        type="text" 
-                        placeholder="123456"
+                      <div className="flex items-center justify-between ml-1">
+                        <label className="text-sm font-bold text-gray-700">OTP</label>
+                        <button
+                          type="button"
+                          onClick={handleResendOtp}
+                          disabled={resendCooldown > 0 || resendLoading}
+                          className="text-sm font-bold text-primary hover:underline disabled:text-gray-400 disabled:no-underline transition-colors"
+                        >
+                          {resendLoading ? 'Sending...' : resendCooldown > 0 ? `Resend in ${resendCooldown}s` : 'Resend OTP'}
+                        </button>
+                      </div>
+                      <input
+                        type="text"
+                        placeholder="Enter OTP"
                         value={otp}
                         onChange={(e) => setOtp(e.target.value)}
                         className="w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-300 placeholder:text-gray-400 font-medium"
@@ -166,7 +202,11 @@ export default function LoginPage() {
                     </div>
                   )}
 
-                  {error && <p className="text-red-500 text-sm font-medium">{error}</p>}
+                  {error && (
+                    <div className="bg-red-50 text-red-500 p-4 rounded-xl text-sm font-medium border border-red-100 animate-shake">
+                      {error}
+                    </div>
+                  )}
 
                   <button 
                     disabled={loading}

@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState, useEffect } from 'react';
 import { fetchApi } from '../lib/api';
+import { setCookie, getCookie, removeCookie } from '../lib/cookies';
 
 const AuthContext = createContext();
 
@@ -10,38 +11,33 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check if user is logged in
-    const storedUser = localStorage.getItem('user');
-    const token = localStorage.getItem('accessToken');
-    
+    const storedUser = getCookie('user');
+    const token = getCookie('accessToken');
+
     if (storedUser && token) {
       setUser(JSON.parse(storedUser));
-      // Optionally fetch latest profile
       fetchApi('/auth/profile/')
         .then(data => {
             setUser(data);
-            localStorage.setItem('user', JSON.stringify(data));
+            setCookie('user', JSON.stringify(data));
         })
-        .catch(() => {
-            // Token might be invalid
-            logout();
-        });
+        .catch(() => logout());
     }
     setLoading(false);
   }, []);
 
   const login = (userData, accessToken, refreshToken) => {
     setUser(userData);
-    localStorage.setItem('user', JSON.stringify(userData));
-    localStorage.setItem('accessToken', accessToken);
-    localStorage.setItem('refreshToken', refreshToken);
+    setCookie('user', JSON.stringify(userData));
+    setCookie('accessToken', accessToken);
+    setCookie('refreshToken', refreshToken);
   };
 
   const logout = () => {
     setUser(null);
-    localStorage.removeItem('user');
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
+    removeCookie('user');
+    removeCookie('accessToken');
+    removeCookie('refreshToken');
     window.location.href = '/login';
   };
 

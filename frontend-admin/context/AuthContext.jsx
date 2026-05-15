@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState, useEffect } from 'react';
 import { fetchApi } from '../lib/api';
+import { setCookie, getCookie, removeCookie } from '../lib/cookies';
 
 const AuthContext = createContext();
 
@@ -10,19 +11,18 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('user');
-    const token = localStorage.getItem('accessToken');
-    
+    const storedUser = getCookie('user');
+    const token = getCookie('accessToken');
+
     if (storedUser && token) {
       const parsedUser = JSON.parse(storedUser);
       if (parsedUser.is_admin) {
         setUser(parsedUser);
-        // Refresh profile to ensure they are still admin
         fetchApi('/auth/profile/')
           .then(data => {
               if (data.is_admin) {
                 setUser(data);
-                localStorage.setItem('user', JSON.stringify(data));
+                setCookie('user', JSON.stringify(data));
               } else {
                 logout();
               }
@@ -40,16 +40,16 @@ export function AuthProvider({ children }) {
         throw new Error("Access denied. Admin privileges required.");
     }
     setUser(userData);
-    localStorage.setItem('user', JSON.stringify(userData));
-    localStorage.setItem('accessToken', accessToken);
-    localStorage.setItem('refreshToken', refreshToken);
+    setCookie('user', JSON.stringify(userData));
+    setCookie('accessToken', accessToken);
+    setCookie('refreshToken', refreshToken);
   };
 
   const logout = () => {
     setUser(null);
-    localStorage.removeItem('user');
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
+    removeCookie('user');
+    removeCookie('accessToken');
+    removeCookie('refreshToken');
     if (typeof window !== 'undefined') {
         window.location.href = '/login';
     }

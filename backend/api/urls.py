@@ -20,11 +20,13 @@ router.register(r'matrimonial', views.MatrimonialProfileViewSet, basename='matri
 router.register(r'articles', views.ArticleViewSet, basename='article')
 router.register(r'events', views.EventViewSet, basename='event')
 router.register(r'event-registrations', views.EventRegistrationViewSet, basename='event-registration')
+router.register(r'carousel-images', views.HeroCarouselImageViewSet, basename='carousel-image')
 
 urlpatterns = [
     # Auth
     path('auth/send-otp/', views.send_otp, name='send_otp'),
     path('auth/verify-otp/', views.verify_otp, name='verify_otp'),
+    path('auth/register/', views.register, name='register'),
     path('auth/admin-login/', views.admin_login, name='admin_login'),
     path('auth/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('auth/profile/', views.profile_view, name='profile_view'),

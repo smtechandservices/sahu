@@ -11,13 +11,15 @@ from rest_framework.filters import SearchFilter
 from .models import (
     User, OTPRecord, Accommodation, Booking, 
     JobListing, Advertisement, MatrimonialProfile, 
-    Article, Event, EventRegistration, SiteSettings
+    Article, Event, EventRegistration, SiteSettings,
+    HeroCarouselImage
 )
 from .serializers import (
     UserSerializer, AccommodationSerializer, BookingSerializer,
     JobListingSerializer, AdvertisementSerializer, 
     MatrimonialProfileSerializer, ArticleSerializer, 
-    EventSerializer, EventRegistrationSerializer, SiteSettingsSerializer
+    EventSerializer, EventRegistrationSerializer, SiteSettingsSerializer,
+    HeroCarouselImageSerializer
 )
 from .permissions import IsAdminOrReadOnly
 
@@ -29,31 +31,75 @@ def send_otp(request):
     if not phone:
         return Response({'error': 'Phone number is required'}, status=status.HTTP_400_BAD_REQUEST)
     
-    OTPRecord.generate_otp(phone)
-    return Response({'message': 'OTP sent successfully (mocked as 123456)'})
+    record = OTPRecord.generate_otp(phone)
+    print(f'[OTP] Phone: {phone} | Code: {record.code}')
+    return Response({'message': 'OTP sent successfully'})
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def verify_otp(request):
     phone = request.data.get('phone')
     code = request.data.get('code')
-    name = request.data.get('name')
-    
+
     if not phone or not code:
         return Response({'error': 'Phone and code are required'}, status=status.HTTP_400_BAD_REQUEST)
-    
-    if code != '123456':
-        return Response({'error': 'Invalid OTP'}, status=status.HTTP_400_BAD_REQUEST)
 
-    user, created = User.objects.get_or_create(phone=phone, defaults={'name': name or 'User'})
+    otp = OTPRecord.objects.filter(phone=phone, code=code, is_used=False).order_by('-created_at').first()
+    if not otp:
+        return Response({'error': 'Invalid or expired OTP'}, status=status.HTTP_400_BAD_REQUEST)
+
+    expiry = otp.created_at + timezone.timedelta(minutes=10)
+    if timezone.now() > expiry:
+        return Response({'error': 'OTP has expired'}, status=status.HTTP_400_BAD_REQUEST)
+
+    otp.is_used = True
+    otp.save()
+
+    try:
+        user = User.objects.get(phone=phone)
+    except User.DoesNotExist:
+        return Response({'error': 'User not found. Please register first.'}, status=status.HTTP_404_NOT_FOUND)
+
+    refresh = RefreshToken.for_user(user)
+
+    return Response({
+        'refresh': str(refresh),
+        'access': str(refresh.access_token),
+        'user': UserSerializer(user).data
+    })
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def register(request):
+    phone = request.data.get('phone')
+    name = request.data.get('name')
+    code = request.data.get('code')
+    
+    if not phone or not name or not code:
+        return Response({'error': 'Phone, name and code are required'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    otp = OTPRecord.objects.filter(phone=phone, code=code, is_used=False).order_by('-created_at').first()
+    if not otp:
+        return Response({'error': 'Invalid or expired OTP'}, status=status.HTTP_400_BAD_REQUEST)
+
+    expiry = otp.created_at + timezone.timedelta(minutes=10)
+    if timezone.now() > expiry:
+        return Response({'error': 'OTP has expired'}, status=status.HTTP_400_BAD_REQUEST)
+
+    otp.is_used = True
+    otp.save()
+
+    if User.objects.filter(phone=phone).exists():
+        return Response({'error': 'User with this phone already exists. Please login.'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    user = User.objects.create_user(phone=phone, name=name)
     refresh = RefreshToken.for_user(user)
     
     return Response({
         'refresh': str(refresh),
         'access': str(refresh.access_token),
-        'user': UserSerializer(user).data,
-        'created': created
-    })
+        'user': UserSerializer(user).data
+    }, status=status.HTTP_201_CREATED)
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
@@ -117,6 +163,12 @@ class BookingViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+
+    def perform_update(self, serializer):
+        if 'status' in self.request.data and not getattr(self.request.user, 'is_admin', False):
+            serializer.save(status=serializer.instance.status)
+        else:
+            serializer.save()
 
     @action(detail=True, methods=['patch'])
     def cancel(self, request, pk=None):
@@ -226,3 +278,28 @@ class SiteSettingsView(views.APIView):
             serializer.save()
             return response.Response(serializer.data)
         return response.Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class HeroCarouselImageViewSet(viewsets.ModelViewSet):
+    queryset = HeroCarouselImage.objects.all()
+    serializer_class = HeroCarouselImageSerializer
+    permission_classes = [IsAdminOrReadOnly]
+
+    def perform_create(self, serializer):
+        image_file = self.request.FILES.get('image_file')
+        if image_file:
+            serializer.save(
+                image=image_file.read(),
+                image_mimetype=image_file.content_type
+            )
+        else:
+            serializer.save()
+
+    def perform_update(self, serializer):
+        image_file = self.request.FILES.get('image_file')
+        if image_file:
+            serializer.save(
+                image=image_file.read(),
+                image_mimetype=image_file.content_type
+            )
+        else:
+            serializer.save()

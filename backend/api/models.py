@@ -55,8 +55,8 @@ class OTPRecord(models.Model):
 
     @classmethod
     def generate_otp(cls, phone):
-        # mock OTP logic
-        code = '123456' # Mocking an OTP
+        code = f'{random.randint(0, 999999):06d}'
+        cls.objects.filter(phone=phone, is_used=False).delete()
         return cls.objects.create(phone=phone, code=code)
 
 # --- Accommodation Models ---
@@ -92,7 +92,9 @@ class Booking(models.Model):
     accommodation = models.ForeignKey(Accommodation, on_delete=models.CASCADE, related_name='bookings')
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='bookings')
     check_in = models.DateField()
+    check_in_time = models.TimeField(null=True, blank=True)
     check_out = models.DateField()
+    check_out_time = models.TimeField(null=True, blank=True)
     guests = models.IntegerField(default=1)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending')
     total_price = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
@@ -216,6 +218,18 @@ class EventRegistration(models.Model):
         return f"{self.user.name} - {self.event.title}"
 
 # --- Core (Settings) Models ---
+class HeroCarouselImage(models.Model):
+    image = models.BinaryField()
+    image_mimetype = models.CharField(max_length=50, default='image/jpeg')
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Carousel Image {self.id}"
+
 class SiteSettings(models.Model):
     hero_text = models.CharField(max_length=255, default="Welcome to Sahu Sabha")
     hero_subtext = models.TextField(default="Empowering our community")

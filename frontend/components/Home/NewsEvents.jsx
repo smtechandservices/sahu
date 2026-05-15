@@ -91,14 +91,12 @@ const NewsEvents = () => {
                     <p className="text-slate-600 text-sm leading-relaxed mb-8 flex-1">
                       {event.description}
                     </p>
-                    <a 
-                      href={event.registration_link || '#'} 
-                      target="_blank" 
-                      rel="noopener noreferrer" 
-                      className="text-yellow-700 font-bold text-sm hover:translate-x-1 transition-transform inline-flex items-center gap-1"
+                    <Link 
+                      href='/events'
+                      className="mt-auto text-yellow-700 font-bold flex items-center gap-2 group/link"
                     >
-                      Register to Attend
-                    </a>
+                      View Details <ArrowRight size={18} className="group-hover/link:translate-x-1 transition-transform" />
+                    </Link>
                   </div>
                 </div>
               ))}

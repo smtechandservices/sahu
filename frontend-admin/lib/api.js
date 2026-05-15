@@ -1,13 +1,19 @@
+import { getCookie, removeCookie } from './cookies';
+
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
 
 export async function fetchApi(endpoint, options = {}) {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
-  
+  const token = typeof window !== 'undefined' ? getCookie('accessToken') : null;
+
   const headers = {
     'Content-Type': 'application/json',
     ...(token && { 'Authorization': `Bearer ${token}` }),
     ...options.headers,
   };
+
+  if (options.body instanceof FormData) {
+    delete headers['Content-Type'];
+  }
 
   const config = {
     ...options,
@@ -18,10 +24,10 @@ export async function fetchApi(endpoint, options = {}) {
     const response = await fetch(`${BASE_URL}${endpoint}`, config);
     
     if (response.status === 401) {
-        // Handle token refresh or logout
         if (typeof window !== 'undefined') {
-            localStorage.removeItem('accessToken');
-            localStorage.removeItem('user');
+            removeCookie('accessToken');
+            removeCookie('refreshToken');
+            removeCookie('user');
             window.location.href = '/login';
         }
     }
@@ -34,8 +40,13 @@ export async function fetchApi(endpoint, options = {}) {
       throw new Error(errorText || `API Error: ${response.status} ${response.statusText}`);
     }
 
+    if (response.status === 204) {
+        return null;
+    }
+
     if (!isJson) {
-        throw new Error(`Unexpected response from server: Expected JSON but received ${contentType || 'unknown content'}`);
+        // If not JSON but status is OK, just return text or null
+        return await response.text();
     }
 
     return await response.json();
