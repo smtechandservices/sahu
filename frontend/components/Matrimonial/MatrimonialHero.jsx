@@ -1,6 +1,7 @@
 import React from 'react';
+import Link from 'next/link';
 
-const MatrimonialHero = () => {
+const MatrimonialHero = ({ onMyInterest, showMyInterest }) => {
   return (
     <section className="bg-white pt-12 pb-10 border-b border-gray-100">
       <div className="px-8">
@@ -19,11 +20,14 @@ const MatrimonialHero = () => {
           </div>
           
           <div className="flex flex-col sm:flex-row gap-4">
-            <button className="btn-primary rounded-lg px-8 shadow-lg shadow-primary/20">
+            <Link href="/matrimonial/create" className="btn-primary rounded-lg px-8 shadow-lg shadow-primary/20 flex items-center justify-center">
               Create Profile
-            </button>
-            <button className="btn-outline rounded-lg px-8 bg-white">
-              My Interest
+            </Link>
+            <button 
+              onClick={onMyInterest} 
+              className={`btn-outline rounded-lg px-8 ${showMyInterest ? 'bg-primary/10 border-primary text-primary' : 'bg-white'}`}
+            >
+              {showMyInterest ? 'Show All' : 'My Interest'}
             </button>
           </div>
         </div>

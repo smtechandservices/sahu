@@ -24,6 +24,7 @@ export default function MatrimonialClient() {
   const [loading, setLoading] = useState(true);
   const [selectedProfile, setSelectedProfile] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [showMyInterest, setShowMyInterest] = useState(false);
 
   // --- Filter States ---
   const [gender, setGender] = useState("Any");
@@ -127,6 +128,12 @@ export default function MatrimonialClient() {
         )
           return false;
       }
+
+      // My Interest Filter
+      if (showMyInterest) {
+        if (!shortlisted.includes(p.id) && !liked.includes(p.id)) return false;
+      }
+
       if (!f) return true;
 
       // Gender
@@ -161,7 +168,7 @@ export default function MatrimonialClient() {
 
       return true;
     });
-  }, [profiles, appliedFilters, searchQuery]);
+  }, [profiles, appliedFilters, searchQuery, showMyInterest, shortlisted, liked]);
 
   if (authLoading || loading)
     return (
@@ -177,7 +184,10 @@ export default function MatrimonialClient() {
     <>
       <Header />
       <main className="bg-gray-50 min-h-screen pb-20">
-        <MatrimonialHero />
+        <MatrimonialHero 
+          showMyInterest={showMyInterest} 
+          onMyInterest={() => setShowMyInterest(!showMyInterest)} 
+        />
 
         <div className="px-8 mt-10">
           <div className="flex flex-col lg:flex-row gap-10">

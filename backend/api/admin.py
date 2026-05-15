@@ -35,8 +35,9 @@ class AdvertisementAdmin(admin.ModelAdmin):
 
 @admin.register(MatrimonialProfile)
 class MatrimonialProfileAdmin(admin.ModelAdmin):
-    list_display = ('user', 'gender', 'city', 'is_approved')
-    list_filter = ('gender', 'is_approved')
+    list_display = ('user', 'gender', 'age', 'city', 'marital_status', 'gotra', 'is_approved')
+    list_filter = ('gender', 'is_approved', 'marital_status', 'manglik')
+    search_fields = ('user__name', 'user__phone', 'city', 'gotra')
 
 @admin.register(Article)
 class ArticleAdmin(admin.ModelAdmin):
