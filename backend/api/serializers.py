@@ -34,11 +34,19 @@ class Base64BinaryField(serializers.Field):
 # --- Auth Serializers ---
 class UserSerializer(serializers.ModelSerializer):
     profile_photo = Base64BinaryField(required=False, allow_null=True)
-    
+
     class Meta:
         model = User
         fields = ['id', 'phone', 'name', 'email', 'profile_photo', 'profile_photo_mimetype', 'is_member', 'is_admin', 'date_joined']
         read_only_fields = ['is_admin', 'date_joined', 'is_member']
+
+class AdminUserSerializer(serializers.ModelSerializer):
+    profile_photo = Base64BinaryField(required=False, allow_null=True)
+
+    class Meta:
+        model = User
+        fields = ['id', 'phone', 'name', 'email', 'profile_photo', 'profile_photo_mimetype', 'is_member', 'is_admin', 'is_active', 'date_joined']
+        read_only_fields = ['phone', 'date_joined']
 
 # --- Accommodation Serializers ---
 class AccommodationSerializer(serializers.ModelSerializer):
@@ -92,7 +100,8 @@ class MatrimonialProfileSerializer(serializers.ModelSerializer):
 # --- Magazine Serializers ---
 class ArticleSerializer(serializers.ModelSerializer):
     image = Base64BinaryField(required=False, allow_null=True)
-    
+    pdf = Base64BinaryField(required=False, allow_null=True)
+
     class Meta:
         model = Article
         fields = '__all__'
@@ -115,7 +124,7 @@ class EventSerializer(serializers.ModelSerializer):
         model = Event
         fields = [
             'id', 'title', 'description', 'image', 'image_mimetype', 
-            'event_date', 'location', 'registration_link', 'is_active', 
+            'event_date', 'location', 'is_active',
             'created_at', 'attendee_count', 'recent_registrations'
         ]
 

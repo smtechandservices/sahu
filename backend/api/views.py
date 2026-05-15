@@ -7,6 +7,9 @@ from django.utils import timezone
 from django.conf import settings
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter
+from django.db.models.functions import TruncMonth
+from django.db.models import Count
+import itertools
 
 from .models import (
     User, OTPRecord, Accommodation, Booking, 
@@ -15,9 +18,9 @@ from .models import (
     HeroCarouselImage
 )
 from .serializers import (
-    UserSerializer, AccommodationSerializer, BookingSerializer,
-    JobListingSerializer, AdvertisementSerializer, 
-    MatrimonialProfileSerializer, ArticleSerializer, 
+    UserSerializer, AdminUserSerializer, AccommodationSerializer, BookingSerializer,
+    JobListingSerializer, AdvertisementSerializer,
+    MatrimonialProfileSerializer, ArticleSerializer,
     EventSerializer, EventRegistrationSerializer, SiteSettingsSerializer,
     HeroCarouselImageSerializer
 )
@@ -30,10 +33,21 @@ def send_otp(request):
     phone = request.data.get('phone')
     if not phone:
         return Response({'error': 'Phone number is required'}, status=status.HTTP_400_BAD_REQUEST)
-    
+
+    if not User.objects.filter(phone=phone).exists():
+        return Response({'error': 'No account found with this number. Please register first.'}, status=status.HTTP_404_NOT_FOUND)
+
     record = OTPRecord.generate_otp(phone)
     print(f'[OTP] Phone: {phone} | Code: {record.code}')
     return Response({'message': 'OTP sent successfully'})
+
+import os
+
+DEV_OTP_ENABLED = os.environ.get('DEV_OTP_ENABLED', 'False').lower() == 'true'
+DEV_OTP_CODE = os.environ.get('DEV_OTP_CODE', '')
+
+def _is_dev_otp(code):
+    return DEV_OTP_ENABLED and bool(DEV_OTP_CODE) and code == DEV_OTP_CODE
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
@@ -44,16 +58,17 @@ def verify_otp(request):
     if not phone or not code:
         return Response({'error': 'Phone and code are required'}, status=status.HTTP_400_BAD_REQUEST)
 
-    otp = OTPRecord.objects.filter(phone=phone, code=code, is_used=False).order_by('-created_at').first()
-    if not otp:
-        return Response({'error': 'Invalid or expired OTP'}, status=status.HTTP_400_BAD_REQUEST)
+    if not _is_dev_otp(code):
+        otp = OTPRecord.objects.filter(phone=phone, code=code, is_used=False).order_by('-created_at').first()
+        if not otp:
+            return Response({'error': 'Invalid or expired OTP'}, status=status.HTTP_400_BAD_REQUEST)
 
-    expiry = otp.created_at + timezone.timedelta(minutes=10)
-    if timezone.now() > expiry:
-        return Response({'error': 'OTP has expired'}, status=status.HTTP_400_BAD_REQUEST)
+        expiry = otp.created_at + timezone.timedelta(minutes=10)
+        if timezone.now() > expiry:
+            return Response({'error': 'OTP has expired'}, status=status.HTTP_400_BAD_REQUEST)
 
-    otp.is_used = True
-    otp.save()
+        otp.is_used = True
+        otp.save()
 
     try:
         user = User.objects.get(phone=phone)
@@ -61,7 +76,6 @@ def verify_otp(request):
         return Response({'error': 'User not found. Please register first.'}, status=status.HTTP_404_NOT_FOUND)
 
     refresh = RefreshToken.for_user(user)
-
     return Response({
         'refresh': str(refresh),
         'access': str(refresh.access_token),
@@ -70,31 +84,75 @@ def verify_otp(request):
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
+def send_register_otp(request):
+    phone = request.data.get('phone')
+    if not phone:
+        return Response({'error': 'Phone number is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+    if User.objects.filter(phone=phone).exists():
+        return Response({'error': 'An account with this number already exists. Please login.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    record = OTPRecord.generate_otp(phone)
+    print(f'[OTP] Phone: {phone} | Code: {record.code}')
+    return Response({'message': 'OTP sent successfully'})
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def verify_register_otp(request):
+    """Validates OTP for an unregistered phone. Does not consume it — register() does that."""
+    phone = request.data.get('phone')
+    code = request.data.get('code')
+
+    if not phone or not code:
+        return Response({'error': 'Phone and code are required'}, status=status.HTTP_400_BAD_REQUEST)
+
+    if User.objects.filter(phone=phone).exists():
+        return Response({'error': 'An account with this number already exists. Please login.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    if not _is_dev_otp(code):
+        otp = OTPRecord.objects.filter(phone=phone, code=code, is_used=False).order_by('-created_at').first()
+        if not otp:
+            return Response({'error': 'Invalid or expired OTP'}, status=status.HTTP_400_BAD_REQUEST)
+
+        expiry = otp.created_at + timezone.timedelta(minutes=10)
+        if timezone.now() > expiry:
+            return Response({'error': 'OTP has expired'}, status=status.HTTP_400_BAD_REQUEST)
+
+    return Response({'message': 'OTP verified'})
+
+
+
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
 def register(request):
     phone = request.data.get('phone')
     name = request.data.get('name')
     code = request.data.get('code')
-    
+
     if not phone or not name or not code:
         return Response({'error': 'Phone, name and code are required'}, status=status.HTTP_400_BAD_REQUEST)
-    
-    otp = OTPRecord.objects.filter(phone=phone, code=code, is_used=False).order_by('-created_at').first()
-    if not otp:
-        return Response({'error': 'Invalid or expired OTP'}, status=status.HTTP_400_BAD_REQUEST)
-
-    expiry = otp.created_at + timezone.timedelta(minutes=10)
-    if timezone.now() > expiry:
-        return Response({'error': 'OTP has expired'}, status=status.HTTP_400_BAD_REQUEST)
-
-    otp.is_used = True
-    otp.save()
 
     if User.objects.filter(phone=phone).exists():
         return Response({'error': 'User with this phone already exists. Please login.'}, status=status.HTTP_400_BAD_REQUEST)
-    
+
+    if not _is_dev_otp(code):
+        otp = OTPRecord.objects.filter(phone=phone, code=code, is_used=False).order_by('-created_at').first()
+        if not otp:
+            return Response({'error': 'Invalid or expired OTP'}, status=status.HTTP_400_BAD_REQUEST)
+
+        expiry = otp.created_at + timezone.timedelta(minutes=10)
+        if timezone.now() > expiry:
+            return Response({'error': 'OTP has expired'}, status=status.HTTP_400_BAD_REQUEST)
+
+        otp.is_used = True
+        otp.save()
+
     user = User.objects.create_user(phone=phone, name=name)
     refresh = RefreshToken.for_user(user)
-    
+
     return Response({
         'refresh': str(refresh),
         'access': str(refresh.access_token),
@@ -138,6 +196,24 @@ def profile_view(request):
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+# --- User Management Views ---
+class UserViewSet(viewsets.ModelViewSet):
+    serializer_class = AdminUserSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = [SearchFilter]
+    search_fields = ['name', 'phone', 'email']
+    http_method_names = ['get', 'put', 'patch', 'delete', 'head', 'options']
+
+    def get_queryset(self):
+        if not getattr(self.request.user, 'is_admin', False):
+            return User.objects.none()
+        return User.objects.all().order_by('-date_joined')
+
+    def destroy(self, request, *args, **kwargs):
+        if not getattr(request.user, 'is_admin', False):
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        return super().destroy(request, *args, **kwargs)
 
 # --- Accommodation Views ---
 class AccommodationViewSet(viewsets.ModelViewSet):
@@ -261,6 +337,111 @@ class EventRegistrationViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+
+# --- Public Stats View ---
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def public_stats(request):
+    return Response({
+        'subscriber_count': User.objects.filter(is_active=True).count(),
+        'magazine_count': Article.objects.filter(category='Magazine', is_published=True).count(),
+    })
+
+
+# --- Admin Dashboard Stats ---
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def admin_dashboard_stats(request):
+    if not getattr(request.user, 'is_admin', False):
+        return Response(status=status.HTTP_403_FORBIDDEN)
+
+    # Counts
+    counts = {
+        'members': User.objects.filter(is_active=True).count(),
+        'bookings': Booking.objects.count(),
+        'events': Event.objects.filter(is_active=True).count(),
+        'matrimonials': MatrimonialProfile.objects.count(),
+        'jobs': JobListing.objects.filter(is_active=True).count(),
+        'articles': Article.objects.filter(is_published=True).count(),
+    }
+
+    # Monthly data for the last 6 months
+    six_months_ago = timezone.now() - timezone.timedelta(days=180)
+    month_names = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                   'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+
+    members_by_month = (
+        User.objects.filter(date_joined__gte=six_months_ago)
+        .annotate(month=TruncMonth('date_joined'))
+        .values('month')
+        .annotate(count=Count('id'))
+        .order_by('month')
+    )
+    bookings_by_month = (
+        Booking.objects.filter(created_at__gte=six_months_ago)
+        .annotate(month=TruncMonth('created_at'))
+        .values('month')
+        .annotate(count=Count('id'))
+        .order_by('month')
+    )
+
+    members_map = {r['month'].strftime('%b'): r['count'] for r in members_by_month}
+    bookings_map = {r['month'].strftime('%b'): r['count'] for r in bookings_by_month}
+
+    # Build ordered 6-month labels
+    now = timezone.now()
+    monthly_data = []
+    for i in range(5, -1, -1):
+        dt = now - timezone.timedelta(days=30 * i)
+        label = month_names[dt.month - 1]
+        monthly_data.append({
+            'name': label,
+            'members': members_map.get(label, 0),
+            'bookings': bookings_map.get(label, 0),
+        })
+
+    # Recent activity: latest 10 items across models, sorted by time
+    activities = []
+
+    for u in User.objects.order_by('-date_joined')[:3]:
+        activities.append({
+            'type': 'member',
+            'title': 'New Member Joined',
+            'desc': f'{u.name} completed registration',
+            'timestamp': u.date_joined.isoformat(),
+        })
+
+    for b in Booking.objects.select_related('user', 'accommodation').order_by('-created_at')[:3]:
+        activities.append({
+            'type': 'booking',
+            'title': 'Room Booked',
+            'desc': f'Booking confirmed for {b.accommodation.title}',
+            'timestamp': b.created_at.isoformat(),
+        })
+
+    for m in MatrimonialProfile.objects.select_related('user').filter(is_approved=False).order_by('-created_at')[:3]:
+        activities.append({
+            'type': 'matrimonial',
+            'title': 'Profile Approval',
+            'desc': f'New Matrimonial profile by {m.user.name} needs review',
+            'timestamp': m.created_at.isoformat(),
+        })
+
+    for e in Event.objects.order_by('-created_at')[:3]:
+        activities.append({
+            'type': 'event',
+            'title': 'Event Created',
+            'desc': f'{e.title} was added',
+            'timestamp': e.created_at.isoformat(),
+        })
+
+    activities.sort(key=lambda x: x['timestamp'], reverse=True)
+
+    return Response({
+        'counts': counts,
+        'monthly_data': monthly_data,
+        'recent_activity': activities[:10],
+    })
 
 # --- Site Settings Views ---
 class SiteSettingsView(views.APIView):

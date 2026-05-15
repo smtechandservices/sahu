@@ -43,9 +43,9 @@ const Services = () => {
             <div className="bg-blue-50 p-4 rounded-lg w-fit mb-8">
               <Briefcase className="text-blue-900 fill-blue-900" size={28} />
             </div>
-            <h3 className="text-2xl font-bold mb-4 text-slate-900">Career Portal</h3>
+            <h3 className="text-2xl font-bold mb-4 text-slate-900">Opportunities</h3>
             <p className="text-slate-600 leading-relaxed mb-8">
-              Job listings, mentorship, and professional networking opportunities.
+              Careeer listings, mentorship, and professional networking opportunities.
             </p>
             <Link href="/career" className="mt-auto text-yellow-700 font-bold flex items-center gap-2 group/link">
               Find Opportunities <ArrowRight size={18} className="group-hover/link:translate-x-1 transition-transform" />

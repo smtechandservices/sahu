@@ -185,6 +185,8 @@ class Article(models.Model):
     content = models.TextField()
     image = models.BinaryField(null=True, blank=True)
     image_mimetype = models.CharField(max_length=50, null=True, blank=True)
+    pdf = models.BinaryField(null=True, blank=True)
+    pdf_filename = models.CharField(max_length=255, null=True, blank=True)
     category = models.CharField(max_length=100) # e.g. 'Magazine', 'News'
     published_at = models.DateTimeField(auto_now_add=True)
     is_published = models.BooleanField(default=True)
@@ -199,7 +201,6 @@ class Event(models.Model):
     image_mimetype = models.CharField(max_length=50, null=True, blank=True)
     event_date = models.DateTimeField()
     location = models.CharField(max_length=255, blank=True, null=True)
-    registration_link = models.URLField(blank=True, null=True)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 

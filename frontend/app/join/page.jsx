@@ -36,7 +36,7 @@ export default function JoinCommunity() {
     setLoading(true);
     setError('');
     try {
-      await fetchApi('/auth/send-otp/', {
+      await fetchApi('/auth/send-register-otp/', {
         method: 'POST',
         body: JSON.stringify({ phone: formData.phone })
       });
@@ -53,7 +53,7 @@ export default function JoinCommunity() {
     setResendLoading(true);
     setError('');
     try {
-      await fetchApi('/auth/send-otp/', {
+      await fetchApi('/auth/send-register-otp/', {
         method: 'POST',
         body: JSON.stringify({ phone: formData.phone })
       });

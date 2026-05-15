@@ -2,9 +2,9 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { 
-  LayoutDashboard, Home, Calendar, BookOpen, 
-  Users, Briefcase, Settings, LogOut, Heart
+import {
+  LayoutDashboard, Home, Calendar, BookOpen,
+  Users, Briefcase, Settings, LogOut, Heart, Newspaper
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
@@ -12,9 +12,11 @@ const menuItems = [
   { icon: LayoutDashboard, label: 'Dashboard', href: '/' },
   { icon: Home, label: 'Accommodations', href: '/accommodation' },
   { icon: Calendar, label: 'Events', href: '/events' },
-  { icon: BookOpen, label: 'Magazine & News', href: '/magazine' },
+  { icon: BookOpen, label: 'Magazine', href: '/magazine' },
+  { icon: Newspaper, label: 'News', href: '/news' },
   { icon: Heart, label: 'Matrimonial', href: '/matrimonial' },
   { icon: Briefcase, label: 'Careers', href: '/career' },
+  { icon: Users, label: 'Users', href: '/users' },
   { icon: Settings, label: 'Site Settings', href: '/settings' },
 ];
 

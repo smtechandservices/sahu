@@ -13,6 +13,7 @@ export default function LoginPage() {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [notRegistered, setNotRegistered] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
   const [resendLoading, setResendLoading] = useState(false);
   const { login } = useAuth();
@@ -23,11 +24,24 @@ export default function LoginPage() {
     return () => clearTimeout(t);
   }, [resendCooldown]);
 
+  useEffect(() => {
+    if (!error) return;
+    const t = setTimeout(() => setError(''), 2000);
+    return () => clearTimeout(t);
+  }, [error]);
+
+  useEffect(() => {
+    if (!notRegistered) return;
+    const t = setTimeout(() => setNotRegistered(false), 2000);
+    return () => clearTimeout(t);
+  }, [notRegistered]);
+
   const handleSendOtp = async (e) => {
     e.preventDefault();
     if (!phone) return setError('Phone is required');
     setLoading(true);
     setError('');
+    setNotRegistered(false);
     try {
       await fetchApi('/auth/send-otp/', {
         method: 'POST',
@@ -36,7 +50,12 @@ export default function LoginPage() {
       setStep(2);
       setResendCooldown(30);
     } catch (err) {
-      setError(err?.data?.error || 'Failed to send OTP');
+      const msg = err?.data?.error || 'Failed to send OTP';
+      if (err?.status === 404) {
+        setNotRegistered(true);
+      } else {
+        setError(msg);
+      }
     } finally {
       setLoading(false);
     }
@@ -202,8 +221,14 @@ export default function LoginPage() {
                     </div>
                   )}
 
+                  {notRegistered && (
+                    <div className="bg-amber-50 text-amber-700 p-4 rounded-xl text-sm font-medium border border-amber-200">
+                      This number is not registered.
+                    </div>
+                  )}
+
                   {error && (
-                    <div className="bg-red-50 text-red-500 p-4 rounded-xl text-sm font-medium border border-red-100 animate-shake">
+                    <div className="bg-red-50 text-red-500 p-4 rounded-xl text-sm font-medium border border-red-100">
                       {error}
                     </div>
                   )}

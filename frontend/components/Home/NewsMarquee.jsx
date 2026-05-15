@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { fetchApi } from "../../lib/api";
 
 export default function NewsMarquee() {
@@ -32,9 +33,9 @@ export default function NewsMarquee() {
             {/* Badge */}
             <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
             {/* Headline */}
-            <span className="text-sm font-semibold text-white/90 hover:text-primary transition-colors cursor-pointer">
+            <Link href="/news" className="text-sm font-semibold text-white/90 hover:text-primary transition-colors">
               {item.title}
-            </span>
+            </Link>
           </div>
         ))}
       </div>

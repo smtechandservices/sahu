@@ -13,7 +13,6 @@ const EMPTY_FORM = {
   description: '',
   event_date: '',
   location: '',
-  registration_link: '',
   is_active: true,
   image: null,
   image_mimetype: null,
@@ -64,7 +63,6 @@ export default function EventsManager() {
       description: event.description || '',
       event_date: event.event_date ? event.event_date.slice(0, 16) : '',
       location: event.location || '',
-      registration_link: event.registration_link || '',
       is_active: event.is_active ?? true,
       image: null,
       image_mimetype: null,
@@ -104,7 +102,6 @@ export default function EventsManager() {
         description: form.description,
         event_date: form.event_date,
         location: form.location,
-        registration_link: form.registration_link || null,
         is_active: form.is_active,
         ...(form.image && { image: form.image, image_mimetype: form.image_mimetype }),
       };
@@ -350,21 +347,6 @@ export default function EventsManager() {
                       onChange={(e) => setForm(f => ({ ...f, location: e.target.value }))}
                       placeholder="Venue or city"
                       className="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all"
-                    />
-                  </div>
-                </div>
-
-                {/* Registration Link */}
-                <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2">Registration Link</label>
-                  <div className="relative">
-                    <Link className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
-                    <input
-                      type="url"
-                      value={form.registration_link}
-                      onChange={(e) => setForm(f => ({ ...f, registration_link: e.target.value }))}
-                      placeholder="https://..."
-                      className="w-full bg-gray-50 border border-gray-100 rounded-xl pl-10 pr-4 py-3 text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all"
                     />
                   </div>
                 </div>

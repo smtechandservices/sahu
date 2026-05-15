@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import Header from "../Header/Header";
 import Footer from "../Footer/Footer";
 import { Calendar as CalendarIcon, MapPin, ChevronLeft, ChevronRight, Clock, ExternalLink, CheckCircle, LogIn, Newspaper } from "lucide-react";
@@ -142,9 +143,9 @@ export default function EventsClient() {
                     <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
                     <span className="text-xs font-black text-primary uppercase tracking-[0.2em]">Latest News</span>
                   </div>
-                  <span className="text-sm font-bold text-gray-700 hover:text-primary transition-all cursor-pointer">
+                  <Link href="/news" className="text-sm font-bold text-gray-700 hover:text-primary transition-all">
                     {item.title}
-                  </span>
+                  </Link>
                   <span className="text-[10px] text-gray-300 font-medium">
                     {new Date(item.published_at).toLocaleDateString('default', { month: 'short', day: 'numeric' })}
                   </span>
@@ -312,16 +313,6 @@ export default function EventsClient() {
                                     </button>
                                 )}
 
-                                {event.registration_link && (
-                                    <a 
-                                        href={event.registration_link}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="flex items-center justify-center gap-2 w-full py-2 text-gray-400 hover:text-primary text-[10px] font-bold transition-all underline decoration-dotted"
-                                    >
-                                        Official Website <ExternalLink size={10} />
-                                    </a>
-                                )}
                             </div>
                           </div>
                         ))

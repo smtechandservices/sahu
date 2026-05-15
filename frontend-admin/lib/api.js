@@ -36,7 +36,13 @@ export async function fetchApi(endpoint, options = {}) {
     const isJson = contentType && contentType.includes("application/json");
 
     if (!response.ok) {
-      const errorText = isJson ? (await response.json()).detail || (await response.json()).error : await response.text();
+      let errorText;
+      if (isJson) {
+        const errBody = await response.json();
+        errorText = errBody.detail || errBody.error || JSON.stringify(errBody);
+      } else {
+        errorText = await response.text();
+      }
       throw new Error(errorText || `API Error: ${response.status} ${response.statusText}`);
     }
 
