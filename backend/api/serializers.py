@@ -3,7 +3,8 @@ from rest_framework import serializers
 from .models import (
     User, OTPRecord, Accommodation, Booking, 
     JobListing, Advertisement, MatrimonialProfile, 
-    Article, Event, EventRegistration, SiteSettings
+    Article, Event, EventRegistration, SiteSettings,
+    HeroCarouselImage
 )
 
 class Base64BinaryField(serializers.Field):
@@ -50,11 +51,16 @@ class AccommodationSerializer(serializers.ModelSerializer):
 class BookingSerializer(serializers.ModelSerializer):
     accommodation_detail = AccommodationSerializer(source='accommodation', read_only=True)
     user_detail = UserSerializer(source='user', read_only=True)
+    
+    # Extra fields for admin consumption
+    user_name = serializers.CharField(source='user.name', read_only=True)
+    user_phone = serializers.CharField(source='user.phone', read_only=True)
+    accommodation_title = serializers.CharField(source='accommodation.title', read_only=True)
 
     class Meta:
         model = Booking
         fields = '__all__'
-        read_only_fields = ['user', 'status', 'total_price', 'created_at']
+        read_only_fields = ['user', 'total_price', 'created_at']
 
 # --- Career Serializers ---
 class JobListingSerializer(serializers.ModelSerializer):
@@ -117,4 +123,9 @@ class EventSerializer(serializers.ModelSerializer):
 class SiteSettingsSerializer(serializers.ModelSerializer):
     class Meta:
         model = SiteSettings
+        fields = '__all__'
+
+class HeroCarouselImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = HeroCarouselImage
         fields = '__all__'

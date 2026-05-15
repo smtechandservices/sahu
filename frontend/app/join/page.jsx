@@ -4,8 +4,91 @@ import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Users, BookOpen, ChevronRight, Mail, ArrowLeft } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '../../context/AuthContext';
+import { fetchApi } from '../../lib/api';
 
 export default function JoinCommunity() {
+  const [formData, setFormData] = React.useState({
+    name: '',
+    phone: '',
+    city: '',
+    reason: ''
+  });
+  const [otp, setOtp] = React.useState('');
+  const [step, setStep] = React.useState(1);
+  const [loading, setLoading] = React.useState(false);
+  const [error, setError] = React.useState('');
+  const [resendCooldown, setResendCooldown] = React.useState(0);
+  const [resendLoading, setResendLoading] = React.useState(false);
+  const { login } = useAuth();
+  const router = useRouter();
+
+  React.useEffect(() => {
+    if (resendCooldown <= 0) return;
+    const t = setTimeout(() => setResendCooldown(c => c - 1), 1000);
+    return () => clearTimeout(t);
+  }, [resendCooldown]);
+
+  const handleSendOtp = async (e) => {
+    e.preventDefault();
+    if (!formData.phone || !formData.name) return setError('Name and Phone are required');
+    setLoading(true);
+    setError('');
+    try {
+      await fetchApi('/auth/send-otp/', {
+        method: 'POST',
+        body: JSON.stringify({ phone: formData.phone })
+      });
+      setStep(2);
+      setResendCooldown(30);
+    } catch (err) {
+      setError(err?.data?.error || 'Failed to send OTP');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResendOtp = async () => {
+    setResendLoading(true);
+    setError('');
+    try {
+      await fetchApi('/auth/send-otp/', {
+        method: 'POST',
+        body: JSON.stringify({ phone: formData.phone })
+      });
+      setOtp('');
+      setResendCooldown(30);
+    } catch (err) {
+      setError(err?.data?.error || 'Failed to resend OTP');
+    } finally {
+      setResendLoading(false);
+    }
+  };
+
+  const handleRegister = async (e) => {
+    e.preventDefault();
+    if (!otp) return setError('OTP is required');
+    setLoading(true);
+    setError('');
+    try {
+      const data = await fetchApi('/auth/register/', {
+        method: 'POST',
+        body: JSON.stringify({ 
+          phone: formData.phone, 
+          name: formData.name,
+          code: otp 
+        })
+      });
+      login(data.user, data.access, data.refresh);
+      router.push('/');
+    } catch (err) {
+      setError(err?.data?.error || 'Registration failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-white font-sans selection:bg-primary/30">
       <div className="px-8 py-8 lg:py-16">
@@ -19,7 +102,8 @@ export default function JoinCommunity() {
                 src="/assets/logo.png" 
                 alt="Sahu Sabha Logo" 
                 width={120} 
-                height={120}
+                height={60}
+                style={{ height: 'auto' }}
               />
             </Link>
             
@@ -90,48 +174,89 @@ export default function JoinCommunity() {
                   <p className="text-gray-500 font-medium">Please fill in your details to register as a new member.</p>
                 </div>
 
-                <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
-                  <div className="space-y-2">
-                    <label className="text-sm font-bold text-gray-700 ml-1">Full Name</label>
-                    <input 
-                      type="text" 
-                      placeholder="Enter your full name"
-                      className="w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-300 placeholder:text-gray-400 font-medium"
-                    />
-                  </div>
+                <form className="space-y-6" onSubmit={step === 1 ? handleSendOtp : handleRegister}>
+                  {step === 1 ? (
+                    <>
+                      <div className="space-y-2">
+                        <label className="text-sm font-bold text-gray-700 ml-1">Full Name</label>
+                        <input 
+                          type="text" 
+                          placeholder="Enter your full name"
+                          value={formData.name}
+                          onChange={(e) => setFormData({...formData, name: e.target.value})}
+                          required
+                          className="w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-300 placeholder:text-gray-400 font-medium"
+                        />
+                      </div>
 
-                  <div className="space-y-2">
-                    <label className="text-sm font-bold text-gray-700 ml-1">Phone Number</label>
-                    <div className="relative">
-                      <span className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-500 font-bold border-r border-gray-300 pr-3">+91</span>
-                      <input 
-                        type="tel" 
-                        placeholder="00000 00000"
-                        className="w-full pl-20 pr-5 py-4 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-300 placeholder:text-gray-400 font-medium"
+                      <div className="space-y-2">
+                        <label className="text-sm font-bold text-gray-700 ml-1">Phone Number</label>
+                        <div className="relative">
+                          <span className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-500 font-bold border-r border-gray-300 pr-3">+91</span>
+                          <input 
+                            type="tel" 
+                            placeholder="00000 00000"
+                            value={formData.phone}
+                            onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                            required
+                            className="w-full pl-20 pr-5 py-4 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-300 placeholder:text-gray-400 font-medium"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="text-sm font-bold text-gray-700 ml-1">City</label>
+                        <input 
+                          type="text" 
+                          placeholder="Your current city"
+                          value={formData.city}
+                          onChange={(e) => setFormData({...formData, city: e.target.value})}
+                          className="w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-300 placeholder:text-gray-400 font-medium"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="text-sm font-bold text-gray-700 ml-1">Reason for Joining</label>
+                        <textarea 
+                          rows={4}
+                          placeholder="Briefly tell us why you want to join Sahu Sabha..."
+                          value={formData.reason}
+                          onChange={(e) => setFormData({...formData, reason: e.target.value})}
+                          className="w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-300 placeholder:text-gray-400 font-medium resize-none"
+                        />
+                      </div>
+                    </>
+                  ) : (
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between ml-1">
+                        <label className="text-sm font-bold text-gray-700">OTP</label>
+                        <button
+                          type="button"
+                          onClick={handleResendOtp}
+                          disabled={resendCooldown > 0 || resendLoading}
+                          className="text-sm font-bold text-primary hover:underline disabled:text-gray-400 disabled:no-underline transition-colors"
+                        >
+                          {resendLoading ? 'Sending...' : resendCooldown > 0 ? `Resend in ${resendCooldown}s` : 'Resend OTP'}
+                        </button>
+                      </div>
+                      <input
+                        type="text"
+                        placeholder="123456"
+                        value={otp}
+                        onChange={(e) => setOtp(e.target.value)}
+                        required
+                        className="w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-300 placeholder:text-gray-400 font-medium"
                       />
                     </div>
-                  </div>
+                  )}
 
-                  <div className="space-y-2">
-                    <label className="text-sm font-bold text-gray-700 ml-1">City</label>
-                    <input 
-                      type="text" 
-                      placeholder="Your current city"
-                      className="w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-300 placeholder:text-gray-400 font-medium"
-                    />
-                  </div>
+                  {error && <p className="text-red-500 text-sm font-medium bg-red-50 p-3 rounded-lg border border-red-100">{error}</p>}
 
-                  <div className="space-y-2">
-                    <label className="text-sm font-bold text-gray-700 ml-1">Reason for Joining</label>
-                    <textarea 
-                      rows={4}
-                      placeholder="Briefly tell us why you want to join Sahu Sabha..."
-                      className="w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-300 placeholder:text-gray-400 font-medium resize-none"
-                    />
-                  </div>
-
-                  <button className="w-full bg-primary hover:bg-primary-dark text-white font-bold py-5 rounded-xl transition-all duration-300 transform active:scale-[0.98] shadow-lg shadow-primary/20 cursor-pointer">
-                    <span>Register Now</span>
+                  <button 
+                    disabled={loading}
+                    className="w-full bg-primary hover:bg-primary-dark text-white font-bold py-5 rounded-xl transition-all duration-300 transform active:scale-[0.98] shadow-lg shadow-primary/20 cursor-pointer disabled:opacity-50"
+                  >
+                    <span>{loading ? 'Please wait...' : (step === 1 ? 'Send OTP' : 'Register Now')}</span>
                   </button>
 
                 </form>

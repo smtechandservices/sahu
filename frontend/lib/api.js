@@ -1,8 +1,10 @@
+import { getCookie, removeCookie } from './cookies';
+
 export const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
 
 export const fetchApi = async (endpoint, options = {}) => {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
-  
+  const token = typeof window !== 'undefined' ? getCookie('accessToken') : null;
+
   const headers = {
     'Content-Type': 'application/json',
     ...options.headers,
@@ -12,7 +14,6 @@ export const fetchApi = async (endpoint, options = {}) => {
     headers['Authorization'] = `Bearer ${token}`;
   }
 
-  // Handle FormData
   if (options.body instanceof FormData) {
     delete headers['Content-Type'];
   }
@@ -23,12 +24,11 @@ export const fetchApi = async (endpoint, options = {}) => {
   });
 
   if (response.status === 401) {
-    // Handle token refresh logic here in production
-    // For now, logout if 401
     if (typeof window !== 'undefined') {
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
-      localStorage.removeItem('user');
+      removeCookie('accessToken');
+      removeCookie('refreshToken');
+      removeCookie('user');
+      window.location.href = '/login';
     }
   }
 

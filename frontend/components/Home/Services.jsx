@@ -61,7 +61,7 @@ const Services = () => {
             <p className="text-slate-600 leading-relaxed mb-8">
               Safe, affordable accommodation for community students pursuing higher education.
             </p>
-            <Link href="/hostels" className="mt-auto text-yellow-700 font-bold flex items-center gap-2 group/link">
+            <Link href="/accommodation" className="mt-auto text-yellow-700 font-bold flex items-center gap-2 group/link">
               View Facilities <ArrowRight size={18} className="group-hover/link:translate-x-1 transition-transform" />
             </Link>
           </div>
@@ -88,9 +88,9 @@ const Services = () => {
               <p className="text-slate-700 text-lg leading-relaxed mb-8">
                 Read inspiring stories, historical insights, and updates from Sabha members globally.
               </p>
-              <button className="mt-auto w-fit bg-white border border-gray-300 px-8 py-3 rounded-md font-bold text-slate-900 hover:bg-slate-50 transition-colors shadow-sm">
+              <Link href="/magazine" className="mt-auto w-fit bg-white border border-gray-300 px-8 py-3 rounded-md font-bold text-slate-900 hover:bg-slate-50 transition-colors shadow-sm">
                 Read Now
-              </button>
+              </Link>
             </div>
           </div>
         </div>

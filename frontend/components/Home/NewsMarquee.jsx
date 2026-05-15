@@ -27,25 +27,13 @@ export default function NewsMarquee() {
         {items.map((item, idx) => (
           <div
             key={idx}
-            className="flex items-center gap-5 px-10 border-r border-white/10"
+            className="flex items-center gap-4 px-10 border-r border-white/10"
           >
             {/* Badge */}
-            <div className="flex items-center gap-1.5 shrink-0">
-              <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-              <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">
-                Latest News
-              </span>
-            </div>
+            <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
             {/* Headline */}
             <span className="text-sm font-semibold text-white/90 hover:text-primary transition-colors cursor-pointer">
               {item.title}
-            </span>
-            {/* Date */}
-            <span className="text-[10px] text-white/30 font-medium shrink-0">
-              {new Date(item.published_at).toLocaleDateString("default", {
-                month: "short",
-                day: "numeric",
-              })}
             </span>
           </div>
         ))}
