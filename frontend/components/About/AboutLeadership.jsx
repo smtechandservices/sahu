@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 
 const leaders = [
   {
-    name: "Rajesh Kumar Sahu",
+    name: "Ranvijay Sahu",
     role: "President",
     image: "/assets/president.png",
     bio: "Dedicated to community welfare for over 25 years, leading with vision and integrity."

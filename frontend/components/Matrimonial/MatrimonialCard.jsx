@@ -1,23 +1,33 @@
 import React from 'react';
 import Image from 'next/image';
 
-const MatrimonialCard = ({ profile, liked, onLike, onView }) => {
+const MatrimonialCard = ({ profile, liked, onLike, onView, receivedInterest }) => {
   const isLiked = liked.includes(profile.id);
 
   return (
-    <div className="bg-white border border-gray-100 rounded-xl overflow-hidden flex flex-col md:flex-row group hover:shadow-lg transition-all duration-300">
+    <div 
+      onClick={onView}
+      className="bg-white border border-gray-100 rounded-xl overflow-hidden flex flex-col md:flex-row group hover:shadow-lg transition-all duration-300 cursor-pointer"
+    >
       {/* Avatar Section */}
       <div className="relative w-full md:w-48 h-64 md:h-auto flex-shrink-0 bg-gray-100 overflow-hidden">
         <Image 
           src={profile.avatar} 
           alt={profile.name} 
           fill 
+          sizes="(max-width: 768px) 100vw, 200px"
           className="object-cover transition-transform duration-500 group-hover:scale-105" 
         />
         <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-md px-2 py-1 rounded-full flex items-center gap-1 shadow-sm">
           <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
           <span className="text-[9px] font-bold text-green-700 uppercase tracking-wider">Verified</span>
         </div>
+        {receivedInterest && (
+          <div className="absolute top-3 right-3 bg-primary text-white px-2 py-1 rounded-full flex items-center gap-1 shadow-sm">
+            <svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+            <span className="text-[9px] font-bold uppercase tracking-wider">Interested in you</span>
+          </div>
+        )}
       </div>
 
       {/* Content Section */}
@@ -35,6 +45,7 @@ const MatrimonialCard = ({ profile, liked, onLike, onView }) => {
             <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" />
           </svg>
         </button>
+
 
         <div className="mb-4">
           <h3 className="text-xl font-bold text-gray-900 mb-0.5 group-hover:text-primary transition-colors">
@@ -58,11 +69,15 @@ const MatrimonialCard = ({ profile, liked, onLike, onView }) => {
 
         <div className="mt-auto pt-4 border-t border-gray-50">
           <button 
-            onClick={onView}
-            className="w-full btn-primary !py-2.5 rounded-lg text-xs tracking-wide flex items-center justify-center gap-2 group/btn"
+            onClick={(e) => { e.stopPropagation(); onLike(); }}
+            className={`w-full !py-2.5 rounded-lg text-xs tracking-wide flex items-center justify-center gap-2 group/btn transition-all font-bold ${
+              isLiked 
+                ? 'bg-primary/10 text-primary border border-primary/20 shadow-none' 
+                : 'btn-primary'
+            }`}
           >
             <HeartIcon />
-            <span>Express Interest</span>
+            <span>{isLiked ? 'Interest Sent ✓' : 'Express Interest'}</span>
           </button>
         </div>
       </div>

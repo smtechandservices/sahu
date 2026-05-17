@@ -1,53 +1,58 @@
+"use client";
+
+import { useState, useEffect } from "react";
 import Link from 'next/link';
 import Image from 'next/image';
 import { Calendar, ArrowRight } from 'lucide-react';
 
-const events = [
-  {
-    date: 'OCT 24, 2024',
-    title: 'Annual General Meeting & Cultural Fest',
-    desc: 'Join us for the yearly review of community initiatives followed by cultural performances by our youth.',
-    image: '/assets/event1.png',
-  },
-  {
-    date: 'NOV 05, 2024',
-    title: 'Youth Professional Networking Mixer',
-    desc: 'An evening designed for young professionals to connect, share industry insights, and find mentorship.',
-    image: '/assets/event2.png',
-  },
-  {
-    date: 'DEC 12, 2024',
-    title: 'Daanveer Bhamashah Jayanti Celebration',
-    desc: 'Commemorating the legacy of Daanveer Bhamashah with traditional rituals, cultural programs, and community dining.',
-    image: '/assets/event3.png',
-  },
-  {
-    date: 'JAN 20, 2025',
-    title: 'Community Health & Wellness Camp',
-    desc: 'Free health check-ups, specialist consultations, and wellness workshops for all community members.',
-    image: '/assets/event4.png',
-  }
-];
-
-const news = [
-  {
-    category: 'Education',
-    time: '2 days ago',
-    title: 'Scholarship Program 2024 Recipients Announced',
-  },
-  {
-    category: 'Community',
-    time: '1 week ago',
-    title: 'New Centralized Office Inaugurated in the Capital',
-  },
-  {
-    category: 'Health',
-    time: '2 weeks ago',
-    title: 'Successful Free Medical Camp Concludes with 500+ Attendees',
-  }
-];
-
 const NewsEvents = () => {
+  const [events, setEvents] = useState([]);
+  const [news, setNews] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const { fetchApi } = await import('../../lib/api');
+        
+        // Fetch News
+        const newsData = await fetchApi('/articles/?category=News');
+        setNews(newsData.slice(0, 3)); // Only take top 3 news
+
+        // Fetch Events
+        const eventsData = await fetchApi('/events/');
+        setEvents(eventsData);
+      } catch (err) {
+        console.error("Error fetching news/events:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadData();
+  }, []);
+
+  const formatDate = (dateStr) => {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: '2-digit',
+      year: 'numeric'
+    }).toUpperCase();
+  };
+
+  const getTimeAgo = (dateStr) => {
+    const date = new Date(dateStr);
+    const now = new Date();
+    const diffInDays = Math.floor((now - date) / (1000 * 60 * 60 * 24));
+    
+    if (diffInDays === 0) return "Today";
+    if (diffInDays === 1) return "Yesterday";
+    if (diffInDays < 7) return `${diffInDays} days ago`;
+    return `${Math.floor(diffInDays / 7)} weeks ago`;
+  };
+
+  if (loading) return null;
+
   return (
     <section className="pb-12 bg-white overflow-hidden">
       <div className="px-8 relative">
@@ -68,25 +73,29 @@ const NewsEvents = () => {
                 <div key={index} className="min-w-[450px] bg-[#FFFBF7] rounded-md border border-yellow-200 shadow-sm overflow-hidden group hover:shadow-md transition-all duration-300 flex flex-col snap-start">
                   <div className="relative h-56 w-full overflow-hidden">
                     <Image 
-                      src={event.image} 
+                      src={event.image ? `data:${event.image_mimetype || 'image/jpeg'};base64,${event.image}` : '/assets/event1.png'} 
                       alt={event.title} 
                       fill 
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                       className="object-cover transition-transform duration-500 group-hover:scale-105" 
                     />
                   </div>
                   <div className="p-8 flex flex-col flex-1">
                     <div className="flex items-center gap-2 text-yellow-600 font-bold text-xs uppercase mb-4">
                       <Calendar size={14} />
-                      {event.date}
+                      {formatDate(event.event_date)}
                     </div>
                     <h3 className="text-xl font-bold mb-4 text-slate-900 group-hover:text-yellow-700 transition-colors">
                       {event.title}
                     </h3>
                     <p className="text-slate-600 text-sm leading-relaxed mb-8 flex-1">
-                      {event.desc}
+                      {event.description}
                     </p>
-                    <Link href="/register" className="text-yellow-700 font-bold text-sm hover:translate-x-1 transition-transform inline-flex items-center gap-1">
-                      Register to Attend
+                    <Link 
+                      href='/events'
+                      className="mt-auto text-yellow-700 font-bold flex items-center gap-2 group/link"
+                    >
+                      View Details <ArrowRight size={18} className="group-hover/link:translate-x-1 transition-transform" />
                     </Link>
                   </div>
                 </div>
@@ -104,7 +113,7 @@ const NewsEvents = () => {
                   <div className="text-slate-500 text-sm mb-2 flex items-center gap-2">
                     <span className="font-medium text-slate-700">{item.category}</span>
                     <span>•</span>
-                    <span>{item.time}</span>
+                    <span>{getTimeAgo(item.published_at)}</span>
                   </div>
                   <h3 className="text-xl font-bold text-slate-900 group-hover:text-yellow-700 transition-colors leading-tight">
                     {item.title}
@@ -113,9 +122,9 @@ const NewsEvents = () => {
               ))}
             </div>
             
-            <button className="w-full mt-10 bg-slate-50 border border-slate-200 py-4 rounded-md font-bold text-slate-700 hover:bg-slate-100 transition-all flex items-center justify-center gap-2">
+            <Link href="/news" className="w-full mt-10 bg-slate-50 border border-slate-200 py-4 rounded-md font-bold text-slate-700 hover:bg-slate-100 transition-all flex items-center justify-center gap-2 text-center">
               View All News
-            </button>
+            </Link>
           </div>
           
         </div>

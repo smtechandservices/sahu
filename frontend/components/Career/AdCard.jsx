@@ -36,9 +36,10 @@ const AdCard = ({ ad }) => {
     <div className="bg-white border border-gray-100 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all group">
       <div className="relative h-48 w-full overflow-hidden">
         <Image 
-          src={ad.image} 
-          alt={ad.name} 
+          src={ad.image ? `data:${ad.image_mimetype || 'image/jpeg'};base64,${ad.image}` : '/placeholder.png'} 
+          alt={ad.title || 'Advertisement'} 
           fill 
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           className="object-cover transition-transform duration-500 group-hover:scale-105" 
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4">
@@ -48,12 +49,11 @@ const AdCard = ({ ad }) => {
 
       <div className="p-6">
         <div className="flex items-center justify-between mb-3">
-          <h3 className="text-lg font-bold text-gray-900">{ad.name}</h3>
+          <h3 className="text-lg font-bold text-gray-900">{ad.title}</h3>
           <span 
-            className="text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-md shadow-sm"
-            style={{ backgroundColor: ad.categoryColor.bg, color: ad.categoryColor.text }}
+            className="text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-md shadow-sm bg-blue-50 text-blue-600"
           >
-            {ad.category}
+            {ad.company}
           </span>
         </div>
 
@@ -62,12 +62,17 @@ const AdCard = ({ ad }) => {
         </p>
 
         <div className="flex gap-3">
-          <button className="flex-1 btn-primary !py-2.5 rounded-lg text-xs flex items-center justify-center gap-2">
-            <CtaIcon /> 
-            <span>{ad.cta}</span>
-          </button>
+          <a 
+            href={ad.link} 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            className="flex-1 btn-primary !py-2.5 rounded-lg text-xs flex items-center justify-center gap-2"
+          >
+            <CartIcon /> 
+            <span>Visit Website</span>
+          </a>
           <button className="w-12 h-11 border border-gray-200 rounded-lg flex items-center justify-center text-gray-400 hover:text-primary hover:border-primary transition-colors">
-            <SecondaryIcon />
+            <LocationIcon />
           </button>
         </div>
       </div>

@@ -6,11 +6,13 @@ import Inspirational from '../components/Home/Inspirational';
 import Services from '../components/Home/Services';
 import NewsEvents from '../components/Home/NewsEvents';
 import Support from '../components/Home/Support';
+import NewsMarquee from '../components/Home/NewsMarquee';
 
 export default function Home() {
   return (
     <>
       <Header />
+      <NewsMarquee />
       <main>
         <Hero />
         <About />

@@ -30,7 +30,7 @@ export const metadata = {
   openGraph: {
     title: "Sahu Sabha",
     description: "Official portal of Sahu Sabha. Connecting the community through heritage, matrimonial services, career support, and more.",
-    url: "https://sahusabha.com",
+    url: "https://bihartailiksahusabha.com",
     siteName: "Sahu Sabha",
     images: [
       {
@@ -62,10 +62,16 @@ export const metadata = {
   },
 };
 
+import { AuthProvider } from "../context/AuthContext";
+
 export default function RootLayout({ children }) {
   return (
     <html lang="en" className={`${inter.variable} ${poppins.variable}`}>
-      <body>{children}</body>
+      <body>
+        <AuthProvider>
+          {children}
+        </AuthProvider>
+      </body>
     </html>
   );
 }

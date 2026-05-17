@@ -43,9 +43,9 @@ const Services = () => {
             <div className="bg-blue-50 p-4 rounded-lg w-fit mb-8">
               <Briefcase className="text-blue-900 fill-blue-900" size={28} />
             </div>
-            <h3 className="text-2xl font-bold mb-4 text-slate-900">Career Portal</h3>
+            <h3 className="text-2xl font-bold mb-4 text-slate-900">Opportunities</h3>
             <p className="text-slate-600 leading-relaxed mb-8">
-              Job listings, mentorship, and professional networking opportunities.
+              Careeer listings, mentorship, and professional networking opportunities.
             </p>
             <Link href="/career" className="mt-auto text-yellow-700 font-bold flex items-center gap-2 group/link">
               Find Opportunities <ArrowRight size={18} className="group-hover/link:translate-x-1 transition-transform" />
@@ -61,7 +61,7 @@ const Services = () => {
             <p className="text-slate-600 leading-relaxed mb-8">
               Safe, affordable accommodation for community students pursuing higher education.
             </p>
-            <Link href="/hostels" className="mt-auto text-yellow-700 font-bold flex items-center gap-2 group/link">
+            <Link href="/accommodation" className="mt-auto text-yellow-700 font-bold flex items-center gap-2 group/link">
               View Facilities <ArrowRight size={18} className="group-hover/link:translate-x-1 transition-transform" />
             </Link>
           </div>
@@ -75,6 +75,7 @@ const Services = () => {
                 alt="Magazine Background" 
                 fill 
                 className="object-cover transition-transform duration-700 group-hover:scale-105" 
+                priority
               />
             </div>
             <div className="absolute inset-0 bg-gradient-to-r from-white/90 via-white/40 to-transparent z-[1]"></div>
@@ -87,9 +88,9 @@ const Services = () => {
               <p className="text-slate-700 text-lg leading-relaxed mb-8">
                 Read inspiring stories, historical insights, and updates from Sabha members globally.
               </p>
-              <button className="mt-auto w-fit bg-white border border-gray-300 px-8 py-3 rounded-md font-bold text-slate-900 hover:bg-slate-50 transition-colors shadow-sm">
+              <Link href="/magazine" className="mt-auto w-fit bg-white border border-gray-300 px-8 py-3 rounded-md font-bold text-slate-900 hover:bg-slate-50 transition-colors shadow-sm">
                 Read Now
-              </button>
+              </Link>
             </div>
           </div>
         </div>

@@ -1,11 +1,101 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ShieldCheck, LogIn, ChevronRight, ArrowLeft } from 'lucide-react';
+import { fetchApi } from '../../lib/api';
+import { useAuth } from '../../context/AuthContext';
 
 export default function LoginPage() {
+  const [phone, setPhone] = useState('');
+  const [otp, setOtp] = useState('');
+  const [step, setStep] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [notRegistered, setNotRegistered] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
+  const [resendLoading, setResendLoading] = useState(false);
+  const { login } = useAuth();
+
+  useEffect(() => {
+    if (resendCooldown <= 0) return;
+    const t = setTimeout(() => setResendCooldown(c => c - 1), 1000);
+    return () => clearTimeout(t);
+  }, [resendCooldown]);
+
+  useEffect(() => {
+    if (!error) return;
+    const t = setTimeout(() => setError(''), 2000);
+    return () => clearTimeout(t);
+  }, [error]);
+
+  useEffect(() => {
+    if (!notRegistered) return;
+    const t = setTimeout(() => setNotRegistered(false), 2000);
+    return () => clearTimeout(t);
+  }, [notRegistered]);
+
+  const handleSendOtp = async (e) => {
+    e.preventDefault();
+    if (!phone) return setError('Phone is required');
+    setLoading(true);
+    setError('');
+    setNotRegistered(false);
+    try {
+      await fetchApi('/auth/send-otp/', {
+        method: 'POST',
+        body: JSON.stringify({ phone })
+      });
+      setStep(2);
+      setResendCooldown(30);
+    } catch (err) {
+      const msg = err?.data?.error || 'Failed to send OTP';
+      if (err?.status === 404) {
+        setNotRegistered(true);
+      } else {
+        setError(msg);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResendOtp = async () => {
+    setResendLoading(true);
+    setError('');
+    try {
+      await fetchApi('/auth/send-otp/', {
+        method: 'POST',
+        body: JSON.stringify({ phone })
+      });
+      setOtp('');
+      setResendCooldown(30);
+    } catch (err) {
+      setError(err?.data?.error || 'Failed to resend OTP');
+    } finally {
+      setResendLoading(false);
+    }
+  };
+
+  const handleVerifyOtp = async (e) => {
+    e.preventDefault();
+    if (!otp) return setError('OTP is required');
+    setLoading(true);
+    setError('');
+    try {
+      const data = await fetchApi('/auth/verify-otp/', {
+        method: 'POST',
+        body: JSON.stringify({ phone, code: otp })
+      });
+      login(data.user, data.access, data.refresh);
+      window.location.href = '/';
+    } catch (err) {
+      setError(err?.data?.error || 'Invalid OTP');
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
     <div className="min-h-screen bg-white font-sans selection:bg-primary/30">
       <div className="px-8 py-8 lg:py-16">
@@ -19,7 +109,9 @@ export default function LoginPage() {
                 src="/assets/logo.png" 
                 alt="Sahu Sabha Logo" 
                 width={120} 
-                height={120} 
+                height={60} 
+                style={{ height: 'auto' }}
+                priority
               />
             </Link>
             
@@ -90,7 +182,7 @@ export default function LoginPage() {
                   <p className="text-gray-500 font-medium">Enter your registered phone number to continue.</p>
                 </div>
 
-                <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
+                <form className="space-y-6" onSubmit={step === 1 ? handleSendOtp : handleVerifyOtp}>
                   <div className="space-y-2">
                     <label className="text-sm font-bold text-gray-700 ml-1">Phone Number</label>
                     <div className="relative">
@@ -98,14 +190,55 @@ export default function LoginPage() {
                       <input 
                         type="tel" 
                         placeholder="00000 00000"
-                        className="w-full pl-20 pr-5 py-4 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-300 placeholder:text-gray-400 font-medium"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        disabled={step === 2}
+                        className="w-full pl-20 pr-5 py-4 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-300 placeholder:text-gray-400 font-medium disabled:opacity-50"
                       />
                     </div>
                   </div>
 
-                  <button className="w-full bg-primary hover:bg-primary-dark text-white font-bold py-5 rounded-xl transition-all duration-300 transform active:scale-[0.98] shadow-lg shadow-primary/20 cursor-pointer flex items-center justify-center space-x-2">
-                    <span>Send OTP</span>
-                    <ChevronRight className="w-5 h-5" />
+                  {step === 2 && (
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between ml-1">
+                        <label className="text-sm font-bold text-gray-700">OTP</label>
+                        <button
+                          type="button"
+                          onClick={handleResendOtp}
+                          disabled={resendCooldown > 0 || resendLoading}
+                          className="text-sm font-bold text-primary hover:underline disabled:text-gray-400 disabled:no-underline transition-colors"
+                        >
+                          {resendLoading ? 'Sending...' : resendCooldown > 0 ? `Resend in ${resendCooldown}s` : 'Resend OTP'}
+                        </button>
+                      </div>
+                      <input
+                        type="text"
+                        placeholder="Enter OTP"
+                        value={otp}
+                        onChange={(e) => setOtp(e.target.value)}
+                        className="w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-300 placeholder:text-gray-400 font-medium"
+                      />
+                    </div>
+                  )}
+
+                  {notRegistered && (
+                    <div className="bg-amber-50 text-amber-700 p-4 rounded-xl text-sm font-medium border border-amber-200">
+                      This number is not registered.
+                    </div>
+                  )}
+
+                  {error && (
+                    <div className="bg-red-50 text-red-500 p-4 rounded-xl text-sm font-medium border border-red-100">
+                      {error}
+                    </div>
+                  )}
+
+                  <button 
+                    disabled={loading}
+                    className="w-full bg-primary hover:bg-primary-dark text-white font-bold py-5 rounded-xl transition-all duration-300 transform active:scale-[0.98] shadow-lg shadow-primary/20 cursor-pointer flex items-center justify-center space-x-2 disabled:opacity-50"
+                  >
+                    <span>{loading ? 'Please wait...' : (step === 1 ? 'Send OTP' : 'Verify & Login')}</span>
+                    {!loading && <ChevronRight className="w-5 h-5" />}
                   </button>
 
                 </form>

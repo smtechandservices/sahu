@@ -26,7 +26,7 @@ export default function AboutPage() {
             <div className="absolute inset-0 bg-gradient-to-r from-gray-900 to-transparent"></div>
           </div>
           
-          <div className="container-custom relative z-10">
+          <div className="px-8 relative z-10">
             <div className="max-w-2xl">
               <span className="inline-block px-4 py-1 bg-primary text-white font-bold rounded-full mb-6">
                 Established 1980
