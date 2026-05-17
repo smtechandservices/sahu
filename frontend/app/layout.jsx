@@ -30,7 +30,7 @@ export const metadata = {
   openGraph: {
     title: "Sahu Sabha",
     description: "Official portal of Sahu Sabha. Connecting the community through heritage, matrimonial services, career support, and more.",
-    url: "https://sahusabha.com",
+    url: "https://bihartailiksahusabha.com",
     siteName: "Sahu Sabha",
     images: [
       {
