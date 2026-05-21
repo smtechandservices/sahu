@@ -99,6 +99,9 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# Magazine article PDF uploads (stored as BinaryField)
+MAX_ARTICLE_PDF_SIZE_BYTES = 10 * 1024 * 1024  # 10 MB
+
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',

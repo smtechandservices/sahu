@@ -13,6 +13,15 @@ import { useRouter } from "next/navigation";
 
 const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
+const isPublicEvent = (event) =>
+  event.is_active !== false && new Date(event.event_date) >= new Date();
+
+const todayInputValue = () => {
+  const d = new Date();
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+};
+
 export default function EventsClient() {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -33,7 +42,7 @@ export default function EventsClient() {
     const loadData = async () => {
       try {
         const eventsData = await fetchApi('/events/');
-        setEvents(eventsData);
+        setEvents(eventsData.filter(isPublicEvent));
         
         const newsData = await fetchApi('/articles/?category=News');
         setNews(newsData);
@@ -73,8 +82,14 @@ export default function EventsClient() {
 
   const isRegistered = (eventId) => userRegistrations.includes(eventId);
 
-  // Filter events based on date range
+  const now = new Date();
+  const month = currentDate.getMonth();
+  const year = currentDate.getFullYear();
+
+  // Filter events based on date range (upcoming only)
   const filteredEvents = events.filter(event => {
+    if (!isPublicEvent(event)) return false;
+
     const eDate = new Date(event.event_date);
     eDate.setHours(0,0,0,0);
     
@@ -94,16 +109,19 @@ export default function EventsClient() {
   });
 
   // Calendar Helper Functions
-  const getDaysInMonth = (year, month) => new Date(year, month + 1, 0).getDate();
-  const getFirstDayOfMonth = (year, month) => new Date(year, month, 1).getDay();
+  const getDaysInMonth = (y, m) => new Date(y, m + 1, 0).getDate();
+  const getFirstDayOfMonth = (y, m) => new Date(y, m, 1).getDay();
 
-  const month = currentDate.getMonth();
-  const year = currentDate.getFullYear();
   const daysInMonth = getDaysInMonth(year, month);
   const firstDay = getFirstDayOfMonth(year, month);
 
-  const prevMonth = () => setCurrentDate(new Date(year, month - 1, 1));
+  const prevMonth = () => {
+    if (year === now.getFullYear() && month === now.getMonth()) return;
+    setCurrentDate(new Date(year, month - 1, 1));
+  };
   const nextMonth = () => setCurrentDate(new Date(year, month + 1, 1));
+
+  const minFilterDate = todayInputValue();
 
   const monthName = currentDate.toLocaleString('default', { month: 'long' });
 
@@ -162,7 +180,11 @@ export default function EventsClient() {
               <div className="flex items-center justify-between mb-8">
                 <h2 className="text-2xl font-bold text-gray-900">{monthName} {year}</h2>
                 <div className="flex gap-2">
-                  <button onClick={prevMonth} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+                  <button
+                    onClick={prevMonth}
+                    disabled={year === now.getFullYear() && month === now.getMonth()}
+                    className="p-2 hover:bg-gray-100 rounded-full transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                  >
                     <ChevronLeft size={24} />
                   </button>
                   <button onClick={nextMonth} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
@@ -187,14 +209,21 @@ export default function EventsClient() {
                 {[...Array(daysInMonth)].map((_, i) => {
                   const day = i + 1;
                   const dayEvents = getEventsForDate(day);
-                  const isToday = day === new Date().getDate() && month === new Date().getMonth() && year === new Date().getFullYear();
+                  const isToday = day === now.getDate() && month === now.getMonth() && year === now.getFullYear();
                   const isSelected = selectedDate === day;
+                  const cellDate = new Date(year, month, day);
+                  cellDate.setHours(0, 0, 0, 0);
+                  const isPastDay = cellDate < new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
                   return (
                     <div 
                       key={day} 
-                      onClick={() => setSelectedDate(day)}
-                      className={`bg-white min-h-[120px] p-2 cursor-pointer transition-all hover:bg-primary-light/30 relative group ${isSelected ? 'ring-2 ring-primary ring-inset z-10' : ''}`}
+                      onClick={() => !isPastDay && setSelectedDate(day)}
+                      className={`bg-white min-h-[120px] p-2 transition-all relative group ${
+                        isPastDay
+                          ? 'opacity-40 cursor-not-allowed'
+                          : 'cursor-pointer hover:bg-primary-light/30'
+                      } ${isSelected ? 'ring-2 ring-primary ring-inset z-10' : ''}`}
                     >
                       <span className={`text-sm font-bold w-7 h-7 flex items-center justify-center rounded-full mb-2 ${isToday ? 'bg-primary text-white' : 'text-gray-700'}`}>
                         {day}
@@ -226,6 +255,7 @@ export default function EventsClient() {
                     <input 
                       type="date" 
                       value={filterStart}
+                      min={minFilterDate}
                       onChange={(e) => setFilterStart(e.target.value)}
                       className="w-full bg-gray-50 border border-gray-100 rounded-lg p-3 text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all"
                     />
@@ -235,6 +265,7 @@ export default function EventsClient() {
                     <input 
                       type="date" 
                       value={filterEnd}
+                      min={filterStart || minFilterDate}
                       onChange={(e) => setFilterEnd(e.target.value)}
                       className="w-full bg-gray-50 border border-gray-100 rounded-lg p-3 text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all"
                     />

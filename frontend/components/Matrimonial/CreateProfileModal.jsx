@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../../context/AuthContext";
 
-export default function CreateProfileModal({ isOpen, onClose }) {
+export default function CreateProfileModal({ isOpen, onClose, onCreated }) {
   const router = useRouter();
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
@@ -66,10 +66,13 @@ export default function CreateProfileModal({ isOpen, onClose }) {
         method: "POST",
         body: JSON.stringify(payload),
       });
-      alert("Matrimonial profile created successfully!");
-      onClose();
-      // Refresh the page to show the new profile
-      router.refresh();
+      alert("Matrimonial profile created successfully! It will be visible after admin approval.");
+      if (onCreated) {
+        await onCreated();
+      } else {
+        onClose();
+        router.refresh();
+      }
     } catch (err) {
       console.error(err);
       alert("Failed to create profile. You may already have one.");

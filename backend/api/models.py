@@ -72,7 +72,6 @@ class Accommodation(models.Model):
     badge = models.CharField(max_length=100, blank=True, null=True)
     image = models.BinaryField()
     image_mimetype = models.CharField(max_length=50, null=True, blank=True)
-    price_label = models.CharField(max_length=100, default="Starting from")
     price = models.DecimalField(max_digits=10, decimal_places=2)
     unit = models.CharField(max_length=50, default="/ night")
     location = models.CharField(max_length=255)
@@ -207,6 +206,11 @@ class Article(models.Model):
     def __str__(self):
         return self.title
 
+class EventQuerySet(models.QuerySet):
+    def upcoming(self):
+        return self.filter(is_active=True, event_date__gte=timezone.now())
+
+
 class Event(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField()
@@ -216,6 +220,8 @@ class Event(models.Model):
     location = models.CharField(max_length=255, blank=True, null=True)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    objects = EventQuerySet.as_manager()
 
     def __str__(self):
         return self.title

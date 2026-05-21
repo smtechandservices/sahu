@@ -47,9 +47,6 @@ const AccommodationCard = ({ item }) => {
           {/* Price Row */}
           <div className="flex items-end justify-between mb-6">
             <div>
-              <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">
-                {item.price_label}
-              </p>
               <p className="text-2xl font-bold text-primary leading-none">
                 ₹{item.price}
                 <span className="text-xs font-normal text-gray-400 ml-1 italic">{item.unit}</span>

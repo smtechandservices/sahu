@@ -8,6 +8,9 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
+const MAX_PDF_SIZE_BYTES = 10 * 1024 * 1024; // must match backend MAX_ARTICLE_PDF_SIZE_BYTES
+const MAX_PDF_SIZE_MB = MAX_PDF_SIZE_BYTES / (1024 * 1024);
+
 const emptyForm = {
   title: '', content: '', category: 'Magazine',
   image: null, image_mimetype: '',
@@ -90,6 +93,16 @@ export default function MagazineManager() {
   const handlePdfChange = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
+      alert('Please select a PDF file.');
+      e.target.value = '';
+      return;
+    }
+    if (file.size > MAX_PDF_SIZE_BYTES) {
+      alert(`PDF must be ${MAX_PDF_SIZE_MB} MB or smaller.`);
+      e.target.value = '';
+      return;
+    }
     const reader = new FileReader();
     reader.onloadend = () => {
       const b64data = reader.result.split('base64,')[1];
@@ -353,7 +366,7 @@ export default function MagazineManager() {
                       ) : (
                         <>
                           <p className="text-sm font-bold text-gray-400">Click to upload PDF</p>
-                          <p className="text-[10px] text-gray-300 mt-0.5">PDF files only</p>
+                          <p className="text-[10px] text-gray-300 mt-0.5">PDF only, max {MAX_PDF_SIZE_MB} MB</p>
                         </>
                       )}
                     </div>

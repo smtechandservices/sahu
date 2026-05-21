@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Header from "../Header/Header";
 import Footer from "../Footer/Footer";
 import AccommodationHero from "./AccommodationHero";
@@ -11,12 +11,7 @@ import { fetchApi } from "../../lib/api";
 import { Search, History, Calendar, Clock, MapPin, Loader2 } from "lucide-react";
 
 const serviceTypes = ["Hostel", "Community Hall", "Guest Rooms"];
-const locations = [
-  "All Locations",
-  "New Delhi Central",
-  "Jaipur Heritage",
-  "Mumbai Suburban",
-];
+const ALL_LOCATIONS = "All Locations";
 
 export default function AccommodationClient() {
   const { user } = useAuth();
@@ -26,7 +21,7 @@ export default function AccommodationClient() {
     "Community Hall": true,
     "Guest Rooms": true,
   });
-  const [selectedLocation, setSelectedLocation] = useState("All Locations");
+  const [selectedLocation, setSelectedLocation] = useState(ALL_LOCATIONS);
   const [accommodations, setAccommodations] = useState([]);
   const [myEnquiries, setMyEnquiries] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -49,19 +44,34 @@ export default function AccommodationClient() {
     }
   }, [activeTab, user]);
 
+  const locations = useMemo(() => {
+    const unique = [
+      ...new Set(
+        accommodations.map((a) => a.location).filter((loc) => loc && loc.trim())
+      ),
+    ].sort((a, b) => a.localeCompare(b));
+    return [ALL_LOCATIONS, ...unique];
+  }, [accommodations]);
+
+  useEffect(() => {
+    if (selectedLocation !== ALL_LOCATIONS && !locations.includes(selectedLocation)) {
+      setSelectedLocation(ALL_LOCATIONS);
+    }
+  }, [locations, selectedLocation]);
+
   const toggleType = (type) => {
     setSelectedTypes((prev) => ({ ...prev, [type]: !prev[type] }));
   };
 
   const clearFilters = () => {
     setSelectedTypes({ Hostel: true, "Community Hall": true, "Guest Rooms": true });
-    setSelectedLocation("All Locations");
+    setSelectedLocation(ALL_LOCATIONS);
   };
 
   const filtered = accommodations.filter((a) => {
     const typeMatch = selectedTypes[a.type];
     const locMatch =
-      selectedLocation === "All Locations" || a.location === selectedLocation;
+      selectedLocation === ALL_LOCATIONS || a.location === selectedLocation;
     return typeMatch && locMatch;
   });
 

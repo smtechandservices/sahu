@@ -1,4 +1,6 @@
 import base64
+from django.conf import settings
+from django.utils import timezone
 from rest_framework import serializers
 from .models import (
     User, OTPRecord, Accommodation, Booking, 
@@ -50,7 +52,7 @@ class AdminUserSerializer(serializers.ModelSerializer):
 
 # --- Accommodation Serializers ---
 class AccommodationSerializer(serializers.ModelSerializer):
-    image = Base64BinaryField()
+    image = Base64BinaryField(required=False, allow_null=True)
     
     class Meta:
         model = Accommodation
@@ -84,23 +86,71 @@ class AdvertisementSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 # --- Matrimonial Serializers ---
+class MatrimonialPublicUserSerializer(serializers.ModelSerializer):
+    """User fields exposed on matrimonial listings (phone withheld; use contact_phone on profile)."""
+
+    class Meta:
+        model = User
+        fields = ['id', 'name', 'email']
+
+
 class MatrimonialProfileSerializer(serializers.ModelSerializer):
-    user_detail = UserSerializer(source='user', read_only=True)
+    user_detail = MatrimonialPublicUserSerializer(source='user', read_only=True)
+    contact_phone = serializers.SerializerMethodField()
     photo = Base64BinaryField()
-    # Expose choice display values as extra read-only fields
     marital_status_display = serializers.CharField(source='get_marital_status_display', read_only=True)
     manglik_display = serializers.CharField(source='get_manglik_display', read_only=True)
     complexion_display = serializers.CharField(source='get_complexion_display', read_only=True)
 
     class Meta:
         model = MatrimonialProfile
-        fields = '__all__'
+        fields = [
+            'id', 'user', 'age', 'gender', 'city', 'education', 'occupation', 'family_type',
+            'gotra', 'marital_status', 'manglik', 'complexion', 'height_cm', 'annual_income',
+            'mother_tongue', 'photo', 'photo_mimetype', 'bio', 'is_approved', 'created_at',
+            'user_detail', 'contact_phone',
+            'marital_status_display', 'manglik_display', 'complexion_display',
+        ]
         read_only_fields = ['user', 'is_approved', 'created_at']
+
+    def get_contact_phone(self, obj):
+        request = self.context.get('request')
+        if not request or not request.user.is_authenticated:
+            return None
+        if obj.user_id == request.user.id:
+            return obj.user.phone
+        if getattr(request.user, 'is_admin', False):
+            return obj.user.phone
+        match_ids = self.context.get('match_ids') or set()
+        if obj.id in match_ids:
+            return obj.user.phone
+        return None
+
+
+class AdminMatrimonialProfileSerializer(MatrimonialProfileSerializer):
+    user_detail = UserSerializer(source='user', read_only=True)
+
+    def get_contact_phone(self, obj):
+        return obj.user.phone
 
 # --- Magazine Serializers ---
 class ArticleSerializer(serializers.ModelSerializer):
     image = Base64BinaryField(required=False, allow_null=True)
     pdf = Base64BinaryField(required=False, allow_null=True)
+
+    def validate_pdf(self, value):
+        if value is None:
+            return value
+        max_size = getattr(settings, 'MAX_ARTICLE_PDF_SIZE_BYTES', 10 * 1024 * 1024)
+        if len(value) > max_size:
+            max_mb = max_size // (1024 * 1024)
+            raise serializers.ValidationError(f'PDF must be {max_mb} MB or smaller.')
+        return value
+
+    def validate_pdf_filename(self, value):
+        if value and not value.lower().endswith('.pdf'):
+            raise serializers.ValidationError('File must have a .pdf extension.')
+        return value
 
     class Meta:
         model = Article
@@ -108,7 +158,12 @@ class ArticleSerializer(serializers.ModelSerializer):
 
 class EventRegistrationSerializer(serializers.ModelSerializer):
     user_detail = UserSerializer(source='user', read_only=True)
-    
+
+    def validate_event(self, value):
+        if not value.is_active or value.event_date < timezone.now():
+            raise serializers.ValidationError('This event is no longer available for registration.')
+        return value
+
     class Meta:
         model = EventRegistration
         fields = ['id', 'event', 'user', 'user_detail', 'registered_at']

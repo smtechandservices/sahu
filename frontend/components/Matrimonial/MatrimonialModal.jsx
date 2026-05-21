@@ -1,8 +1,7 @@
 import React from 'react';
 import Image from 'next/image';
 
-const MatrimonialModal = ({ profile, shortlisted, onShortlist, liked, onLike, onClose, isOwn, onEdit }) => {
-  const isShortlisted = shortlisted.includes(profile.id);
+const MatrimonialModal = ({ profile, liked, isMatch, onLike, onClose, isOwn, onEdit }) => {
   const isLiked = liked?.includes(profile.id);
 
   const InfoRow = ({ label, value }) =>
@@ -48,6 +47,7 @@ const MatrimonialModal = ({ profile, shortlisted, onShortlist, liked, onLike, on
                     Manglik: {profile.manglik}
                   </Badge>
                 )}
+                {isMatch && <Badge color="match">Match</Badge>}
               </div>
             </div>
           </div>
@@ -97,6 +97,24 @@ const MatrimonialModal = ({ profile, shortlisted, onShortlist, liked, onLike, on
               <span className="text-sm font-semibold text-gray-800">{profile.location}</span>
             </div>
           </section>
+
+          {/* Contact — only for mutual matches */}
+          {isMatch && profile.contactPhone && !isOwn && (
+            <section>
+              <SectionTitle icon={<PhoneIcon />}>Contact</SectionTitle>
+              <div className="bg-primary/5 rounded-xl px-4 py-4 border border-primary/20">
+                <p className="text-[10px] font-bold text-primary uppercase tracking-widest mb-1">
+                  Phone number
+                </p>
+                <a
+                  href={`tel:${profile.contactPhone}`}
+                  className="text-lg font-bold text-gray-900 hover:text-primary transition-colors"
+                >
+                  {formatPhone(profile.contactPhone)}
+                </a>
+              </div>
+            </section>
+          )}
         </div>
 
         {/* Footer */}
@@ -113,30 +131,18 @@ const MatrimonialModal = ({ profile, shortlisted, onShortlist, liked, onLike, on
               Edit Profile
             </button>
           ) : (
-            <>
-              <button
-                onClick={onShortlist}
-                className={`
-                  px-5 py-2.5 rounded-lg text-sm font-bold flex items-center gap-2 transition-all
-                  ${isShortlisted
-                    ? 'bg-primary/15 text-primary border border-primary'
-                    : 'bg-white text-gray-500 border border-gray-200 hover:border-primary hover:text-primary'}
-                `}
-              >
-                <BookmarkIcon fill={isShortlisted ? 'currentColor' : 'none'} />
-                {isShortlisted ? 'Shortlisted' : 'Shortlist'}
-              </button>
-              <button
-                onClick={onLike}
-                className={`px-7 py-2.5 rounded-lg text-sm shadow-lg shadow-primary/20 transition-all font-bold ${
-                  isLiked
-                    ? 'bg-primary/10 text-primary border border-primary/20 shadow-none'
-                    : 'btn-primary'
-                }`}
-              >
-                {isLiked ? 'Interest Sent ✓' : 'Send Interest'}
-              </button>
-            </>
+            <button
+              onClick={onLike}
+              className={`px-7 py-2.5 rounded-lg text-sm transition-all font-bold ${
+                isMatch
+                  ? 'bg-gradient-to-r from-pink-500/10 to-primary/10 text-primary border border-primary/30 shadow-none'
+                  : isLiked
+                  ? 'bg-primary/10 text-primary border border-primary/20 shadow-none'
+                  : 'btn-primary shadow-lg shadow-primary/20'
+              }`}
+            >
+              {isMatch ? "It's a Match!" : isLiked ? 'Interest Sent ✓' : 'Send Interest'}
+            </button>
           )}
         </div>
       </div>
@@ -162,6 +168,7 @@ function Badge({ color = 'gray', children }) {
     green: 'bg-green-100 text-green-700',
     red: 'bg-red-100 text-red-700',
     gray: 'bg-gray-100 text-gray-600',
+    match: 'bg-gradient-to-r from-pink-500/15 to-primary/15 text-primary',
   };
   return (
     <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide ${colors[color]}`}>
@@ -175,6 +182,12 @@ const UserIcon = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="non
 const BriefcaseIcon = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2" /><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16" /></svg>;
 const HeartIcon = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" /></svg>;
 const MapPinIcon = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" /><circle cx="12" cy="10" r="3" /></svg>;
-const BookmarkIcon = ({ fill }) => <svg width="14" height="14" viewBox="0 0 24 24" fill={fill} stroke="currentColor" strokeWidth="2"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z" /></svg>;
+const PhoneIcon = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z" /></svg>;
+
+function formatPhone(phone) {
+  const digits = String(phone).replace(/\D/g, '');
+  if (digits.length === 10) return `+91 ${digits.slice(0, 5)} ${digits.slice(5)}`;
+  return phone;
+}
 
 export default MatrimonialModal;

@@ -39,7 +39,7 @@ export default function EventsManager() {
 
   const fetchEvents = async () => {
     try {
-      const data = await fetchApi('/events/');
+      const data = await fetchApi('/events/?all=true');
       setEvents(data);
     } catch (err) {
       console.error(err);

@@ -125,17 +125,6 @@ export default function JoinCommunity() {
               </p>
             </div>
 
-            {/* Illustration */}
-            <div className="relative w-full h-[250px] bg-[#F3F4F6] rounded-2xl overflow-hidden group">
-              <Image 
-                src="/assets/community_illustration.png" 
-                alt="Community Illustration" 
-                fill
-                className="object-cover transition-transform duration-700 group-hover:scale-105"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-            </div>
-
             {/* Features */}
             <div className="space-y-6">
               <div className="flex items-start space-x-4 p-4 rounded-xl hover:bg-gray-50 transition-colors duration-300 group">

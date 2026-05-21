@@ -21,7 +21,12 @@ const NewsEvents = () => {
 
         // Fetch Events
         const eventsData = await fetchApi('/events/');
-        setEvents(eventsData);
+        const now = new Date();
+        setEvents(
+          eventsData.filter(
+            (e) => e.is_active !== false && new Date(e.event_date) >= now
+          )
+        );
       } catch (err) {
         console.error("Error fetching news/events:", err);
       } finally {
@@ -69,7 +74,9 @@ const NewsEvents = () => {
             
             {/* Scrollable Container - Can scroll across full width on desktop */}
             <div className="flex overflow-x-auto flex-nowrap scrollbar-hide gap-8 pb-8 snap-x snap-mandatory relative z-0 lg:pr-[40%]">
-              {events.map((event, index) => (
+              {events.length === 0 ? (
+                <p className="text-slate-500 text-sm font-medium py-8">No upcoming events right now.</p>
+              ) : events.map((event, index) => (
                 <div key={index} className="min-w-[450px] bg-[#FFFBF7] rounded-md border border-yellow-200 shadow-sm overflow-hidden group hover:shadow-md transition-all duration-300 flex flex-col snap-start">
                   <div className="relative h-56 w-full overflow-hidden">
                     <Image 

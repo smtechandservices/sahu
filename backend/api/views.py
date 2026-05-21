@@ -1,4 +1,5 @@
 from rest_framework import status, viewsets, permissions, views, response
+from rest_framework.exceptions import ValidationError
 from rest_framework.decorators import api_view, permission_classes, action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
@@ -279,12 +280,39 @@ class AdvertisementViewSet(viewsets.ModelViewSet):
         return Advertisement.objects.filter(is_active=True).order_by('-created_at')
 
 # --- Matrimonial Views ---
+def _matrimonial_match_ids_for_user(user):
+    if not user.is_authenticated:
+        return set()
+    try:
+        my_profile = user.matrimonial_profile
+    except MatrimonialProfile.DoesNotExist:
+        return set()
+    sent_ids = set(
+        MatrimonialInterest.objects.filter(from_profile=my_profile).values_list('to_profile_id', flat=True)
+    )
+    received_ids = set(
+        MatrimonialInterest.objects.filter(to_profile=my_profile).values_list('from_profile_id', flat=True)
+    )
+    return sent_ids & received_ids
+
+
 class MatrimonialProfileViewSet(viewsets.ModelViewSet):
     serializer_class = MatrimonialProfileSerializer
     permission_classes = [permissions.IsAuthenticated]
     filter_backends = [DjangoFilterBackend, SearchFilter]
     filterset_fields = ['gender', 'city', 'gotra', 'marital_status', 'manglik', 'complexion', 'family_type']
     search_fields = ['user__name', 'city', 'occupation', 'education', 'gotra']
+
+    def get_serializer_class(self):
+        if self.request.user.is_authenticated and getattr(self.request.user, 'is_admin', False):
+            from .serializers import AdminMatrimonialProfileSerializer
+            return AdminMatrimonialProfileSerializer
+        return MatrimonialProfileSerializer
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['match_ids'] = _matrimonial_match_ids_for_user(self.request.user)
+        return context
 
     def get_queryset(self):
         qs = MatrimonialProfile.objects.all()
@@ -328,7 +356,10 @@ class MatrimonialProfileViewSet(viewsets.ModelViewSet):
             return Response({'error': 'Cannot send interest to yourself.'}, status=status.HTTP_400_BAD_REQUEST)
         if request.method == 'POST':
             MatrimonialInterest.objects.get_or_create(from_profile=from_profile, to_profile=to_profile)
-            return Response({'status': 'interest_sent'})
+            is_match = MatrimonialInterest.objects.filter(
+                from_profile=to_profile, to_profile=from_profile
+            ).exists()
+            return Response({'status': 'interest_sent', 'is_match': is_match})
         else:
             MatrimonialInterest.objects.filter(from_profile=from_profile, to_profile=to_profile).delete()
             return Response({'status': 'interest_withdrawn'})
@@ -354,11 +385,15 @@ class MatrimonialProfileViewSet(viewsets.ModelViewSet):
         try:
             my_profile = request.user.matrimonial_profile
         except MatrimonialProfile.DoesNotExist:
-            return Response([])
+            return Response({'profile_ids': [], 'match_ids': []})
         profile_ids = list(
             MatrimonialInterest.objects.filter(from_profile=my_profile).values_list('to_profile_id', flat=True)
         )
-        return Response({'profile_ids': profile_ids})
+        received_from_ids = set(
+            MatrimonialInterest.objects.filter(to_profile=my_profile).values_list('from_profile_id', flat=True)
+        )
+        match_ids = [pid for pid in profile_ids if pid in received_from_ids]
+        return Response({'profile_ids': profile_ids, 'match_ids': match_ids})
 
     @action(detail=True, methods=['patch'])
     def approve(self, request, pk=None):
@@ -377,9 +412,23 @@ class ArticleViewSet(viewsets.ModelViewSet):
     filterset_fields = ['category']
 
 class EventViewSet(viewsets.ModelViewSet):
-    queryset = Event.objects.filter(is_active=True).order_by('event_date')
     serializer_class = EventSerializer
     permission_classes = [IsAdminOrReadOnly]
+
+    def get_queryset(self):
+        # Public (and admin browsing the site): active upcoming events only
+        if self.action == 'list':
+            if (
+                self.request.user.is_authenticated
+                and getattr(self.request.user, 'is_admin', False)
+                and self.request.query_params.get('all') == 'true'
+            ):
+                return Event.objects.all().order_by('-event_date')
+            return Event.objects.upcoming().order_by('event_date')
+        # Admin detail/update/delete may target inactive or past events by id
+        if self.request.user.is_authenticated and getattr(self.request.user, 'is_admin', False):
+            return Event.objects.all().order_by('-event_date')
+        return Event.objects.upcoming().order_by('event_date')
 
 class EventRegistrationViewSet(viewsets.ModelViewSet):
     serializer_class = EventRegistrationSerializer
@@ -388,9 +437,16 @@ class EventRegistrationViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         if getattr(self.request.user, 'is_admin', False):
             return EventRegistration.objects.all().order_by('-registered_at')
-        return EventRegistration.objects.filter(user=self.request.user).order_by('-registered_at')
+        return EventRegistration.objects.filter(
+            user=self.request.user,
+            event__is_active=True,
+            event__event_date__gte=timezone.now(),
+        ).order_by('-registered_at')
 
     def perform_create(self, serializer):
+        event = serializer.validated_data['event']
+        if not event.is_active or event.event_date < timezone.now():
+            raise ValidationError({'event': 'This event is no longer available for registration.'})
         serializer.save(user=self.request.user)
 
 # --- Public Stats View ---
