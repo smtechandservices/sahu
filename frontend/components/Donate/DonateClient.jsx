@@ -12,6 +12,8 @@ import { useAuth } from '../../context/AuthContext';
 import Link from 'next/link';
 import { Lock } from 'lucide-react';
 
+import Swal from 'sweetalert2';
+
 const DonateClient = () => {
   const { user, loading } = useAuth();
   const [formData, setFormData] = useState({
@@ -37,10 +39,20 @@ const DonateClient = () => {
 
   const handleDonate = () => {
     if (!formData.amount || formData.amount <= 0) {
-      alert("Please enter a valid donation amount.");
+      Swal.fire({
+        icon: 'warning',
+        title: 'Invalid Amount',
+        text: 'Please enter a valid donation amount.',
+        confirmButtonColor: '#EAB308',
+      });
       return;
     }
-    alert(`Thank you for your generous contribution of ₹${formData.amount}!`);
+    Swal.fire({
+      icon: 'success',
+      title: 'Thank You!',
+      text: `Thank you for your generous contribution of ₹${formData.amount}!`,
+      confirmButtonColor: '#EAB308',
+    });
     // Payment integration logic would go here
   };
 

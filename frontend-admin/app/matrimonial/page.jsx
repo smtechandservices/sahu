@@ -7,6 +7,7 @@ import {
   User, MapPin, GraduationCap, Briefcase, Users
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import Swal from 'sweetalert2';
 
 export default function MatrimonialManager() {
   const [profiles, setProfiles] = useState([]);
@@ -39,7 +40,7 @@ export default function MatrimonialManager() {
       setProfiles(prev => prev.map(p => p.id === id ? { ...p, is_approved: true } : p));
       if (selectedProfile?.id === id) setSelectedProfile(p => ({ ...p, is_approved: true }));
     } catch (err) {
-      alert('Failed to approve profile');
+      Swal.fire({ icon: 'error', title: 'Approval Failed', text: 'Failed to approve profile' });
     } finally {
       setProcessing(null);
     }
@@ -53,7 +54,7 @@ export default function MatrimonialManager() {
       setProfiles(prev => prev.filter(p => p.id !== id));
       if (selectedProfile?.id === id) setSelectedProfile(null);
     } catch (err) {
-      alert('Failed to delete profile');
+      Swal.fire({ icon: 'error', title: 'Delete Failed', text: 'Failed to delete profile' });
     } finally {
       setProcessing(null);
     }
@@ -71,7 +72,7 @@ export default function MatrimonialManager() {
       setProfiles(prev => prev.map(p => p.id === id ? { ...p, city, bio, occupation, education } : p));
       setEditingProfile(null);
     } catch (err) {
-      alert('Failed to save profile');
+      Swal.fire({ icon: 'error', title: 'Save Failed', text: 'Failed to save profile' });
     } finally {
       setProcessing(null);
     }

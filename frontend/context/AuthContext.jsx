@@ -33,7 +33,18 @@ export function AuthProvider({ children }) {
     setCookie('refreshToken', refreshToken);
   };
 
-  const logout = () => {
+  const logout = async () => {
+    const refreshToken = getCookie('refreshToken');
+    if (refreshToken) {
+      try {
+        await fetchApi('/auth/logout/', {
+          method: 'POST',
+          body: JSON.stringify({ refresh: refreshToken })
+        });
+      } catch (e) {
+        console.error("Server logout failed:", e);
+      }
+    }
     setUser(null);
     removeCookie('user');
     removeCookie('accessToken');

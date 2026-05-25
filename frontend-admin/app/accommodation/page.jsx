@@ -6,6 +6,7 @@ import {
   Plus, MapPin, Edit, Trash2, CheckCircle, X, Upload
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import Swal from 'sweetalert2';
 
 const ACCOMMODATION_TYPES = ['Hostel', 'Community Hall', 'Guest Rooms'];
 
@@ -106,7 +107,7 @@ export default function AccommodationManager() {
   const handleSave = async (e) => {
     e.preventDefault();
     if (!editingAcc && !form.image) {
-      alert('Please upload a property image.');
+      Swal.fire({ icon: 'warning', title: 'Image Required', text: 'Please upload a property image.' });
       return;
     }
     setSaving(true);
@@ -137,7 +138,7 @@ export default function AccommodationManager() {
       await fetchData();
       closeModal();
     } catch (err) {
-      alert(err.message || 'Failed to save property');
+      Swal.fire({ icon: 'error', title: 'Save Failed', text: err.message || 'Failed to save property' });
     } finally {
       setSaving(false);
     }
@@ -151,7 +152,7 @@ export default function AccommodationManager() {
       await fetchApi(`/accommodations/${id}/`, { method: 'DELETE' });
       setAccommodations((prev) => prev.filter((a) => a.id !== id));
     } catch (err) {
-      alert(err.message || 'Failed to delete property');
+      Swal.fire({ icon: 'error', title: 'Delete Failed', text: err.message || 'Failed to delete property' });
     } finally {
       setDeletingId(null);
     }
@@ -165,7 +166,7 @@ export default function AccommodationManager() {
       });
       fetchData();
     } catch (err) {
-      alert('Failed to update status');
+      Swal.fire({ icon: 'error', title: 'Update Failed', text: 'Failed to update status' });
     }
   };
 

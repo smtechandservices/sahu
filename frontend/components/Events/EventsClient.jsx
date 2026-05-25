@@ -11,6 +11,8 @@ import { useAuth } from "../../context/AuthContext";
 import { fetchApi } from "../../lib/api";
 import { useRouter } from "next/navigation";
 
+import Swal from "sweetalert2";
+
 const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 const isPublicEvent = (event) =>
@@ -73,8 +75,19 @@ export default function EventsClient() {
             body: JSON.stringify({ event: eventId })
         });
         setUserRegistrations([...userRegistrations, eventId]);
+        Swal.fire({
+            icon: "success",
+            title: "Registered!",
+            text: "You have successfully registered for the event.",
+            confirmButtonColor: "#EAB308",
+        });
     } catch (err) {
-        alert(err.message || "Failed to register for event");
+        Swal.fire({
+            icon: "error",
+            title: "Registration Failed",
+            text: err.message || "Failed to register for event",
+            confirmButtonColor: "#EAB308",
+        });
     } finally {
         setRegisteringId(null);
     }

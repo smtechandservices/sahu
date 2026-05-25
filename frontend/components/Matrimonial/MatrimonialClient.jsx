@@ -10,6 +10,7 @@ import MatrimonialModal from "./MatrimonialModal";
 import CreateProfileModal from "./CreateProfileModal";
 import EditProfileModal from "./EditProfileModal";
 import { useAuth } from "../../context/AuthContext";
+import Swal from "sweetalert2";
 
 // Helper: height_cm → display string e.g. "5' 7\""
 function cmToFeet(cm) {
@@ -126,10 +127,20 @@ export default function MatrimonialClient() {
   // Toggle send interest — syncs with backend
   const handleToggleInterest = async (profileId) => {
     if (!myProfile) {
-      const create = window.confirm(
-        "You need a matrimonial profile to send interest. Create your profile now?"
-      );
-      if (create) setShowCreateModal(true);
+      Swal.fire({
+        title: "Profile Required",
+        text: "You need a matrimonial profile to send interest. Create your profile now?",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#EAB308",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Yes, create it!",
+        cancelButtonText: "Cancel"
+      }).then((result) => {
+        if (result.isConfirmed) {
+          setShowCreateModal(true);
+        }
+      });
       return;
     }
 
@@ -151,7 +162,12 @@ export default function MatrimonialClient() {
         err?.data?.error ||
         (typeof err?.data === "string" ? err.data : null) ||
         "Could not update interest. Please try again.";
-      alert(msg);
+      Swal.fire({
+        icon: "error",
+        title: "Interest Failed",
+        text: msg,
+        confirmButtonColor: "#EAB308",
+      });
       console.error(err);
     }
   };

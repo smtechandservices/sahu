@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
+import Swal from "sweetalert2";
+
 export default function EditProfileModal({ isOpen, onClose, profile }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -71,12 +73,22 @@ export default function EditProfileModal({ isOpen, onClose, profile }) {
         method: "PATCH",
         body: JSON.stringify(payload),
       });
-      alert("Profile updated! It will be visible after admin approval.");
+      Swal.fire({
+        icon: "success",
+        title: "Profile Updated",
+        text: "Profile updated! It will be visible after admin approval.",
+        confirmButtonColor: "#EAB308",
+      });
       onClose();
       router.refresh();
     } catch (err) {
       console.error(err);
-      alert("Failed to update profile. Please try again.");
+      Swal.fire({
+        icon: "error",
+        title: "Update Failed",
+        text: "Failed to update profile. Please try again.",
+        confirmButtonColor: "#EAB308",
+      });
     } finally {
       setLoading(false);
     }

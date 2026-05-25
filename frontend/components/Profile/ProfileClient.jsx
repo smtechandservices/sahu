@@ -11,6 +11,7 @@ import {
   Briefcase, Heart, BookOpen
 } from "lucide-react";
 import { motion } from "framer-motion";
+import Swal from "sweetalert2";
 
 export default function ProfileClient() {
   const { user, login, loading: authLoading } = useAuth();
@@ -96,10 +97,20 @@ export default function ProfileClient() {
       login(updatedUser, localStorage.getItem('accessToken'), localStorage.getItem('refreshToken'));
       setIsEditing(false);
       setProfilePhoto(null);
-      alert("Profile updated successfully!");
+      Swal.fire({
+        icon: "success",
+        title: "Profile Updated",
+        text: "Profile updated successfully!",
+        confirmButtonColor: "#EAB308",
+      });
     } catch (err) {
       console.error(err);
-      alert("Failed to update profile.");
+      Swal.fire({
+        icon: "error",
+        title: "Update Failed",
+        text: "Failed to update profile.",
+        confirmButtonColor: "#EAB308",
+      });
     } finally {
       setLoading(false);
     }

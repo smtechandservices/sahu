@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../../context/AuthContext";
 
+import Swal from "sweetalert2";
+
 export default function CreateProfileModal({ isOpen, onClose, onCreated }) {
   const router = useRouter();
   const { user } = useAuth();
@@ -66,7 +68,12 @@ export default function CreateProfileModal({ isOpen, onClose, onCreated }) {
         method: "POST",
         body: JSON.stringify(payload),
       });
-      alert("Matrimonial profile created successfully! It will be visible after admin approval.");
+      Swal.fire({
+        icon: "success",
+        title: "Profile Created",
+        text: "Matrimonial profile created successfully! It will be visible after admin approval.",
+        confirmButtonColor: "#EAB308",
+      });
       if (onCreated) {
         await onCreated();
       } else {
@@ -75,7 +82,12 @@ export default function CreateProfileModal({ isOpen, onClose, onCreated }) {
       }
     } catch (err) {
       console.error(err);
-      alert("Failed to create profile. You may already have one.");
+      Swal.fire({
+        icon: "error",
+        title: "Creation Failed",
+        text: "Failed to create profile. You may already have one.",
+        confirmButtonColor: "#EAB308",
+      });
     } finally {
       setLoading(false);
     }
