@@ -98,11 +98,11 @@ export default function LoginPage() {
   };
   return (
     <div className="min-h-screen bg-white font-sans selection:bg-primary/30">
-      <div className="px-8 py-8 lg:py-16">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24 items-start">
-          
+      <div className="px-4 sm:px-6 md:px-8 py-6 lg:py-16">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-24 items-start">
+
           {/* Left Column: Branding & Info */}
-          <div className="flex flex-col space-y-10">
+          <div className="flex flex-col space-y-6 lg:space-y-10">
             {/* Logo */}
             <Link href="/" className="inline-block transition-transform active:scale-95 duration-300">
               <Image 
@@ -165,9 +165,9 @@ export default function LoginPage() {
               {/* Curve Decoration at top right */}
               <div className="absolute top-0 right-0 w-48 h-48 bg-[#FFFBEB] rounded-bl-[100%] z-0 transform translate-x-12 -translate-y-12" />
               
-              <div className="relative z-10 p-8 lg:p-12">
-                <div className="mb-10">
-                  <h2 className="text-3xl font-bold text-gray-900 mb-2">Login to your account</h2>
+              <div className="relative z-10 p-6 sm:p-8 lg:p-12">
+                <div className="mb-6 lg:mb-10">
+                  <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Login to your account</h2>
                   <p className="text-gray-500 font-medium">Enter your registered phone number to continue.</p>
                 </div>
 
@@ -235,6 +235,11 @@ export default function LoginPage() {
                 <p className="mt-8 text-center text-gray-500 text-sm font-medium">
                   Don't have an account? <Link href="/join" className="text-primary font-bold hover:underline">Register Now</Link>
                 </p>
+                <div className="mt-4 text-center">
+                  <a href="tel:+919876543210" className="inline-flex items-center gap-1.5 text-sm font-bold text-gray-400 hover:text-primary transition-colors">
+                    Need help?
+                  </a>
+                </div>
               </div>
             </div>
           </div>
@@ -243,7 +248,7 @@ export default function LoginPage() {
       </div>
       
       {/* Footer-like simple copyright */}
-      <div className="px-8 py-8 border-t border-gray-100 flex flex-col md:flex-row justify-between items-center text-gray-400 text-sm font-medium gap-4">
+      <div className="px-4 sm:px-6 md:px-8 py-8 border-t border-gray-100 flex flex-col md:flex-row justify-between items-center text-gray-400 text-sm font-medium gap-4">
         <p>© {new Date().getFullYear()} Sahu Sabha Digital Heritage. All rights reserved.</p>
         <div className="flex space-x-6">
           <Link href="/terms" className="hover:text-primary transition-colors">Terms of Service</Link>

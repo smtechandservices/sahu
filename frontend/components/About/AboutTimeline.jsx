@@ -33,7 +33,7 @@ const milestones = [
 const AboutTimeline = () => {
   return (
     <section className="section-padding bg-gray-50 overflow-hidden">
-      <div className="px-8">
+      <div className="px-4 sm:px-6 md:px-8">
         <div className="text-center mb-20">
           <h2 className="text-4xl font-bold text-gray-900 mb-4">Our Journey</h2>
           <p className="text-xl text-[#564337] max-w-5xl mx-auto">

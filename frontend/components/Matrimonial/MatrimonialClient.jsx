@@ -10,6 +10,7 @@ import MatrimonialModal from "./MatrimonialModal";
 import CreateProfileModal from "./CreateProfileModal";
 import EditProfileModal from "./EditProfileModal";
 import { useAuth } from "../../context/AuthContext";
+import Swal from "sweetalert2";
 
 // Helper: height_cm → display string e.g. "5' 7\""
 function cmToFeet(cm) {
@@ -46,6 +47,12 @@ export default function MatrimonialClient() {
   const [income, setIncome] = useState("Any");
   const [location, setLocation] = useState("");
 
+  // --- Dynamic Filter Options (populated from API) ---
+  const [filterOptions, setFilterOptions] = useState({
+    gotra: [], education: [], occupation: [], annual_income: [],
+    city: [], marital_status: [], manglik: [], complexion: [],
+  });
+
 
 
   const formatProfile = (p) => ({
@@ -71,20 +78,17 @@ export default function MatrimonialClient() {
     annual_income: p.annual_income || "—",
     mother_tongue: p.mother_tongue || "—",
     family_type: p.family_type || "—",
-    avatar: p.photo
-      ? `data:${p.photo_mimetype || "image/jpeg"};base64,${p.photo}`
-      : p.gender === "Male"
-      ? "/assets/avatar_male.png"
-      : "/assets/avatar_female.png",
+    avatar: p.gender === "Male" ? "/assets/avatar_male.png" : "/assets/avatar_female.png",
     bgColor: p.gender === "Male" ? "#1a7a6e" : "#1a2a4a",
   });
 
   const loadMatrimonialData = async () => {
     const { fetchApi } = await import("../../lib/api");
-    const [allData, sentData, receivedData] = await Promise.all([
+    const [allData, sentData, receivedData, options] = await Promise.all([
       fetchApi("/matrimonial/"),
       fetchApi("/matrimonial/my_sent_interests/"),
       fetchApi("/matrimonial/received_interests/"),
+      fetchApi("/matrimonial/filter_options/"),
     ]);
     setProfiles(allData.map(formatProfile));
     setLiked(sentData.profile_ids || []);
@@ -92,6 +96,9 @@ export default function MatrimonialClient() {
     setReceivedProfiles(
       Array.isArray(receivedData) ? receivedData.map(formatProfile) : []
     );
+    if (options && typeof options === "object") {
+      setFilterOptions(options);
+    }
   };
 
   useEffect(() => {
@@ -126,10 +133,20 @@ export default function MatrimonialClient() {
   // Toggle send interest — syncs with backend
   const handleToggleInterest = async (profileId) => {
     if (!myProfile) {
-      const create = window.confirm(
-        "You need a matrimonial profile to send interest. Create your profile now?"
-      );
-      if (create) setShowCreateModal(true);
+      Swal.fire({
+        title: "Profile Required",
+        text: "You need a matrimonial profile to send interest. Create your profile now?",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#EAB308",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Yes, create it!",
+        cancelButtonText: "Cancel"
+      }).then((result) => {
+        if (result.isConfirmed) {
+          setShowCreateModal(true);
+        }
+      });
       return;
     }
 
@@ -151,7 +168,12 @@ export default function MatrimonialClient() {
         err?.data?.error ||
         (typeof err?.data === "string" ? err.data : null) ||
         "Could not update interest. Please try again.";
-      alert(msg);
+      Swal.fire({
+        icon: "error",
+        title: "Interest Failed",
+        text: msg,
+        confirmButtonColor: "#EAB308",
+      });
       console.error(err);
     }
   };
@@ -211,6 +233,9 @@ export default function MatrimonialClient() {
       // Location
       if (location && !p.location.toLowerCase().includes(location.toLowerCase())) return false;
 
+      // Annual Income
+      if (income !== "Any" && p.annual_income !== income) return false;
+
       return true;
     });
 
@@ -230,7 +255,7 @@ export default function MatrimonialClient() {
       if (!aMatch && bMatch) return 1;
       return 0;
     });
-  }, [profiles, receivedProfiles, searchQuery, showMyInterest, liked, matches, gender, ageMin, ageMax, maritalStatus, gotra, manglik, complexion, education, occupation, location, user]);
+  }, [profiles, receivedProfiles, searchQuery, showMyInterest, liked, matches, gender, ageMin, ageMax, maritalStatus, gotra, manglik, complexion, education, occupation, income, location, user]);
 
   if (authLoading || loading)
     return (
@@ -254,7 +279,7 @@ export default function MatrimonialClient() {
           onViewMyProfile={(profile) => setSelectedProfile(profile)}
         />
 
-        <div className="px-8 mt-10">
+        <div className="px-4 sm:px-6 md:px-8 mt-10">
           <div className="flex flex-col lg:flex-row gap-10">
             {/* Sidebar */}
             <MatrimonialFilterSidebar
@@ -269,6 +294,7 @@ export default function MatrimonialClient() {
               occupation={occupation} setOccupation={setOccupation}
               income={income} setIncome={setIncome}
               location={location} setLocation={setLocation}
+              filterOptions={filterOptions}
               onReset={handleReset}
             />
 

@@ -1,12 +1,11 @@
 import Header from '../../components/Header/Header';
 import Footer from '../../components/Footer/Footer';
 import AboutValues from '../../components/About/AboutValues';
-import AboutTimeline from '../../components/About/AboutTimeline';
 import AboutLeadership from '../../components/About/AboutLeadership';
 import AboutStats from '../../components/About/AboutStats';
 
 export const metadata = {
-  title: 'About Us | Sahu Sabha',
+  title: 'About Us',
   description: 'Learn about the mission, values, history and leadership of Sahu Sabha.',
 };
 
@@ -26,7 +25,7 @@ export default function AboutPage() {
             <div className="absolute inset-0 bg-gradient-to-r from-gray-900 to-transparent"></div>
           </div>
           
-          <div className="px-8 relative z-10">
+          <div className="px-4 sm:px-6 md:px-8 relative z-10">
             <div className="max-w-2xl">
               <span className="inline-block px-4 py-1 bg-primary text-white font-bold rounded-full mb-6">
                 Established 1980
@@ -43,7 +42,6 @@ export default function AboutPage() {
         </section>
 
         <AboutValues />
-        <AboutTimeline />
         <AboutLeadership />
         <AboutStats />
       </main>

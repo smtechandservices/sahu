@@ -42,7 +42,7 @@ const NewsList = ({ searchQuery }) => {
 
   return (
     <section className="section-padding bg-white">
-      <div className="px-8 space-y-12">
+      <div className="px-4 sm:px-6 md:px-8 space-y-12">
 
         {loading ? (
           <div className="py-32 text-center text-gray-400 font-semibold">Loading news...</div>

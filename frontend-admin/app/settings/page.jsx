@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { fetchApi } from '../../lib/api';
 import { Image as ImageIcon, Plus, Trash2, Save, Loader2, ArrowUp, ArrowDown } from 'lucide-react';
+import Swal from 'sweetalert2';
 
 export default function SiteSettingsManager() {
   const [carouselImages, setCarouselImages] = useState([]);
@@ -40,7 +41,7 @@ export default function SiteSettingsManager() {
       });
       fetchData();
     } catch (err) {
-      alert("Failed to upload image");
+      Swal.fire({ icon: 'error', title: 'Upload Failed', text: 'Failed to upload image' });
     } finally {
       setUploading(false);
     }
@@ -52,7 +53,7 @@ export default function SiteSettingsManager() {
       await fetchApi(`/carousel-images/${id}/`, { method: 'DELETE' });
       fetchData();
     } catch (err) {
-      alert("Failed to delete image");
+      Swal.fire({ icon: 'error', title: 'Delete Failed', text: 'Failed to delete image' });
     }
   };
 

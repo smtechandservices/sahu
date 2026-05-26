@@ -5,14 +5,14 @@ import { Heart, Briefcase, Building2, ArrowRight } from 'lucide-react';
 const Services = () => {
   return (
     <section className="pb-16 bg-white">
-      <div className="px-8">
+      <div className="px-4 sm:px-6 md:px-8">
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-4">
           <div>
             <span className="text-yellow-600 font-bold tracking-widest text-sm uppercase mb-2 block">
               ESSENTIAL RESOURCES
             </span>
-            <h2 className="text-5xl font-bold text-slate-900">Quick Access</h2>
+            <h2 className="text-3xl md:text-5xl font-bold text-slate-900">Quick Access</h2>
           </div>
           <Link href="/services" className="text-yellow-700 font-bold flex items-center gap-2 hover:gap-3 transition-all group">
             View All Services <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
@@ -28,8 +28,9 @@ const Services = () => {
                 <Heart className="text-yellow-600 fill-yellow-600" size={28} />
               </div>
               <h3 className="text-3xl font-bold mb-4 text-slate-900">Matrimonial Services</h3>
-              <p className="text-slate-600 text-lg leading-relaxed mb-12 max-w-md">
-                Connect with eligible individuals within our community. A trusted platform built on shared values and heritage.
+              <p className="text-slate-600 text-xl leading-relaxed mb-12 max-w-md">
+                Find the Perfect Life Partner
+                Within Your Community
               </p>
               <Link href="/matrimonial" className="mt-auto text-yellow-700 font-bold flex items-center gap-2 group/link">
                 Explore Profiles <ArrowRight size={18} className="group-hover/link:translate-x-1 transition-transform" />
@@ -44,8 +45,8 @@ const Services = () => {
               <Briefcase className="text-blue-900 fill-blue-900" size={28} />
             </div>
             <h3 className="text-2xl font-bold mb-4 text-slate-900">Opportunities</h3>
-            <p className="text-slate-600 leading-relaxed mb-8">
-              Careeer listings, mentorship, and professional networking opportunities.
+            <p className="text-slate-600 leading-relaxed mb-8 text-lg">
+              Empowering the Community Through Opportunities
             </p>
             <Link href="/career" className="mt-auto text-yellow-700 font-bold flex items-center gap-2 group/link">
               Find Opportunities <ArrowRight size={18} className="group-hover/link:translate-x-1 transition-transform" />

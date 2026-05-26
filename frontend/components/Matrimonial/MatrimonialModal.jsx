@@ -31,9 +31,6 @@ const MatrimonialModal = ({ profile, liked, isMatch, onLike, onClose, isOwn, onE
           </button>
 
           <div className="flex gap-5 items-start">
-            <div className="w-24 h-24 rounded-2xl overflow-hidden flex-shrink-0 bg-gray-200 shadow-md relative border-4 border-white">
-              <Image src={profile.avatar} alt={profile.name} fill className="object-cover" />
-            </div>
             <div className="flex-1 min-w-0">
               <h2 className="text-2xl font-bold text-gray-900 mb-0.5 truncate">{profile.name}</h2>
               <p className="text-sm text-gray-600 mb-2">

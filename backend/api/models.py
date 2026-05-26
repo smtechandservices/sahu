@@ -98,6 +98,16 @@ class Booking(models.Model):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending')
     total_price = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    # Hostel student enquiry fields
+    student_name = models.CharField(max_length=255, blank=True, null=True)
+    institution_name = models.CharField(max_length=255, blank=True, null=True)
+    institution_type = models.CharField(
+        max_length=20,
+        choices=(('School', 'School'), ('College', 'College'), ('University', 'University')),
+        blank=True, null=True
+    )
+    guardian_name = models.CharField(max_length=255, blank=True, null=True)
+    guardian_contact = models.CharField(max_length=20, blank=True, null=True)
 
     def __str__(self):
         return f"{self.user.name} - {self.accommodation.title}"
@@ -169,8 +179,6 @@ class MatrimonialProfile(models.Model):
     height_cm = models.IntegerField(blank=True, null=True, help_text="Height in centimeters")
     annual_income = models.CharField(max_length=50, blank=True, null=True, help_text="e.g. 5-10 LPA")
     mother_tongue = models.CharField(max_length=50, blank=True, null=True)
-    photo = models.BinaryField()
-    photo_mimetype = models.CharField(max_length=50, null=True, blank=True)
     bio = models.TextField()
     is_approved = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -268,3 +276,20 @@ class SiteSettings(models.Model):
 
     def __str__(self):
         return "Site Settings"
+
+
+class UserSession(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='sessions')
+    refresh_jti = models.CharField(max_length=255, unique=True)
+    device_name = models.CharField(max_length=255, blank=True, null=True)
+    ip_address = models.GenericIPAddressField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    last_activity = models.DateTimeField(auto_now=True)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ['-last_activity']
+
+    def __str__(self):
+        return f"{self.user.phone} - {self.device_name or 'Unknown'} ({self.refresh_jti})"
+

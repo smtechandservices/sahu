@@ -16,16 +16,55 @@ from .models import (
     User, OTPRecord, Accommodation, Booking,
     JobListing, Advertisement, MatrimonialProfile, MatrimonialInterest,
     Article, Event, EventRegistration, SiteSettings,
-    HeroCarouselImage
+    HeroCarouselImage, UserSession
 )
 from .serializers import (
     UserSerializer, AdminUserSerializer, AccommodationSerializer, BookingSerializer,
     JobListingSerializer, AdvertisementSerializer,
     MatrimonialProfileSerializer, ArticleSerializer,
     EventSerializer, EventRegistrationSerializer, SiteSettingsSerializer,
-    HeroCarouselImageSerializer
+    HeroCarouselImageSerializer, UserSessionSerializer, CustomTokenRefreshSerializer
 )
 from .permissions import IsAdminOrReadOnly
+
+def create_user_session(user, refresh, request):
+    user_agent = request.META.get('HTTP_USER_AGENT', '')
+    device_name = 'Web Browser'
+    if 'Mobile' in user_agent or 'Android' in user_agent or 'iPhone' in user_agent:
+        device_name = 'Mobile Device'
+        if 'iPhone' in user_agent:
+            device_name = 'iPhone'
+        elif 'Android' in user_agent:
+            device_name = 'Android Device'
+    elif 'iPad' in user_agent:
+        device_name = 'iPad'
+    elif 'Macintosh' in user_agent:
+        device_name = 'Mac'
+    elif 'Windows' in user_agent:
+        device_name = 'Windows PC'
+    elif 'Linux' in user_agent:
+        device_name = 'Linux PC'
+
+    ip_address = request.META.get('HTTP_X_FORWARDED_FOR', request.META.get('REMOTE_ADDR'))
+    if ip_address:
+        ip_address = ip_address.split(',')[0].strip()
+
+    jti = refresh.payload.get('jti')
+
+    # Max 2 device logins: raise ValidationError if there are 2 or more active sessions
+    active_sessions = UserSession.objects.filter(user=user, is_active=True)
+    if active_sessions.count() >= 2:
+        raise ValidationError({'error': 'Maximum active session limit reached. You are already logged in from 2 devices. Please log out from another device first.'})
+
+
+    UserSession.objects.create(
+        user=user,
+        refresh_jti=jti,
+        device_name=device_name,
+        ip_address=ip_address,
+        is_active=True
+    )
+
 
 # --- Auth Views ---
 @api_view(['POST'])
@@ -77,6 +116,8 @@ def verify_otp(request):
         return Response({'error': 'User not found. Please register first.'}, status=status.HTTP_404_NOT_FOUND)
 
     refresh = RefreshToken.for_user(user)
+    refresh.access_token['refresh_jti'] = refresh.payload.get('jti')
+    create_user_session(user, refresh, request)
     return Response({
         'refresh': str(refresh),
         'access': str(refresh.access_token),
@@ -153,6 +194,8 @@ def register(request):
 
     user = User.objects.create_user(phone=phone, name=name)
     refresh = RefreshToken.for_user(user)
+    refresh.access_token['refresh_jti'] = refresh.payload.get('jti')
+    create_user_session(user, refresh, request)
 
     return Response({
         'refresh': str(refresh),
@@ -177,6 +220,8 @@ def admin_login(request):
             return Response({'error': 'Access denied. Administrator privileges required.'}, status=status.HTTP_403_FORBIDDEN)
         
         refresh = RefreshToken.for_user(user)
+        refresh.access_token['refresh_jti'] = refresh.payload.get('jti')
+        create_user_session(user, refresh, request)
         return Response({
             'refresh': str(refresh),
             'access': str(refresh.access_token),
@@ -184,6 +229,21 @@ def admin_login(request):
         })
     else:
         return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def logout_view(request):
+    refresh_token = request.data.get('refresh')
+    if not refresh_token:
+        return Response({'error': 'Refresh token is required'}, status=status.HTTP_400_BAD_REQUEST)
+    try:
+        token = RefreshToken(refresh_token)
+        jti = token.payload.get('jti')
+        UserSession.objects.filter(refresh_jti=jti).update(is_active=False)
+        return Response({'message': 'Logged out successfully'})
+    except Exception as e:
+        return Response({'error': 'Invalid or expired refresh token'}, status=status.HTTP_400_BAD_REQUEST)
+
 
 @api_view(['GET', 'PUT'])
 @permission_classes([IsAuthenticated])
@@ -210,6 +270,39 @@ class UserViewSet(viewsets.ModelViewSet):
         if not getattr(self.request.user, 'is_admin', False):
             return User.objects.none()
         return User.objects.all().order_by('-date_joined')
+
+    @action(detail=True, methods=['get'])
+    def sessions(self, request, pk=None):
+        if not getattr(request.user, 'is_admin', False):
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        user = self.get_object()
+        sessions = UserSession.objects.filter(user=user)
+        serializer = UserSessionSerializer(sessions, many=True)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=['post'], url_path='revoke-session')
+    def revoke_session(self, request, pk=None):
+        if not getattr(request.user, 'is_admin', False):
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        user = self.get_object()
+        session_id = request.data.get('session_id')
+        if not session_id:
+            return Response({'error': 'session_id is required'}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            session = UserSession.objects.get(id=session_id, user=user)
+            session.is_active = False
+            session.save()
+            return Response({'message': 'Session revoked successfully'})
+        except UserSession.DoesNotExist:
+            return Response({'error': 'Session not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    @action(detail=True, methods=['post'], url_path='revoke-all-sessions')
+    def revoke_all_sessions(self, request, pk=None):
+        if not getattr(request.user, 'is_admin', False):
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        user = self.get_object()
+        UserSession.objects.filter(user=user).update(is_active=False)
+        return Response({'message': 'All sessions revoked successfully'})
 
     def destroy(self, request, *args, **kwargs):
         if not getattr(request.user, 'is_admin', False):
@@ -404,6 +497,24 @@ class MatrimonialProfileViewSet(viewsets.ModelViewSet):
         profile.save()
         return Response({'message': 'Profile approved successfully'})
 
+    @action(detail=False, methods=['get'], permission_classes=[permissions.IsAuthenticated])
+    def filter_options(self, request):
+        qs = MatrimonialProfile.objects.filter(is_approved=True)
+
+        def distinct_vals(field):
+            return sorted(filter(None, qs.values_list(field, flat=True).distinct()))
+
+        return Response({
+            'gotra': distinct_vals('gotra'),
+            'education': distinct_vals('education'),
+            'occupation': distinct_vals('occupation'),
+            'annual_income': distinct_vals('annual_income'),
+            'city': distinct_vals('city'),
+            'marital_status': [c[0] for c in MatrimonialProfile.MARITAL_STATUS_CHOICES],
+            'manglik': [c[0] for c in MatrimonialProfile.MANGLIK_CHOICES],
+            'complexion': [c[0] for c in MatrimonialProfile.COMPLEXION_CHOICES],
+        })
+
 # --- Magazine Views ---
 class ArticleViewSet(viewsets.ModelViewSet):
     queryset = Article.objects.filter(is_published=True).order_by('-published_at')
@@ -424,6 +535,8 @@ class EventViewSet(viewsets.ModelViewSet):
                 and self.request.query_params.get('all') == 'true'
             ):
                 return Event.objects.all().order_by('-event_date')
+            if self.request.query_params.get('past') == 'true':
+                return Event.objects.filter(event_date__lt=timezone.now()).order_by('-event_date')
             return Event.objects.upcoming().order_by('event_date')
         # Admin detail/update/delete may target inactive or past events by id
         if self.request.user.is_authenticated and getattr(self.request.user, 'is_admin', False):
@@ -595,3 +708,10 @@ class HeroCarouselImageViewSet(viewsets.ModelViewSet):
             )
         else:
             serializer.save()
+
+
+from rest_framework_simplejwt.views import TokenRefreshView
+
+class CustomTokenRefreshView(TokenRefreshView):
+    serializer_class = CustomTokenRefreshSerializer
+

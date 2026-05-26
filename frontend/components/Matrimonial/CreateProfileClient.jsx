@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "../../context/AuthContext";
 import Header from "../Header/Header";
 import Footer from "../Footer/Footer";
+import Swal from "sweetalert2";
 
 export default function CreateProfileClient() {
   const router = useRouter();
@@ -26,8 +27,6 @@ export default function CreateProfileClient() {
     mother_tongue: "Hindi",
     bio: "",
   });
-  const [photo, setPhoto] = useState(null);
-
   useEffect(() => {
     if (authLoading) return;
     if (!user) {
@@ -40,39 +39,31 @@ export default function CreateProfileClient() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handlePhotoChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPhoto(reader.result);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
       const { fetchApi } = await import("../../lib/api");
       const payload = { ...formData };
-      if (photo) {
-        const [meta, base64Data] = photo.split(",");
-        const mimetype = meta.split(":")[1].split(";")[0];
-        payload.photo = base64Data;
-        payload.photo_mimetype = mimetype;
-      }
-      
       await fetchApi("/matrimonial/", {
         method: "POST",
         body: JSON.stringify(payload),
       });
-      alert("Matrimonial profile created successfully!");
+      Swal.fire({
+        icon: "success",
+        title: "Profile Created",
+        text: "Matrimonial profile created successfully!",
+        confirmButtonColor: "#EAB308",
+      });
       router.push("/matrimonial");
     } catch (err) {
       console.error(err);
-      alert("Failed to create profile. You may already have one.");
+      Swal.fire({
+        icon: "error",
+        title: "Creation Failed",
+        text: "Failed to create profile. You may already have one.",
+        confirmButtonColor: "#EAB308",
+      });
     } finally {
       setLoading(false);
     }
@@ -164,12 +155,6 @@ export default function CreateProfileClient() {
               <div>
                 <label className="block text-sm font-bold text-gray-700 mb-2">About You (Bio)</label>
                 <textarea name="bio" required rows="4" value={formData.bio} onChange={handleChange} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 outline-none focus:border-primary transition-colors" />
-              </div>
-
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">Profile Photo</label>
-                <input type="file" accept="image/*" required onChange={handlePhotoChange} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 outline-none focus:border-primary transition-colors" />
-                {photo && <img src={photo} alt="Preview" className="mt-4 w-32 h-32 object-cover rounded-xl border-4 border-white shadow-sm" />}
               </div>
 
               <div className="pt-4 flex justify-end gap-4">

@@ -6,6 +6,7 @@ import {
   Users, Search, Edit, Trash2, X, Shield, CheckCircle, XCircle, Phone, Mail
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import Swal from 'sweetalert2';
 
 const EMPTY_FORM = {
   name: '',
@@ -26,6 +27,9 @@ export default function UsersManager() {
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
 
+  const [sessions, setSessions] = useState([]);
+  const [loadingSessions, setLoadingSessions] = useState(false);
+
   useEffect(() => {
     fetchUsers();
   }, []);
@@ -41,6 +45,18 @@ export default function UsersManager() {
     }
   };
 
+  const fetchSessions = async (userId) => {
+    setLoadingSessions(true);
+    try {
+      const data = await fetchApi(`/users/${userId}/sessions/`);
+      setSessions(data);
+    } catch (err) {
+      console.error('Failed to fetch sessions', err);
+    } finally {
+      setLoadingSessions(false);
+    }
+  };
+
   const openEdit = (user) => {
     setEditingUser(user);
     setForm({
@@ -51,12 +67,14 @@ export default function UsersManager() {
       is_active: user.is_active ?? true,
     });
     setModalOpen(true);
+    fetchSessions(user.id);
   };
 
   const closeModal = () => {
     setModalOpen(false);
     setEditingUser(null);
     setForm(EMPTY_FORM);
+    setSessions([]);
   };
 
   const handleSave = async (e) => {
@@ -74,9 +92,20 @@ export default function UsersManager() {
         }),
       });
       await fetchUsers();
+      Swal.fire({
+        icon: 'success',
+        title: 'Success',
+        text: 'User updated successfully!',
+        confirmButtonColor: '#3b82f6',
+      });
       closeModal();
     } catch (err) {
-      alert(err.message || 'Failed to save user');
+      Swal.fire({
+        icon: 'error',
+        title: 'Failed to Save',
+        text: err.message || 'Failed to save user',
+        confirmButtonColor: '#3b82f6',
+      });
     } finally {
       setSaving(false);
     }
@@ -84,16 +113,77 @@ export default function UsersManager() {
 
   const handleDelete = async (e, user) => {
     e.stopPropagation();
-    if (!window.confirm(`Delete user "${user.name}" (${user.phone})? This cannot be undone.`)) return;
-    setDeletingId(user.id);
-    try {
-      await fetchApi(`/users/${user.id}/`, { method: 'DELETE' });
-      setUsers(prev => prev.filter(u => u.id !== user.id));
-    } catch (err) {
-      alert('Failed to delete user');
-    } finally {
-      setDeletingId(null);
-    }
+    Swal.fire({
+      title: 'Delete User?',
+      text: `Are you sure you want to delete user "${user.name}" (${user.phone})? This cannot be undone.`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Yes, delete it!'
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        setDeletingId(user.id);
+        try {
+          await fetchApi(`/users/${user.id}/`, { method: 'DELETE' });
+          setUsers(prev => prev.filter(u => u.id !== user.id));
+          Swal.fire('Deleted!', 'User has been deleted.', 'success');
+        } catch (err) {
+          Swal.fire('Error', 'Failed to delete user.', 'error');
+        } finally {
+          setDeletingId(null);
+        }
+      }
+    });
+  };
+
+  const handleRevokeSession = async (sessionId) => {
+    Swal.fire({
+      title: 'Revoke Session?',
+      text: 'This will log out the user from this device.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Yes, revoke it!'
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          await fetchApi(`/users/${editingUser.id}/revoke-session/`, {
+            method: 'POST',
+            body: JSON.stringify({ session_id: sessionId })
+          });
+          Swal.fire('Revoked!', 'The session has been revoked.', 'success');
+          fetchSessions(editingUser.id);
+        } catch (err) {
+          Swal.fire('Error', 'Failed to revoke session.', 'error');
+        }
+      }
+    });
+  };
+
+  const handleRevokeAllSessions = async () => {
+    Swal.fire({
+      title: 'Revoke All Sessions?',
+      text: 'This will log out the user from all devices.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Yes, revoke all!'
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          await fetchApi(`/users/${editingUser.id}/revoke-all-sessions/`, {
+            method: 'POST'
+          });
+          Swal.fire('Revoked!', 'All sessions have been revoked.', 'success');
+          fetchSessions(editingUser.id);
+        } catch (err) {
+          Swal.fire('Error', 'Failed to revoke sessions.', 'error');
+        }
+      }
+    });
   };
 
   const filteredUsers = users.filter(u =>
@@ -199,14 +289,6 @@ export default function UsersManager() {
                       >
                         <Edit size={16} />
                       </button>
-                      <button
-                        onClick={(e) => handleDelete(e, user)}
-                        disabled={deletingId === user.id}
-                        className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all disabled:opacity-40"
-                        title="Delete User"
-                      >
-                        <Trash2 size={16} />
-                      </button>
                     </div>
                   </td>
                 </motion.tr>
@@ -231,7 +313,7 @@ export default function UsersManager() {
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative bg-white w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
+              className="relative bg-white w-full max-w-xl rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
             >
               <div className="p-8 border-b border-gray-100 flex justify-between items-center">
                 <div>
@@ -294,6 +376,68 @@ export default function UsersManager() {
                       </button>
                     </div>
                   ))}
+                </div>
+
+                {/* ── Active Sessions ── */}
+                <div className="pt-2">
+                  <div className="flex items-center justify-between mb-3">
+                    <p className="text-sm font-bold text-gray-700 flex items-center gap-2">
+                      <Shield size={15} className="text-primary" />
+                      Active Sessions
+                      {sessions.length > 0 && (
+                        <span className="px-2 py-0.5 bg-primary/10 text-primary text-xs font-bold rounded-full">
+                          {sessions.length} / 2
+                        </span>
+                      )}
+                    </p>
+                    {sessions.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={handleRevokeAllSessions}
+                        className="text-xs font-bold text-red-500 hover:text-red-700 hover:underline transition-colors"
+                      >
+                        Revoke All
+                      </button>
+                    )}
+                  </div>
+
+                  {loadingSessions ? (
+                    <div className="text-xs text-gray-400 italic py-4 text-center bg-gray-50 rounded-xl">
+                      Loading sessions…
+                    </div>
+                  ) : sessions.length === 0 ? (
+                    <div className="text-xs text-gray-400 italic py-4 text-center bg-gray-50 rounded-xl">
+                      No active sessions found.
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      {sessions.map((session) => (
+                        <div
+                          key={session.id}
+                          className="flex items-start justify-between gap-3 p-3 bg-gray-50 border border-gray-100 rounded-xl"
+                        >
+                          <div className="min-w-0 flex-1">
+                            <p className="text-xs font-bold text-gray-800 truncate">
+                              {session.device_name || (session.user_agent ? session.user_agent.slice(0, 50) : 'Unknown Device')}
+                            </p>
+                            <p className="text-[11px] text-gray-400 mt-0.5">
+                              IP: {session.ip_address || '—'}&nbsp;·&nbsp;
+                              {session.created_at
+                                ? new Date(session.created_at).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })
+                                : '—'}
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleRevokeSession(session.id)}
+                            className="flex-shrink-0 px-3 py-1.5 rounded-lg bg-red-50 text-red-500 text-xs font-bold hover:bg-red-100 transition-colors"
+                          >
+                            Revoke
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </form>
 

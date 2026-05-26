@@ -22,6 +22,11 @@ export const metadata = {
   authors: [{ name: "Sahu Sabha Digital Team" }],
   creator: "Sahu Sabha",
   publisher: "Sahu Sabha",
+  icons: {
+    icon: "/assets/logo.png",
+    shortcut: "/assets/logo.png",
+    apple: "/assets/logo.png",
+  },
   formatDetection: {
     email: false,
     address: false,

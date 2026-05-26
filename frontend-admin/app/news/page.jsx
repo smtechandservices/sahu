@@ -7,6 +7,7 @@ import {
   X, Image as ImageIcon, Eye
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import Swal from 'sweetalert2';
 
 const emptyForm = {
   title: '', content: '', category: 'News',
@@ -101,7 +102,7 @@ export default function NewsManager() {
       await fetchArticles();
       closeModal();
     } catch (err) {
-      alert(err.message || 'Failed to save news article');
+      Swal.fire({ icon: 'error', title: 'Save Failed', text: err.message || 'Failed to save news article' });
     } finally {
       setSaving(false);
     }
@@ -114,7 +115,7 @@ export default function NewsManager() {
       await fetchApi(`/articles/${id}/`, { method: 'DELETE' });
       setArticles(prev => prev.filter(a => a.id !== id));
     } catch (err) {
-      alert('Failed to delete article');
+      Swal.fire({ icon: 'error', title: 'Delete Failed', text: 'Failed to delete article' });
     } finally {
       setDeletingId(null);
     }

@@ -7,6 +7,7 @@ import {
   X, Eye, Upload, FileText
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import Swal from 'sweetalert2';
 
 const MAX_PDF_SIZE_BYTES = 10 * 1024 * 1024; // must match backend MAX_ARTICLE_PDF_SIZE_BYTES
 const MAX_PDF_SIZE_MB = MAX_PDF_SIZE_BYTES / (1024 * 1024);
@@ -94,12 +95,12 @@ export default function MagazineManager() {
     const file = e.target.files?.[0];
     if (!file) return;
     if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
-      alert('Please select a PDF file.');
+      Swal.fire({ icon: 'warning', title: 'Invalid File', text: 'Please select a PDF file.' });
       e.target.value = '';
       return;
     }
     if (file.size > MAX_PDF_SIZE_BYTES) {
-      alert(`PDF must be ${MAX_PDF_SIZE_MB} MB or smaller.`);
+      Swal.fire({ icon: 'warning', title: 'File Too Large', text: `PDF must be ${MAX_PDF_SIZE_MB} MB or smaller.` });
       e.target.value = '';
       return;
     }
@@ -139,7 +140,7 @@ export default function MagazineManager() {
       await fetchArticles();
       closeModal();
     } catch (err) {
-      alert(err.message || 'Failed to save magazine');
+      Swal.fire({ icon: 'error', title: 'Save Failed', text: err.message || 'Failed to save magazine' });
     } finally {
       setSaving(false);
     }
@@ -152,7 +153,7 @@ export default function MagazineManager() {
       await fetchApi(`/articles/${id}/`, { method: 'DELETE' });
       setArticles(prev => prev.filter(a => a.id !== id));
     } catch (err) {
-      alert('Failed to delete magazine');
+      Swal.fire({ icon: 'error', title: 'Delete Failed', text: 'Failed to delete magazine' });
     } finally {
       setDeletingId(null);
     }

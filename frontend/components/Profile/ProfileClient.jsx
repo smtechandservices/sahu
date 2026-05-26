@@ -5,12 +5,14 @@ import Image from "next/image";
 import Header from "../Header/Header";
 import Footer from "../Footer/Footer";
 import { useAuth } from "../../context/AuthContext";
+import { getCookie } from "../../lib/cookies";
 import { 
   User as UserIcon, Mail, Phone, Calendar, 
   Camera, ShieldCheck, Edit3, Save, X,
   Briefcase, Heart, BookOpen
 } from "lucide-react";
 import { motion } from "framer-motion";
+import Swal from "sweetalert2";
 
 export default function ProfileClient() {
   const { user, login, loading: authLoading } = useAuth();
@@ -93,13 +95,23 @@ export default function ProfileClient() {
         body: JSON.stringify(payload)
       });
       
-      login(updatedUser, localStorage.getItem('accessToken'), localStorage.getItem('refreshToken'));
+      login(updatedUser, getCookie('accessToken'), getCookie('refreshToken'));
       setIsEditing(false);
       setProfilePhoto(null);
-      alert("Profile updated successfully!");
+      Swal.fire({
+        icon: "success",
+        title: "Profile Updated",
+        text: "Profile updated successfully!",
+        confirmButtonColor: "#EAB308",
+      });
     } catch (err) {
       console.error(err);
-      alert("Failed to update profile.");
+      Swal.fire({
+        icon: "error",
+        title: "Update Failed",
+        text: "Failed to update profile.",
+        confirmButtonColor: "#EAB308",
+      });
     } finally {
       setLoading(false);
     }
@@ -114,7 +126,7 @@ export default function ProfileClient() {
         {/* Cover / Header Section */}
         <div className="h-64 bg-primary-dark relative">
           <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
-          <div className="px-8 h-full relative">
+          <div className="px-4 sm:px-6 md:px-8 h-full relative">
             <div className="absolute -bottom-22 left-8 flex items-end gap-6">
               <div className="relative group">
                 <div className="w-40 h-40 rounded-3xl bg-white p-1 overflow-hidden border-4 border-white">
@@ -180,7 +192,7 @@ export default function ProfileClient() {
           </div>
         </div>
 
-        <div className="px-8 mt-24">
+        <div className="px-4 sm:px-6 md:px-8 mt-24">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
             
             {/* Left Column - Stats / Info */}

@@ -91,11 +91,11 @@ export default function JoinCommunity() {
 
   return (
     <div className="min-h-screen bg-white font-sans selection:bg-primary/30">
-      <div className="px-8 py-8 lg:py-16">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24 items-start">
-          
+      <div className="px-4 sm:px-6 md:px-8 py-6 lg:py-16">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-24 items-start">
+
           {/* Left Column: Branding & Info */}
-          <div className="flex flex-col space-y-10">
+          <div className="flex flex-col space-y-6 lg:space-y-10">
             {/* Logo */}
             <Link href="/" className="inline-block transition-transform active:scale-95 duration-300">
               <Image 
@@ -157,9 +157,9 @@ export default function JoinCommunity() {
               {/* Curve Decoration at top right */}
               <div className="absolute top-0 right-0 w-48 h-48 bg-[#FFFBEB] rounded-bl-[100%] z-0 transform translate-x-12 -translate-y-12" />
               
-              <div className="relative z-10 p-8 lg:p-12">
-                <div className="mb-10">
-                  <h2 className="text-3xl font-bold text-gray-900 mb-2">Create your account</h2>
+              <div className="relative z-10 p-6 sm:p-8 lg:p-12">
+                <div className="mb-6 lg:mb-10">
+                  <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Create your account</h2>
                   <p className="text-gray-500 font-medium">Please fill in your details to register as a new member.</p>
                 </div>
 
@@ -253,6 +253,11 @@ export default function JoinCommunity() {
                 <p className="mt-8 text-center text-gray-500 text-sm font-medium">
                   Already have an account? <Link href="/login" className="text-primary font-bold hover:underline">Log in</Link>
                 </p>
+                <div className="mt-4 text-center">
+                  <a href="tel:+919876543210" className="inline-flex items-center gap-1.5 text-sm font-bold text-gray-400 hover:text-primary transition-colors">
+                    Need help?
+                  </a>
+                </div>
               </div>
             </div>
           </div>
