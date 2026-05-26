@@ -3,7 +3,7 @@ import React from 'react';
 const AccommodationHero = () => {
   return (
     <section className="bg-white pt-12 pb-10 border-b border-gray-100">
-      <div className="px-8">
+      <div className="px-4 sm:px-6 md:px-8">
         <span className="inline-block px-3 py-1 bg-primary/10 text-primary text-xs font-bold rounded-full mb-4">
           FACILITIES & STAYS
         </span>

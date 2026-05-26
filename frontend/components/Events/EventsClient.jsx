@@ -158,7 +158,7 @@ export default function EventsClient() {
       <main className="bg-gray-50 min-h-screen">
         {/* Hero Section */}
         <div className="bg-primary-dark text-white py-16">
-          <div className="px-8">
+          <div className="px-4 sm:px-6 md:px-8">
             <h1 className="text-4xl font-bold mb-4">Community Events Calendar</h1>
             <p className="text-primary-light max-w-2xl">
               Discover and participate in cultural festivals, professional mixers, and community gatherings.
@@ -190,7 +190,7 @@ export default function EventsClient() {
           </div>
         )}
 
-        <div className="px-8 py-12">
+        <div className="px-4 sm:px-6 md:px-8 py-12">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
             {/* Calendar Grid Section */}
             <div className="lg:col-span-8 bg-white rounded-2xl shadow-md p-8 border border-gray-100">
@@ -395,7 +395,7 @@ export default function EventsClient() {
           <div>
             <div className="px-8 flex items-center gap-3 mb-6">
               <div className="w-3 h-3 rounded-full bg-green-500 animate-pulse" />
-              <h2 className="text-2xl font-bold text-gray-900">Upcoming Events</h2>
+              <h2 className="text-2xl font-bold text-gray-900">Upcoming</h2>
               <span className="bg-green-100 text-green-700 text-sm font-bold px-3 py-1 rounded-full">{events.length}</span>
             </div>
             {loading ? (
@@ -403,7 +403,7 @@ export default function EventsClient() {
             ) : events.length === 0 ? (
               <div className="px-8 text-sm text-gray-400 italic">No upcoming events at the moment.</div>
             ) : (
-              <div className="flex gap-6 overflow-x-auto px-8 pb-4 scrollbar-hide">
+              <div className="flex gap-6 overflow-x-auto px-4 sm:px-6 md:px-8 pb-4 scrollbar-hide">
                 {events.map((event) => (
                   <div
                     key={event.id}
@@ -466,10 +466,10 @@ export default function EventsClient() {
             <div>
               <div className="px-8 flex items-center gap-3 mb-6">
                 <div className="w-3 h-3 rounded-full bg-gray-400" />
-                <h2 className="text-2xl font-bold text-gray-500">Past Events</h2>
+                <h2 className="text-2xl font-bold text-gray-500">Archived</h2>
                 <span className="bg-gray-100 text-gray-500 text-sm font-bold px-3 py-1 rounded-full">{pastEvents.length}</span>
               </div>
-              <div className="flex gap-6 overflow-x-auto px-8 pb-4 scrollbar-hide">
+              <div className="flex gap-6 overflow-x-auto px-4 sm:px-6 md:px-8 pb-4 scrollbar-hide">
                 {pastEvents.map((event) => (
                   <div
                     key={event.id}

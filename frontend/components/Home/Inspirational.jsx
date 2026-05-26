@@ -36,7 +36,7 @@ const Inspirational = () => {
 
   return (
     <section className="section-padding bg-white">
-      <div className="px-8">
+      <div className="px-4 sm:px-6 md:px-8">
         <div className="text-center mb-12">
           <h2 className="text-4xl font-bold mb-4">Inspirational Figures</h2>
           <p className="text-xl text-[#564337]">community&apos;s pride and eternal guiding lights</p>
@@ -46,8 +46,8 @@ const Inspirational = () => {
           {figures.map((figure, index) => (
             <div
               key={index}
-              className="cursor-pointer"
-              style={{ perspective: '1000px', height: '650px' }}
+              className="cursor-pointer h-[480px] sm:h-[560px] lg:h-[650px]"
+              style={{ perspective: '1000px' }}
               onClick={() => handleFlip(index)}
             >
               <div
@@ -65,7 +65,7 @@ const Inspirational = () => {
                   style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden' }}
                   className="absolute inset-0 bg-[#FFFBF7] overflow-hidden shadow-base hover:-translate-y-2 hover:shadow-md transition-all duration-300"
                 >
-                  <div className="relative h-[550px] w-full">
+                  <div className="relative h-[360px] sm:h-[440px] lg:h-[550px] w-full">
                     <Image
                       src={figure.image}
                       alt={figure.name}

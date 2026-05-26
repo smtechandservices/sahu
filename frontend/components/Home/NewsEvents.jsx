@@ -60,7 +60,7 @@ const NewsEvents = () => {
 
   return (
     <section className="pb-12 bg-white overflow-hidden">
-      <div className="px-8 relative">
+      <div className="px-4 sm:px-6 md:px-8 relative">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-16">
           
           {/* Upcoming Events Column - Spans 2/3 on desktop */}
@@ -73,11 +73,11 @@ const NewsEvents = () => {
             </div>
             
             {/* Scrollable Container - Can scroll across full width on desktop */}
-            <div className="flex overflow-x-auto flex-nowrap scrollbar-hide gap-8 pb-8 snap-x snap-mandatory relative z-0 lg:pr-[40%]">
+            <div className="flex overflow-x-auto flex-nowrap scrollbar-hide gap-6 pb-8 snap-x snap-mandatory relative z-0 lg:pr-[40%]">
               {events.length === 0 ? (
                 <p className="text-slate-500 text-sm font-medium py-8">No upcoming events right now.</p>
               ) : events.map((event, index) => (
-                <div key={index} className="min-w-[450px] bg-[#FFFBF7] rounded-md border border-yellow-200 shadow-sm overflow-hidden group hover:shadow-md transition-all duration-300 flex flex-col snap-start">
+                <div key={index} className="min-w-[280px] sm:min-w-[360px] md:min-w-[450px] bg-[#FFFBF7] rounded-md border border-yellow-200 shadow-sm overflow-hidden group hover:shadow-md transition-all duration-300 flex flex-col snap-start">
                   <div className="relative h-56 w-full overflow-hidden">
                     <Image 
                       src={event.image ? `data:${event.image_mimetype || 'image/jpeg'};base64,${event.image}` : '/assets/event1.png'} 

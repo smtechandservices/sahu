@@ -3,7 +3,7 @@ import React from 'react';
 const MatrimonialHero = ({ onMyInterest, showMyInterest, onCreateProfile, onViewMyProfile, myProfile }) => {
   return (
     <section className="bg-white pt-12 pb-10 border-b border-gray-100">
-      <div className="px-8">
+      <div className="px-4 sm:px-6 md:px-8">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
           <div className="max-w-2xl">
             <span className="inline-block px-3 py-1 bg-primary/10 text-primary text-xs font-bold rounded-full mb-4">

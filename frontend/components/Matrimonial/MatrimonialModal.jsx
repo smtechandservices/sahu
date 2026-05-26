@@ -31,11 +31,6 @@ const MatrimonialModal = ({ profile, liked, isMatch, onLike, onClose, isOwn, onE
           </button>
 
           <div className="flex gap-5 items-start">
-            <div className="w-24 h-24 rounded-2xl overflow-hidden flex-shrink-0 bg-gradient-to-br from-primary/10 to-primary/5 text-primary/30 shadow-md relative border-4 border-white flex items-center justify-center">
-              <svg className="w-12 h-12" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-              </svg>
-            </div>
             <div className="flex-1 min-w-0">
               <h2 className="text-2xl font-bold text-gray-900 mb-0.5 truncate">{profile.name}</h2>
               <p className="text-sm text-gray-600 mb-2">

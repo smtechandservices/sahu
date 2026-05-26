@@ -97,7 +97,6 @@ class MatrimonialPublicUserSerializer(serializers.ModelSerializer):
 class MatrimonialProfileSerializer(serializers.ModelSerializer):
     user_detail = MatrimonialPublicUserSerializer(source='user', read_only=True)
     contact_phone = serializers.SerializerMethodField()
-    photo = Base64BinaryField()
     marital_status_display = serializers.CharField(source='get_marital_status_display', read_only=True)
     manglik_display = serializers.CharField(source='get_manglik_display', read_only=True)
     complexion_display = serializers.CharField(source='get_complexion_display', read_only=True)
@@ -107,7 +106,7 @@ class MatrimonialProfileSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'user', 'age', 'gender', 'city', 'education', 'occupation', 'family_type',
             'gotra', 'marital_status', 'manglik', 'complexion', 'height_cm', 'annual_income',
-            'mother_tongue', 'photo', 'photo_mimetype', 'bio', 'is_approved', 'created_at',
+            'mother_tongue', 'bio', 'is_approved', 'created_at',
             'user_detail', 'contact_phone',
             'marital_status_display', 'manglik_display', 'complexion_display',
         ]

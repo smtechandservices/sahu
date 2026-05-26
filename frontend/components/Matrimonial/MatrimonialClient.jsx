@@ -78,11 +78,7 @@ export default function MatrimonialClient() {
     annual_income: p.annual_income || "—",
     mother_tongue: p.mother_tongue || "—",
     family_type: p.family_type || "—",
-    avatar: p.photo
-      ? `data:${p.photo_mimetype || "image/jpeg"};base64,${p.photo}`
-      : p.gender === "Male"
-      ? "/assets/avatar_male.png"
-      : "/assets/avatar_female.png",
+    avatar: p.gender === "Male" ? "/assets/avatar_male.png" : "/assets/avatar_female.png",
     bgColor: p.gender === "Male" ? "#1a7a6e" : "#1a2a4a",
   });
 
@@ -283,7 +279,7 @@ export default function MatrimonialClient() {
           onViewMyProfile={(profile) => setSelectedProfile(profile)}
         />
 
-        <div className="px-8 mt-10">
+        <div className="px-4 sm:px-6 md:px-8 mt-10">
           <div className="flex flex-col lg:flex-row gap-10">
             {/* Sidebar */}
             <MatrimonialFilterSidebar

@@ -179,8 +179,6 @@ class MatrimonialProfile(models.Model):
     height_cm = models.IntegerField(blank=True, null=True, help_text="Height in centimeters")
     annual_income = models.CharField(max_length=50, blank=True, null=True, help_text="e.g. 5-10 LPA")
     mother_tongue = models.CharField(max_length=50, blank=True, null=True)
-    photo = models.BinaryField()
-    photo_mimetype = models.CharField(max_length=50, null=True, blank=True)
     bio = models.TextField()
     is_approved = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)

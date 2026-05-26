@@ -93,7 +93,7 @@ const MagazineArchives = () => {
             </div>
 
             {/* Grid */}
-            <motion.div layout className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+            <motion.div layout className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 md:gap-8">
               <AnimatePresence mode="popLayout">
                 {filtered.map((article) => (
                   <motion.div
@@ -128,7 +128,7 @@ const MagazineArchives = () => {
                     <h4 className="mt-3 font-bold text-gray-900 text-center text-sm leading-tight">
                       {article.title}
                     </h4>
-                    <p className="text-center text-[10px] text-gray-400 mt-1">
+                    <p className="text-center text-xs text-gray-400 mt-1">
                       {new Date(article.published_at).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' })}
                     </p>
 
@@ -137,15 +137,15 @@ const MagazineArchives = () => {
                       <div className="flex gap-2 mt-3">
                         <button
                           onClick={() => handleRead(article)}
-                          className="cursor-pointer flex-1 flex items-center justify-center gap-1 py-2 rounded-lg bg-primary text-white text-[11px] font-bold hover:bg-primary/90 transition-colors"
+                          className="cursor-pointer flex-1 flex items-center justify-center gap-1 py-2 rounded-lg bg-primary text-white text-xs font-bold hover:bg-primary/90 transition-colors"
                         >
-                          <FileText size={11} /> Read
+                          <FileText size={12} /> Read
                         </button>
                         <button
                           onClick={() => handleDownload(article)}
-                          className="cursor-pointer flex-1 flex items-center justify-center gap-1 py-2 rounded-lg border border-gray-200 text-gray-600 text-[11px] font-bold hover:bg-gray-50 transition-colors"
+                          className="cursor-pointer flex-1 flex items-center justify-center gap-1 py-2 rounded-lg border border-gray-200 text-gray-600 text-xs font-bold hover:bg-gray-50 transition-colors"
                         >
-                          <Download size={11} /> Download
+                          <Download size={12} /> Download
                         </button>
                       </div>
                     )}

@@ -125,7 +125,7 @@ export default function ProfileClient() {
         {/* Cover / Header Section */}
         <div className="h-64 bg-primary-dark relative">
           <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
-          <div className="px-8 h-full relative">
+          <div className="px-4 sm:px-6 md:px-8 h-full relative">
             <div className="absolute -bottom-22 left-8 flex items-end gap-6">
               <div className="relative group">
                 <div className="w-40 h-40 rounded-3xl bg-white p-1 overflow-hidden border-4 border-white">
@@ -191,7 +191,7 @@ export default function ProfileClient() {
           </div>
         </div>
 
-        <div className="px-8 mt-24">
+        <div className="px-4 sm:px-6 md:px-8 mt-24">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
             
             {/* Left Column - Stats / Info */}

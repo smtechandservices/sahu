@@ -81,7 +81,7 @@ export default function AccommodationClient() {
       <main className="bg-gray-50 min-h-screen pb-20">
         <AccommodationHero />
 
-        <div className="px-8 mt-10 mx-auto">
+        <div className="px-4 sm:px-6 md:px-8 mt-10 mx-auto">
           {/* Tab Switcher */}
           {user && (
             <div className="flex bg-white p-1.5 rounded-2xl shadow-sm border border-gray-100 w-fit mb-10">

@@ -4,9 +4,9 @@ import { motion } from 'framer-motion';
 
 const stats = [
   { label: "ACTIVE MEMBERS", value: "5K+" },
-  { label: "SCHOLARSHIPS GIVEN", value: "200+" },
-  { label: "YEARS OF SERVICE", value: "40" },
-  { label: "REGIONAL CHAPTERS", value: "15" }
+  { label: "EVENTS ORGANIZED", value: "50+" },
+  { label: "YEARS OF SERVICE", value: "30+" },
+  { label: "DISTRICTS", value: "15+" }
 ];
 
 const AboutStats = () => {

@@ -5,14 +5,14 @@ import { Heart, Briefcase, Building2, ArrowRight } from 'lucide-react';
 const Services = () => {
   return (
     <section className="pb-16 bg-white">
-      <div className="px-8">
+      <div className="px-4 sm:px-6 md:px-8">
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-4">
           <div>
             <span className="text-yellow-600 font-bold tracking-widest text-sm uppercase mb-2 block">
               ESSENTIAL RESOURCES
             </span>
-            <h2 className="text-5xl font-bold text-slate-900">Quick Access</h2>
+            <h2 className="text-3xl md:text-5xl font-bold text-slate-900">Quick Access</h2>
           </div>
           <Link href="/services" className="text-yellow-700 font-bold flex items-center gap-2 hover:gap-3 transition-all group">
             View All Services <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />

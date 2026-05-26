@@ -61,7 +61,7 @@ const DonateClient = () => {
       <Header />
       <main className="bg-gray-50 min-h-screen pb-20">
         <DonateHero />
-        <div className="px-8 mt-12">
+        <div className="px-4 sm:px-6 md:px-8 mt-12">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
             
             {/* Left Column: Tiers & Form */}
