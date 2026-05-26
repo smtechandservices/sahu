@@ -1,22 +1,27 @@
-"use client";
+import NewsClient from '../../components/News/NewsClient';
 
-import { useState } from "react";
-import Header from "../../components/Header/Header";
-import Footer from "../../components/Footer/Footer";
-import NewsHero from "../../components/News/NewsHero";
-import NewsList from "../../components/News/NewsList";
+export const metadata = {
+  title: 'Community News',
+  description: 'Stay informed with the latest news, announcements, and updates from the Sahu Sabha community across India.',
+  keywords: ['Sahu Sabha News', 'Community Updates', 'Sabha Announcements', 'Sahu Heritage', 'India Community'],
+  openGraph: {
+    title: 'Community News',
+    description: 'Latest news and announcements from the Sahu Sabha community.',
+    url: 'https://bihartailiksahusabha.com/news',
+    siteName: 'Sahu Sabha',
+    images: [
+      {
+        url: '/assets/logo.png',
+        width: 800,
+        height: 800,
+        alt: 'Sahu Sabha Logo',
+      },
+    ],
+    locale: 'en_IN',
+    type: 'website',
+  },
+};
 
 export default function NewsPage() {
-  const [searchQuery, setSearchQuery] = useState("");
-
-  return (
-    <>
-      <Header />
-      <main>
-        <NewsHero searchQuery={searchQuery} onSearch={setSearchQuery} />
-        <NewsList searchQuery={searchQuery} />
-      </main>
-      <Footer />
-    </>
-  );
+  return <NewsClient />;
 }

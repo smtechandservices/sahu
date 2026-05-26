@@ -1,11 +1,11 @@
 import DonateClient from '../../components/Donate/DonateClient';
 
 export const metadata = {
-  title: 'Donate & Support | Sahu Sabha',
+  title: 'Donate & Support',
   description: 'Support the Sahu community through collective giving. Your contributions help in education, hostel maintenance, and community welfare.',
   keywords: ['Sahu Sabha Donation', 'Community Support', 'Charity', 'Sahu Welfare Fund', 'Sahu Scholarships'],
   openGraph: {
-    title: 'Donate & Support | Sahu Sabha',
+    title: 'Donate & Support',
     description: 'Empowering the Sahu community through collective giving.',
     url: 'https://sahusabha.com/donate',
     siteName: 'Sahu Sabha',

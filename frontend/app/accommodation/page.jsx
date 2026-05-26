@@ -1,7 +1,7 @@
 import AccommodationClient from '../../components/Accommodation/AccommodationClient';
 
 export const metadata = {
-  title: "Accommodation | Sahu Sabha",
+  title: "Accommodation",
   description:
     "Access well-maintained community facilities provided by Sahu Sabha. Reserve halls for events, book hostel stays for students, or find temporary guest room accommodations.",
   keywords: [
@@ -14,7 +14,7 @@ export const metadata = {
     "Sahu Vidyarthi Bhavan",
   ],
   openGraph: {
-    title: "Accommodation | Sahu Sabha",
+    title: "Accommodation",
     description:
       "Explore community hostel, guest room, and hall booking services provided by Sahu Sabha for its members across India.",
     url: "https://sahusabha.com/accommodation",

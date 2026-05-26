@@ -6,7 +6,7 @@ from .models import (
     User, OTPRecord, Accommodation, Booking, 
     JobListing, Advertisement, MatrimonialProfile, 
     Article, Event, EventRegistration, SiteSettings,
-    HeroCarouselImage
+    HeroCarouselImage, UserSession
 )
 
 class Base64BinaryField(serializers.Field):
@@ -193,3 +193,35 @@ class HeroCarouselImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = HeroCarouselImage
         fields = '__all__'
+
+
+class UserSessionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserSession
+        fields = ['id', 'device_name', 'ip_address', 'created_at', 'last_activity', 'is_active']
+
+
+from rest_framework_simplejwt.serializers import TokenRefreshSerializer
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.exceptions import AuthenticationFailed
+
+class CustomTokenRefreshSerializer(TokenRefreshSerializer):
+    def validate(self, attrs):
+        data = super().validate(attrs)
+        
+        refresh = RefreshToken(attrs['refresh'])
+        jti = refresh.payload.get('jti')
+        
+        try:
+            session = UserSession.objects.get(refresh_jti=jti)
+            if not session.is_active:
+                raise AuthenticationFailed('Session has been terminated.', code='session_terminated')
+        except UserSession.DoesNotExist:
+            pass
+
+        access_token = refresh.access_token
+        access_token['refresh_jti'] = jti
+        data['access'] = str(access_token)
+        
+        return data
+

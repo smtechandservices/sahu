@@ -33,7 +33,8 @@ urlpatterns = [
     path('auth/verify-register-otp/', views.verify_register_otp, name='verify_register_otp'),
     path('auth/register/', views.register, name='register'),
     path('auth/admin-login/', views.admin_login, name='admin_login'),
-    path('auth/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('auth/logout/', views.logout_view, name='logout_view'),
+    path('auth/refresh/', views.CustomTokenRefreshView.as_view(), name='token_refresh'),
     path('auth/profile/', views.profile_view, name='profile_view'),
     
     # Public stats

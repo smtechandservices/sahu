@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../../context/AuthContext";
 
+import Swal from "sweetalert2";
+
 export default function CreateProfileModal({ isOpen, onClose, onCreated }) {
   const router = useRouter();
   const { user } = useAuth();
@@ -24,7 +26,7 @@ export default function CreateProfileModal({ isOpen, onClose, onCreated }) {
     mother_tongue: "Hindi",
     bio: "",
   });
-  const [photo, setPhoto] = useState(null);
+
 
   // Lock body scroll when open
   useEffect(() => {
@@ -41,14 +43,7 @@ export default function CreateProfileModal({ isOpen, onClose, onCreated }) {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handlePhotoChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => setPhoto(reader.result);
-      reader.readAsDataURL(file);
-    }
-  };
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -56,17 +51,17 @@ export default function CreateProfileModal({ isOpen, onClose, onCreated }) {
     try {
       const { fetchApi } = await import("../../lib/api");
       const payload = { ...formData };
-      if (photo) {
-        const [meta, base64Data] = photo.split(",");
-        const mimetype = meta.split(":")[1].split(";")[0];
-        payload.photo = base64Data;
-        payload.photo_mimetype = mimetype;
-      }
+
       await fetchApi("/matrimonial/", {
         method: "POST",
         body: JSON.stringify(payload),
       });
-      alert("Matrimonial profile created successfully! It will be visible after admin approval.");
+      Swal.fire({
+        icon: "success",
+        title: "Profile Created",
+        text: "Matrimonial profile created successfully! It will be visible after admin approval.",
+        confirmButtonColor: "#EAB308",
+      });
       if (onCreated) {
         await onCreated();
       } else {
@@ -75,7 +70,12 @@ export default function CreateProfileModal({ isOpen, onClose, onCreated }) {
       }
     } catch (err) {
       console.error(err);
-      alert("Failed to create profile. You may already have one.");
+      Swal.fire({
+        icon: "error",
+        title: "Creation Failed",
+        text: "Failed to create profile. You may already have one.",
+        confirmButtonColor: "#EAB308",
+      });
     } finally {
       setLoading(false);
     }
@@ -184,11 +184,7 @@ export default function CreateProfileModal({ isOpen, onClose, onCreated }) {
             <textarea name="bio" required rows="4" value={formData.bio} onChange={handleChange} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 outline-none focus:border-primary transition-colors" />
           </div>
 
-          <div>
-            <label className="block text-sm font-bold text-gray-700 mb-2">Profile Photo</label>
-            <input type="file" accept="image/*" required onChange={handlePhotoChange} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 outline-none focus:border-primary transition-colors" />
-            {photo && <img src={photo} alt="Preview" className="mt-4 w-32 h-32 object-cover rounded-xl border-4 border-white shadow-sm" />}
-          </div>
+
 
           <div className="pt-2 pb-2 flex justify-end gap-4">
             <button type="button" onClick={onClose} className="px-6 py-3 rounded-xl font-bold text-gray-500 hover:bg-gray-100 transition-colors">

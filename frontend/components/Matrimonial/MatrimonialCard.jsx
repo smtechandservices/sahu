@@ -10,14 +10,10 @@ const MatrimonialCard = ({ profile, liked, isMatch, onLike, onView, receivedInte
       className="bg-white border border-gray-100 rounded-xl overflow-hidden flex flex-col md:flex-row group hover:shadow-lg transition-all duration-300 cursor-pointer"
     >
       {/* Avatar Section */}
-      <div className="relative w-full md:w-48 h-64 md:h-auto flex-shrink-0 bg-gray-100 overflow-hidden">
-        <Image 
-          src={profile.avatar} 
-          alt={profile.name} 
-          fill 
-          sizes="(max-width: 768px) 100vw, 200px"
-          className="object-cover transition-transform duration-500 group-hover:scale-105" 
-        />
+      <div className="relative w-full md:w-48 h-64 md:h-auto flex-shrink-0 bg-gradient-to-br from-primary/10 to-primary/5 text-primary/30 overflow-hidden flex items-center justify-center">
+        <svg className="w-20 h-20" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+        </svg>
         <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-md px-2 py-1 rounded-full flex items-center gap-1 shadow-sm">
           <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
           <span className="text-[9px] font-bold text-green-700 uppercase tracking-wider">Verified</span>

@@ -278,3 +278,20 @@ class SiteSettings(models.Model):
 
     def __str__(self):
         return "Site Settings"
+
+
+class UserSession(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='sessions')
+    refresh_jti = models.CharField(max_length=255, unique=True)
+    device_name = models.CharField(max_length=255, blank=True, null=True)
+    ip_address = models.GenericIPAddressField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    last_activity = models.DateTimeField(auto_now=True)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ['-last_activity']
+
+    def __str__(self):
+        return f"{self.user.phone} - {self.device_name or 'Unknown'} ({self.refresh_jti})"
+

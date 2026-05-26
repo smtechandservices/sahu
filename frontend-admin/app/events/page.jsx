@@ -7,6 +7,7 @@ import {
   Edit, Trash2, Users, Search, X, Upload, Link
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import Swal from 'sweetalert2';
 
 const EMPTY_FORM = {
   title: '',
@@ -114,7 +115,7 @@ export default function EventsManager() {
       await fetchEvents();
       closeModal();
     } catch (err) {
-      alert(err.message || 'Failed to save event');
+      Swal.fire({ icon: 'error', title: 'Save Failed', text: err.message || 'Failed to save event' });
     } finally {
       setSaving(false);
     }
@@ -128,7 +129,7 @@ export default function EventsManager() {
       await fetchApi(`/events/${id}/`, { method: 'DELETE' });
       setEvents(prev => prev.filter(ev => ev.id !== id));
     } catch (err) {
-      alert('Failed to delete event');
+      Swal.fire({ icon: 'error', title: 'Delete Failed', text: 'Failed to delete event' });
     } finally {
       setDeletingId(null);
     }
@@ -490,7 +491,7 @@ export default function EventsManager() {
                                 });
                                 fetchEvents();
                               } catch (err) {
-                                alert('Failed to remove member');
+                                 Swal.fire({ icon: 'error', title: 'Remove Failed', text: 'Failed to remove member' });
                               }
                             }
                           }}

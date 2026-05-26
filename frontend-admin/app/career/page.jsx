@@ -7,6 +7,7 @@ import {
   MapPin, Clock, ExternalLink, X, Check
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import Swal from 'sweetalert2';
 
 const JOB_TYPES = ['Full-time', 'Part-time', 'Remote', 'Contract'];
 
@@ -55,7 +56,7 @@ export default function CareerManager() {
       await fetchJobs();
       closeModal();
     } catch (err) {
-      alert(err.message || 'Failed to save job listing');
+      Swal.fire({ icon: 'error', title: 'Save Failed', text: err.message || 'Failed to save job listing' });
     } finally {
       setSaving(false);
     }
@@ -68,7 +69,7 @@ export default function CareerManager() {
       await fetchApi(`/jobs/${id}/`, { method: 'DELETE' });
       setJobs(prev => prev.filter(j => j.id !== id));
     } catch (err) {
-      alert('Failed to delete');
+      Swal.fire({ icon: 'error', title: 'Delete Failed', text: 'Failed to delete' });
     } finally {
       setDeletingId(null);
     }

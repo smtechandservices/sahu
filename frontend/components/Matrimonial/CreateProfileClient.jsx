@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "../../context/AuthContext";
 import Header from "../Header/Header";
 import Footer from "../Footer/Footer";
+import Swal from "sweetalert2";
 
 export default function CreateProfileClient() {
   const router = useRouter();
@@ -68,11 +69,21 @@ export default function CreateProfileClient() {
         method: "POST",
         body: JSON.stringify(payload),
       });
-      alert("Matrimonial profile created successfully!");
+      Swal.fire({
+        icon: "success",
+        title: "Profile Created",
+        text: "Matrimonial profile created successfully!",
+        confirmButtonColor: "#EAB308",
+      });
       router.push("/matrimonial");
     } catch (err) {
       console.error(err);
-      alert("Failed to create profile. You may already have one.");
+      Swal.fire({
+        icon: "error",
+        title: "Creation Failed",
+        text: "Failed to create profile. You may already have one.",
+        confirmButtonColor: "#EAB308",
+      });
     } finally {
       setLoading(false);
     }
