@@ -24,6 +24,7 @@ router.register(r'articles', views.ArticleViewSet, basename='article')
 router.register(r'events', views.EventViewSet, basename='event')
 router.register(r'event-registrations', views.EventRegistrationViewSet, basename='event-registration')
 router.register(r'carousel-images', views.HeroCarouselImageViewSet, basename='carousel-image')
+router.register(r'gallery', views.GalleryImageViewSet, basename='gallery')
 
 urlpatterns = [
     # Auth

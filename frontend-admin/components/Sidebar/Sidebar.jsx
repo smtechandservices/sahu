@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard, Home, Calendar, BookOpen,
-  Users, Briefcase, Settings, LogOut, Heart, Newspaper
+  Users, Briefcase, Settings, LogOut, Heart, Newspaper, Images
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
@@ -16,6 +16,7 @@ const menuItems = [
   { icon: Newspaper, label: 'News', href: '/news' },
   { icon: Heart, label: 'Matrimonial', href: '/matrimonial' },
   { icon: Briefcase, label: 'Careers', href: '/career' },
+  { icon: Images, label: 'Gallery', href: '/gallery' },
   { icon: Users, label: 'Users', href: '/users' },
   { icon: Settings, label: 'Site Settings', href: '/settings' },
 ];

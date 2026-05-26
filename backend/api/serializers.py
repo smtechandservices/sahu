@@ -3,10 +3,10 @@ from django.conf import settings
 from django.utils import timezone
 from rest_framework import serializers
 from .models import (
-    User, OTPRecord, Accommodation, Booking, 
-    JobListing, Advertisement, MatrimonialProfile, 
+    User, OTPRecord, Accommodation, Booking,
+    JobListing, Advertisement, MatrimonialProfile,
     Article, Event, EventRegistration, SiteSettings,
-    HeroCarouselImage, UserSession
+    HeroCarouselImage, UserSession, GalleryImage
 )
 
 class Base64BinaryField(serializers.Field):
@@ -192,6 +192,14 @@ class HeroCarouselImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = HeroCarouselImage
         fields = '__all__'
+
+
+class GalleryImageSerializer(serializers.ModelSerializer):
+    image = Base64BinaryField(required=True)
+
+    class Meta:
+        model = GalleryImage
+        fields = ['id', 'image', 'image_mimetype', 'title', 'is_active', 'created_at']
 
 
 class UserSessionSerializer(serializers.ModelSerializer):

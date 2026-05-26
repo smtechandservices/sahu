@@ -8,13 +8,10 @@ import { Lock, Phone, AlertCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export default function LoginPage() {
-  const [formData, setFormData] = useState({
-    phone: '',
-    password: ''
-  });
+  const [formData, setFormData] = useState({ phone: '', password: '' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  
+
   const { login } = useAuth();
   const router = useRouter();
 
@@ -25,13 +22,12 @@ export default function LoginPage() {
     try {
       const data = await fetchApi('/auth/admin-login/', {
         method: 'POST',
-        body: JSON.stringify(formData)
+        body: JSON.stringify(formData),
       });
-      
       login(data.user, data.access, data.refresh);
       router.push('/');
     } catch (err) {
-      setError(err.message || 'Invalid credentials');
+      setError(err?.message || 'Invalid credentials');
     } finally {
       setLoading(false);
     }
@@ -39,7 +35,7 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 p-6">
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="max-w-md w-full bg-white rounded-3xl shadow-2xl p-10 border border-gray-100"
@@ -65,10 +61,10 @@ export default function LoginPage() {
               <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Phone Number</label>
               <div className="relative">
                 <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                <input 
-                  type="tel" 
+                <input
+                  type="tel"
                   value={formData.phone}
-                  onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                   placeholder="Admin Phone"
                   className="w-full bg-gray-50 border border-gray-100 rounded-xl pl-12 pr-4 py-3.5 text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all"
                   required
@@ -80,10 +76,10 @@ export default function LoginPage() {
               <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Password</label>
               <div className="relative">
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                <input 
-                  type="password" 
+                <input
+                  type="password"
                   value={formData.password}
-                  onChange={(e) => setFormData({...formData, password: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                   placeholder="Admin Password"
                   className="w-full bg-gray-50 border border-gray-100 rounded-xl pl-12 pr-4 py-3.5 text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all"
                   required
@@ -92,12 +88,12 @@ export default function LoginPage() {
             </div>
           </div>
 
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             disabled={loading}
-            className="w-full bg-primary text-white py-4 rounded-xl font-bold hover:bg-primary-dark transition-all shadow-lg shadow-primary/20 flex items-center justify-center gap-2 mt-4"
+            className="w-full bg-primary text-white py-4 rounded-xl font-bold hover:bg-primary-dark transition-all shadow-lg shadow-primary/20 flex items-center justify-center gap-2 mt-4 disabled:opacity-60"
           >
-            {loading ? "Authenticating..." : "Login to Dashboard"}
+            {loading ? 'Authenticating...' : 'Login to Dashboard'}
           </button>
         </form>
       </motion.div>

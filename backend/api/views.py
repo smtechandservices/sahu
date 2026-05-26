@@ -16,14 +16,15 @@ from .models import (
     User, OTPRecord, Accommodation, Booking,
     JobListing, Advertisement, MatrimonialProfile, MatrimonialInterest,
     Article, Event, EventRegistration, SiteSettings,
-    HeroCarouselImage, UserSession
+    HeroCarouselImage, UserSession, GalleryImage
 )
 from .serializers import (
     UserSerializer, AdminUserSerializer, AccommodationSerializer, BookingSerializer,
     JobListingSerializer, AdvertisementSerializer,
     MatrimonialProfileSerializer, ArticleSerializer,
     EventSerializer, EventRegistrationSerializer, SiteSettingsSerializer,
-    HeroCarouselImageSerializer, UserSessionSerializer, CustomTokenRefreshSerializer
+    HeroCarouselImageSerializer, UserSessionSerializer, CustomTokenRefreshSerializer,
+    GalleryImageSerializer
 )
 from .permissions import IsAdminOrReadOnly
 
@@ -208,20 +209,22 @@ def register(request):
 def admin_login(request):
     phone = request.data.get('phone')
     password = request.data.get('password')
-    
     if not phone or not password:
         return Response({'error': 'Phone and password are required'}, status=status.HTTP_400_BAD_REQUEST)
-    
+
     from django.contrib.auth import authenticate
     user = authenticate(username=phone, password=password)
-    
+
     if user is not None:
         if not user.is_admin:
             return Response({'error': 'Access denied. Administrator privileges required.'}, status=status.HTTP_403_FORBIDDEN)
-        
+
+        UserSession.objects.filter(user=user, is_active=True).update(is_active=False)
+
         refresh = RefreshToken.for_user(user)
         refresh.access_token['refresh_jti'] = refresh.payload.get('jti')
         create_user_session(user, refresh, request)
+
         return Response({
             'refresh': str(refresh),
             'access': str(refresh.access_token),
@@ -706,6 +709,24 @@ class HeroCarouselImageViewSet(viewsets.ModelViewSet):
                 image=image_file.read(),
                 image_mimetype=image_file.content_type
             )
+        else:
+            serializer.save()
+
+
+class GalleryImageViewSet(viewsets.ModelViewSet):
+    serializer_class = GalleryImageSerializer
+    permission_classes = [IsAdminOrReadOnly]
+
+    def get_queryset(self):
+        qs = GalleryImage.objects.all()
+        if not (self.request.user.is_authenticated and getattr(self.request.user, 'is_admin', False)):
+            qs = qs.filter(is_active=True)
+        return qs
+
+    def perform_create(self, serializer):
+        image_file = self.request.FILES.get('image_file')
+        if image_file:
+            serializer.save(image=image_file.read(), image_mimetype=image_file.content_type)
         else:
             serializer.save()
 

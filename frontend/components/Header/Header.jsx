@@ -18,6 +18,7 @@ const Header = () => {
     { href: '/about', label: 'About Us' },
     { href: '/accommodation', label: 'Accommodation' },
     { href: '/events', label: 'Events' },
+    { href: '/gallery', label: 'Gallery' },
     { href: '/matrimonial', label: 'Matrimonial' },
     { href: '/magazine', label: 'Magazine' },
   ];

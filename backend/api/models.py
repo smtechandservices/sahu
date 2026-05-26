@@ -258,6 +258,20 @@ class HeroCarouselImage(models.Model):
     def __str__(self):
         return f"Carousel Image {self.id}"
 
+class GalleryImage(models.Model):
+    image = models.BinaryField()
+    image_mimetype = models.CharField(max_length=50, default='image/jpeg')
+    title = models.CharField(max_length=200, blank=True, default='')
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return self.title or f"Gallery Image {self.id}"
+
+
 class SiteSettings(models.Model):
     hero_text = models.CharField(max_length=255, default="Welcome to Sahu Sabha")
     hero_subtext = models.TextField(default="Empowering our community")
