@@ -9,7 +9,7 @@ export default function EditProfileModal({ isOpen, onClose, profile }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({});
-  const [photo, setPhoto] = useState(null);
+
 
   // Pre-fill form whenever profile changes or modal opens
   useEffect(() => {
@@ -30,7 +30,7 @@ export default function EditProfileModal({ isOpen, onClose, profile }) {
       mother_tongue: profile.mother_tongue ?? "Hindi",
       bio: profile.about ?? "",
     });
-    setPhoto(null);
+
   }, [profile, isOpen]);
 
   // Lock body scroll when open
@@ -48,14 +48,7 @@ export default function EditProfileModal({ isOpen, onClose, profile }) {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handlePhotoChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => setPhoto(reader.result);
-      reader.readAsDataURL(file);
-    }
-  };
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -63,12 +56,7 @@ export default function EditProfileModal({ isOpen, onClose, profile }) {
     try {
       const { fetchApi } = await import("../../lib/api");
       const payload = { ...formData };
-      if (photo) {
-        const [meta, base64Data] = photo.split(",");
-        const mimetype = meta.split(":")[1].split(";")[0];
-        payload.photo = base64Data;
-        payload.photo_mimetype = mimetype;
-      }
+
       await fetchApi(`/matrimonial/${profile.id}/`, {
         method: "PATCH",
         body: JSON.stringify(payload),
@@ -96,7 +84,7 @@ export default function EditProfileModal({ isOpen, onClose, profile }) {
 
   if (!isOpen || !profile) return null;
 
-  const currentAvatar = photo || (profile.avatar?.startsWith("data:") ? profile.avatar : null);
+
 
   return (
     <div
@@ -199,14 +187,7 @@ export default function EditProfileModal({ isOpen, onClose, profile }) {
             <textarea name="bio" required rows="4" value={formData.bio} onChange={handleChange} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 outline-none focus:border-primary transition-colors" />
           </div>
 
-          <div>
-            <label className="block text-sm font-bold text-gray-700 mb-2">Profile Photo</label>
-            {currentAvatar && (
-              <img src={currentAvatar} alt="Current" className="mb-3 w-24 h-24 object-cover rounded-xl border-4 border-white shadow-sm" />
-            )}
-            <input type="file" accept="image/*" onChange={handlePhotoChange} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 outline-none focus:border-primary transition-colors" />
-            <p className="text-xs text-gray-400 mt-1">Leave blank to keep current photo.</p>
-          </div>
+
 
           <div className="pt-2 pb-2 flex justify-end gap-4">
             <button type="button" onClick={onClose} className="px-6 py-3 rounded-xl font-bold text-gray-500 hover:bg-gray-100 transition-colors">

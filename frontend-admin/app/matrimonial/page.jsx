@@ -161,13 +161,8 @@ export default function MatrimonialManager() {
               className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden group hover:shadow-md transition-all"
             >
               {/* Photo */}
-              <div className="relative h-52 bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center">
-                {profile.photo ? (
-                  <img src={`data:${profile.photo_mimetype || 'image/jpeg'};base64,${profile.photo}`}
-                    alt={profile.user_detail?.name} className="w-full h-full object-cover" />
-                ) : (
-                  <User size={56} className="text-primary/30" />
-                )}
+              <div className="relative h-52 bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center text-primary/30">
+                <User size={56} />
                 <div className={`absolute top-4 right-4 px-3 py-1 rounded-full text-[10px] font-black uppercase ${profile.is_approved ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
                   {profile.is_approved ? 'Approved' : 'Pending'}
                 </div>
@@ -222,13 +217,8 @@ export default function MatrimonialManager() {
               exit={{ opacity: 0, scale: 0.95 }}
               className="relative bg-white w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
 
-              <div className="relative h-56 bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center shrink-0">
-                {selectedProfile.photo ? (
-                  <img src={`data:${selectedProfile.photo_mimetype || 'image/jpeg'};base64,${selectedProfile.photo}`}
-                    alt={selectedProfile.user_detail?.name} className="w-full h-full object-cover" />
-                ) : (
-                  <User size={72} className="text-primary/30" />
-                )}
+              <div className="relative h-56 bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center shrink-0 text-primary/30">
+                <User size={72} />
                 <button onClick={() => setSelectedProfile(null)}
                   className="absolute top-4 right-4 w-10 h-10 bg-white/90 backdrop-blur rounded-full flex items-center justify-center text-gray-600 hover:bg-white transition-all">
                   <X size={18} />

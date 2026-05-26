@@ -1,7 +1,7 @@
 import ProfileClient from '../../components/Profile/ProfileClient';
 
 export const metadata = {
-  title: 'My Profile | Sahu Sabha',
+  title: 'My Profile',
   description: 'Manage your community profile, membership details, and activities.',
 };
 

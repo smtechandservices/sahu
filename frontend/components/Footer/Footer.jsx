@@ -11,13 +11,16 @@ const Footer = () => {
             <p className="text-slate-500 text-sm font-medium">
               © {new Date().getFullYear()} Sahu Sabha Digital Heritage. Preserving values, empowering community.
             </p>
+            <p className="text-slate-400 text-xs font-bold uppercase tracking-wider mt-1">
+              Made by Commhawk
+            </p>
           </div>
           
           {/* Right Side: Navigation Links */}
           <nav>
             <ul className="flex flex-wrap justify-center lg:justify-end gap-x-12 gap-y-4">
               <li>
-                <Link href="/opportunities" className="text-slate-500 hover:text-yellow-700 font-medium transition-colors">
+                <Link href="/career" className="text-slate-500 hover:text-yellow-700 font-medium transition-colors">
                   Opportunities
                 </Link>
               </li>

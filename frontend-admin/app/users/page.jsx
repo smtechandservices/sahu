@@ -289,14 +289,6 @@ export default function UsersManager() {
                       >
                         <Edit size={16} />
                       </button>
-                      <button
-                        onClick={(e) => handleDelete(e, user)}
-                        disabled={deletingId === user.id}
-                        className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all disabled:opacity-40"
-                        title="Delete User"
-                      >
-                        <Trash2 size={16} />
-                      </button>
                     </div>
                   </td>
                 </motion.tr>

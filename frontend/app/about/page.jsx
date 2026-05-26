@@ -1,12 +1,11 @@
 import Header from '../../components/Header/Header';
 import Footer from '../../components/Footer/Footer';
 import AboutValues from '../../components/About/AboutValues';
-import AboutTimeline from '../../components/About/AboutTimeline';
 import AboutLeadership from '../../components/About/AboutLeadership';
 import AboutStats from '../../components/About/AboutStats';
 
 export const metadata = {
-  title: 'About Us | Sahu Sabha',
+  title: 'About Us',
   description: 'Learn about the mission, values, history and leadership of Sahu Sabha.',
 };
 
@@ -43,7 +42,6 @@ export default function AboutPage() {
         </section>
 
         <AboutValues />
-        <AboutTimeline />
         <AboutLeadership />
         <AboutStats />
       </main>

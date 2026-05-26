@@ -1,7 +1,7 @@
 import CareerClient from '../../components/Career/CareerClient';
 
 export const metadata = {
-  title: "Career Portal | Sahu Sabha",
+  title: "Career Portal",
   description:
     "Explore job opportunities posted by Sahu Sabha community members. Find full-time, part-time, and remote roles across India.",
   keywords: [
@@ -13,7 +13,7 @@ export const metadata = {
     "Local Business",
   ],
   openGraph: {
-    title: "Career Portal | Sahu Sabha",
+    title: "Career Portal",
     description:
       "Explore job opportunities and advertise your business on the Sahu Sabha community portal.",
     url: "https://sahusabha.com/career",
