@@ -28,8 +28,9 @@ const Services = () => {
                 <Heart className="text-yellow-600 fill-yellow-600" size={28} />
               </div>
               <h3 className="text-3xl font-bold mb-4 text-slate-900">Matrimonial Services</h3>
-              <p className="text-slate-600 text-lg leading-relaxed mb-12 max-w-md">
-                Connect with eligible individuals within our community. A trusted platform built on shared values and heritage.
+              <p className="text-slate-600 text-xl leading-relaxed mb-12 max-w-md">
+                Find the Perfect Life Partner
+                Within Your Community
               </p>
               <Link href="/matrimonial" className="mt-auto text-yellow-700 font-bold flex items-center gap-2 group/link">
                 Explore Profiles <ArrowRight size={18} className="group-hover/link:translate-x-1 transition-transform" />
@@ -44,8 +45,8 @@ const Services = () => {
               <Briefcase className="text-blue-900 fill-blue-900" size={28} />
             </div>
             <h3 className="text-2xl font-bold mb-4 text-slate-900">Opportunities</h3>
-            <p className="text-slate-600 leading-relaxed mb-8">
-              Careeer listings, mentorship, and professional networking opportunities.
+            <p className="text-slate-600 leading-relaxed mb-8 text-lg">
+              Empowering the Community Through Opportunities
             </p>
             <Link href="/career" className="mt-auto text-yellow-700 font-bold flex items-center gap-2 group/link">
               Find Opportunities <ArrowRight size={18} className="group-hover/link:translate-x-1 transition-transform" />

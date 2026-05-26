@@ -134,9 +134,97 @@ export default function EventsManager() {
     }
   };
 
+  const now = new Date();
+
   const filteredEvents = events.filter(event =>
     event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
     (event.location || '').toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const upcomingEvents = filteredEvents.filter(event => new Date(event.event_date) >= now);
+  const pastEvents = filteredEvents.filter(event => new Date(event.event_date) < now);
+
+  const EventCard = ({ event, isPast }) => (
+    <motion.div
+      key={event.id}
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      onClick={() => setSelectedEvent(event)}
+      className={`bg-white rounded-2xl border shadow-sm overflow-hidden group hover:shadow-md transition-all duration-300 cursor-pointer ${isPast ? 'border-gray-200 opacity-75' : 'border-gray-100'}`}
+    >
+      <div className="h-48 bg-gray-100 relative">
+        {event.image && (
+          <img
+            src={`data:${event.image_mimetype || 'image/jpeg'};base64,${event.image}`}
+            alt={event.title}
+            className={`w-full h-full object-cover transition-transform duration-500 ${isPast ? 'grayscale-[30%]' : 'group-hover:scale-105'}`}
+          />
+        )}
+        <div className={`absolute top-4 left-4 px-3 py-1 rounded-lg text-xs font-bold shadow-lg ${isPast ? 'bg-gray-500 text-white' : 'bg-primary text-white'}`}>
+          {event.attendee_count} Registered
+        </div>
+        {isPast && (
+          <div className="absolute top-4 right-4 bg-gray-700/90 text-white px-3 py-1 rounded-lg text-xs font-bold">
+            Past
+          </div>
+        )}
+        {!isPast && !event.is_active && (
+          <div className="absolute top-4 right-4 bg-gray-700 text-white px-3 py-1 rounded-lg text-xs font-bold">
+            Inactive
+          </div>
+        )}
+      </div>
+      <div className="p-6">
+        <h3 className={`text-lg font-bold mb-4 line-clamp-1 ${isPast ? 'text-gray-500' : 'text-gray-900'}`}>{event.title}</h3>
+
+        <div className="space-y-3 mb-6">
+          <div className="flex items-center gap-3 text-gray-500 text-sm">
+            <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${isPast ? 'bg-gray-100 text-gray-400' : 'bg-gray-50 text-primary'}`}>
+              <Calendar size={16} />
+            </div>
+            <span className="font-medium">{new Date(event.event_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+          </div>
+          <div className="flex items-center gap-3 text-gray-500 text-sm">
+            <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${isPast ? 'bg-gray-100 text-gray-400' : 'bg-gray-50 text-primary'}`}>
+              <MapPin size={16} />
+            </div>
+            <span className="font-medium truncate">{event.location || '—'}</span>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between pt-4 border-t border-gray-50">
+          <div className="flex -space-x-2">
+            {event.recent_registrations?.slice(0, 3).map((reg) => (
+              <div key={reg.id} className={`w-8 h-8 rounded-full border-2 border-white flex items-center justify-center text-[10px] font-bold uppercase ${isPast ? 'bg-gray-100 text-gray-400' : 'bg-primary/10 text-primary'}`}>
+                {reg.user_detail.name.charAt(0)}
+              </div>
+            ))}
+            {event.attendee_count > 3 && (
+              <div className="w-8 h-8 rounded-full border-2 border-white bg-gray-100 flex items-center justify-center text-[10px] font-bold text-gray-400">
+                +{event.attendee_count - 3}
+              </div>
+            )}
+          </div>
+          <div className="flex gap-2">
+            <button
+              className="p-2 text-gray-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-all"
+              onClick={(e) => openEdit(e, event)}
+              title="Edit Event"
+            >
+              <Edit size={18} />
+            </button>
+            <button
+              className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all disabled:opacity-40"
+              onClick={(e) => handleDelete(e, event.id)}
+              disabled={deletingId === event.id}
+              title="Delete Event"
+            >
+              <Trash2 size={18} />
+            </button>
+          </div>
+        </div>
+      </div>
+    </motion.div>
   );
 
   return (
@@ -174,84 +262,41 @@ export default function EventsManager() {
           <p className="text-gray-400 font-bold">No events found.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredEvents.map((event) => (
-            <motion.div
-              key={event.id}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              onClick={() => setSelectedEvent(event)}
-              className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden group hover:shadow-md transition-all duration-300 cursor-pointer"
-            >
-              <div className="h-48 bg-gray-100 relative">
-                {event.image && (
-                  <img
-                    src={`data:${event.image_mimetype || 'image/jpeg'};base64,${event.image}`}
-                    alt={event.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                )}
-                <div className="absolute top-4 left-4 bg-primary text-white px-3 py-1 rounded-lg text-xs font-bold shadow-lg">
-                  {event.attendee_count} Registered
-                </div>
-                {!event.is_active && (
-                  <div className="absolute top-4 right-4 bg-gray-700 text-white px-3 py-1 rounded-lg text-xs font-bold">
-                    Inactive
-                  </div>
-                )}
+        <div className="space-y-10">
+          {/* Upcoming Events */}
+          <div>
+            <div className="flex items-center gap-3 mb-5">
+              <h2 className="text-xl font-black text-gray-900">Upcoming Events</h2>
+              <span className="bg-green-100 text-green-700 text-xs font-bold px-2.5 py-0.5 rounded-full">{upcomingEvents.length}</span>
+            </div>
+            {upcomingEvents.length === 0 ? (
+              <div className="py-10 text-center bg-gray-50 rounded-2xl border border-dashed border-gray-200">
+                <Calendar size={36} className="mx-auto text-gray-200 mb-3" />
+                <p className="text-gray-400 font-bold text-sm">No upcoming events.</p>
               </div>
-              <div className="p-6">
-                <h3 className="text-lg font-bold text-gray-900 mb-4 line-clamp-1">{event.title}</h3>
-
-                <div className="space-y-3 mb-6">
-                  <div className="flex items-center gap-3 text-gray-500 text-sm">
-                    <div className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center text-primary">
-                      <Calendar size={16} />
-                    </div>
-                    <span className="font-medium">{new Date(event.event_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
-                  </div>
-                  <div className="flex items-center gap-3 text-gray-500 text-sm">
-                    <div className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center text-primary">
-                      <MapPin size={16} />
-                    </div>
-                    <span className="font-medium truncate">{event.location || '—'}</span>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between pt-4 border-t border-gray-50">
-                  <div className="flex -space-x-2">
-                    {event.recent_registrations?.slice(0, 3).map((reg) => (
-                      <div key={reg.id} className="w-8 h-8 rounded-full border-2 border-white bg-primary/10 flex items-center justify-center text-[10px] font-bold text-primary uppercase">
-                        {reg.user_detail.name.charAt(0)}
-                      </div>
-                    ))}
-                    {event.attendee_count > 3 && (
-                      <div className="w-8 h-8 rounded-full border-2 border-white bg-gray-100 flex items-center justify-center text-[10px] font-bold text-gray-400">
-                        +{event.attendee_count - 3}
-                      </div>
-                    )}
-                  </div>
-                  <div className="flex gap-2">
-                    <button
-                      className="p-2 text-gray-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-all"
-                      onClick={(e) => openEdit(e, event)}
-                      title="Edit Event"
-                    >
-                      <Edit size={18} />
-                    </button>
-                    <button
-                      className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all disabled:opacity-40"
-                      onClick={(e) => handleDelete(e, event.id)}
-                      disabled={deletingId === event.id}
-                      title="Delete Event"
-                    >
-                      <Trash2 size={18} />
-                    </button>
-                  </div>
-                </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {upcomingEvents.map((event) => (
+                  <EventCard key={event.id} event={event} isPast={false} />
+                ))}
               </div>
-            </motion.div>
-          ))}
+            )}
+          </div>
+
+          {/* Past Events */}
+          {pastEvents.length > 0 && (
+            <div>
+              <div className="flex items-center gap-3 mb-5">
+                <h2 className="text-xl font-black text-gray-500">Past Events</h2>
+                <span className="bg-gray-100 text-gray-500 text-xs font-bold px-2.5 py-0.5 rounded-full">{pastEvents.length}</span>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {pastEvents.map((event) => (
+                  <EventCard key={event.id} event={event} isPast={true} />
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
 

@@ -404,6 +404,24 @@ class MatrimonialProfileViewSet(viewsets.ModelViewSet):
         profile.save()
         return Response({'message': 'Profile approved successfully'})
 
+    @action(detail=False, methods=['get'], permission_classes=[permissions.IsAuthenticated])
+    def filter_options(self, request):
+        qs = MatrimonialProfile.objects.filter(is_approved=True)
+
+        def distinct_vals(field):
+            return sorted(filter(None, qs.values_list(field, flat=True).distinct()))
+
+        return Response({
+            'gotra': distinct_vals('gotra'),
+            'education': distinct_vals('education'),
+            'occupation': distinct_vals('occupation'),
+            'annual_income': distinct_vals('annual_income'),
+            'city': distinct_vals('city'),
+            'marital_status': [c[0] for c in MatrimonialProfile.MARITAL_STATUS_CHOICES],
+            'manglik': [c[0] for c in MatrimonialProfile.MANGLIK_CHOICES],
+            'complexion': [c[0] for c in MatrimonialProfile.COMPLEXION_CHOICES],
+        })
+
 # --- Magazine Views ---
 class ArticleViewSet(viewsets.ModelViewSet):
     queryset = Article.objects.filter(is_published=True).order_by('-published_at')
@@ -424,6 +442,8 @@ class EventViewSet(viewsets.ModelViewSet):
                 and self.request.query_params.get('all') == 'true'
             ):
                 return Event.objects.all().order_by('-event_date')
+            if self.request.query_params.get('past') == 'true':
+                return Event.objects.filter(event_date__lt=timezone.now()).order_by('-event_date')
             return Event.objects.upcoming().order_by('event_date')
         # Admin detail/update/delete may target inactive or past events by id
         if self.request.user.is_authenticated and getattr(self.request.user, 'is_admin', False):

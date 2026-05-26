@@ -9,21 +9,21 @@ const figures = [
     title: 'Symbol of Generosity',
     image: '/assets/figures/bhamashah.jpg',
     description:
-      'Bhamashah was a legendary minister and philanthropist in the Mewar kingdom who donated his entire personal wealth to Maharana Pratap to fund the fight for independence. His selfless sacrifice became an enduring symbol of generosity and patriotism for the Sahu community.',
+      'भामाशाह मेवाड़ राज्य के एक महान मंत्री और दानवीर थे, जिन्होंने महाराणा प्रताप को स्वाधीनता संग्राम के लिए अपनी संपूर्ण व्यक्तिगत संपदा दान कर दी। उनका यह निःस्वार्थ बलिदान साहू समाज के लिए उदारता और देशभक्ति का चिरस्थायी प्रतीक बन गया।',
   },
   {
     name: 'Baba Badal Nayak',
     title: 'Legendary Leader',
     image: '/assets/figures/badal_nayak.png',
     description:
-      'Baba Badal Nayak was a revered spiritual and community leader who guided the Sahu community through challenging times. His wisdom, courage, and unwavering commitment to justice made him a legendary figure whose teachings continue to inspire generations.',
+      'बाबा बादल नायक एक पूजनीय आध्यात्मिक एवं सामुदायिक नेता थे, जिन्होंने कठिन परिस्थितियों में साहू समाज का मार्गदर्शन किया। उनकी बुद्धिमत्ता, साहस और न्याय के प्रति अटूट समर्पण ने उन्हें एक महान विभूति बनाया, जिनकी शिक्षाएँ आज भी पीढ़ियों को प्रेरित करती हैं।',
   },
   {
     name: 'Maa Karma',
     title: 'Sant Shiromani',
     image: '/assets/figures/maa_karma.png',
     description:
-      'Maa Karma is venerated as a supreme saint and the presiding deity of the Karma festival. Her devotion, compassion, and spiritual teachings have been a guiding light for the community, embodying the values of faith, sacrifice, and love for all living beings.',
+      'माँ कर्मा को एक परम संत और करमा पर्व की अधिष्ठात्री देवी के रूप में पूजा जाता है। उनकी भक्ति, करुणा और आध्यात्मिक शिक्षाएँ समाज के लिए सदैव प्रकाशस्तंभ रही हैं, जो आस्था, त्याग और समस्त प्राणियों के प्रति प्रेम के मूल्यों का मूर्त स्वरूप हैं।',
   },
 ];
 
@@ -100,7 +100,7 @@ const Inspirational = () => {
                   </div>
                   <h3 className="text-2xl font-bold text-white mb-2">{figure.name}</h3>
                   <p className="text-sm font-semibold text-amber-300 uppercase tracking-widest mb-6">{figure.title}</p>
-                  <p className="text-white/90 text-base leading-relaxed">{figure.description}</p>
+                  <p className="text-white/90 text-base leading-loose tracking-wide">{figure.description}</p>
                   <p className="mt-8 text-white/40 text-xs">Click to flip back</p>
                 </div>
               </div>

@@ -46,6 +46,12 @@ export default function MatrimonialClient() {
   const [income, setIncome] = useState("Any");
   const [location, setLocation] = useState("");
 
+  // --- Dynamic Filter Options (populated from API) ---
+  const [filterOptions, setFilterOptions] = useState({
+    gotra: [], education: [], occupation: [], annual_income: [],
+    city: [], marital_status: [], manglik: [], complexion: [],
+  });
+
 
 
   const formatProfile = (p) => ({
@@ -81,10 +87,11 @@ export default function MatrimonialClient() {
 
   const loadMatrimonialData = async () => {
     const { fetchApi } = await import("../../lib/api");
-    const [allData, sentData, receivedData] = await Promise.all([
+    const [allData, sentData, receivedData, options] = await Promise.all([
       fetchApi("/matrimonial/"),
       fetchApi("/matrimonial/my_sent_interests/"),
       fetchApi("/matrimonial/received_interests/"),
+      fetchApi("/matrimonial/filter_options/"),
     ]);
     setProfiles(allData.map(formatProfile));
     setLiked(sentData.profile_ids || []);
@@ -92,6 +99,9 @@ export default function MatrimonialClient() {
     setReceivedProfiles(
       Array.isArray(receivedData) ? receivedData.map(formatProfile) : []
     );
+    if (options && typeof options === "object") {
+      setFilterOptions(options);
+    }
   };
 
   useEffect(() => {
@@ -211,6 +221,9 @@ export default function MatrimonialClient() {
       // Location
       if (location && !p.location.toLowerCase().includes(location.toLowerCase())) return false;
 
+      // Annual Income
+      if (income !== "Any" && p.annual_income !== income) return false;
+
       return true;
     });
 
@@ -230,7 +243,7 @@ export default function MatrimonialClient() {
       if (!aMatch && bMatch) return 1;
       return 0;
     });
-  }, [profiles, receivedProfiles, searchQuery, showMyInterest, liked, matches, gender, ageMin, ageMax, maritalStatus, gotra, manglik, complexion, education, occupation, location, user]);
+  }, [profiles, receivedProfiles, searchQuery, showMyInterest, liked, matches, gender, ageMin, ageMax, maritalStatus, gotra, manglik, complexion, education, occupation, income, location, user]);
 
   if (authLoading || loading)
     return (
@@ -269,6 +282,7 @@ export default function MatrimonialClient() {
               occupation={occupation} setOccupation={setOccupation}
               income={income} setIncome={setIncome}
               location={location} setLocation={setLocation}
+              filterOptions={filterOptions}
               onReset={handleReset}
             />
 

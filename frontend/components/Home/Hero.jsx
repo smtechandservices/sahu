@@ -37,8 +37,8 @@ const Hero = () => {
 
   return (
     <section className="bg-gray-50">
-      <div className="px-8 pt-4 pb-8">
-        <div className="relative overflow-hidden h-[800px] flex items-center bg-white">
+      <div className="px-2 pt-4 pb-8">
+        <div className="relative overflow-hidden h-[550px] flex items-center bg-white">
           <AnimatePresence mode="wait">
             <motion.div 
               key={current}

@@ -98,6 +98,16 @@ class Booking(models.Model):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending')
     total_price = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    # Hostel student enquiry fields
+    student_name = models.CharField(max_length=255, blank=True, null=True)
+    institution_name = models.CharField(max_length=255, blank=True, null=True)
+    institution_type = models.CharField(
+        max_length=20,
+        choices=(('School', 'School'), ('College', 'College'), ('University', 'University')),
+        blank=True, null=True
+    )
+    guardian_name = models.CharField(max_length=255, blank=True, null=True)
+    guardian_contact = models.CharField(max_length=20, blank=True, null=True)
 
     def __str__(self):
         return f"{self.user.name} - {self.accommodation.title}"

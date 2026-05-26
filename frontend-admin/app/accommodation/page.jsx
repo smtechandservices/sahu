@@ -258,28 +258,28 @@ export default function AccommodationManager() {
           </div>
         )
       ) : (
-        <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
-          <table className="w-full text-left">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Guest</th>
-                <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Property</th>
-                <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Dates</th>
-                <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Status</th>
-                <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Action</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-50">
-              {bookings.map((booking) => (
-                <tr key={booking.id} className="hover:bg-gray-50/50 transition-all">
-                  <td className="px-6 py-4">
+        <>
+        <div className="grid grid-cols-5 gap-4 px-6 py-3 mb-1">
+          <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Guest</p>
+          <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Property</p>
+          <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Dates</p>
+          <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Status</p>
+          <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Action</p>
+        </div>
+        <div className="space-y-3">
+          {bookings.map((booking) => {
+            const isHostel = booking.accommodation_detail?.type === 'Hostel' || booking.student_name;
+            return (
+              <div key={booking.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                <div className="grid grid-cols-5 gap-4 px-6 py-4 items-center">
+                  <div>
                     <p className="text-sm font-bold text-gray-900">{booking.user_name || 'Guest'}</p>
                     <p className="text-xs text-gray-400">{booking.user_phone}</p>
-                  </td>
-                  <td className="px-6 py-4">
+                  </div>
+                  <div>
                     <p className="text-sm font-medium text-gray-600">{booking.accommodation_title}</p>
-                  </td>
-                  <td className="px-6 py-4">
+                  </div>
+                  <div>
                     <p className="text-sm font-medium text-gray-600">
                       {booking.check_in}{' '}
                       <span className="text-[10px] text-gray-400">({booking.check_in_time || '12:00'})</span>
@@ -288,8 +288,8 @@ export default function AccommodationManager() {
                       to {booking.check_out}{' '}
                       <span className="text-[10px] text-gray-400">({booking.check_out_time || '11:00'})</span>
                     </p>
-                  </td>
-                  <td className="px-6 py-4">
+                  </div>
+                  <div>
                     <span
                       className={`text-[10px] font-bold uppercase px-2 py-1 rounded-full ${
                         booking.status === 'Confirmed'
@@ -303,8 +303,8 @@ export default function AccommodationManager() {
                     >
                       {booking.status}
                     </span>
-                  </td>
-                  <td className="px-6 py-4">
+                  </div>
+                  <div>
                     {booking.status === 'Pending' ? (
                       <div className="flex flex-col gap-2">
                         <button
@@ -323,12 +323,46 @@ export default function AccommodationManager() {
                     ) : (
                       <span className="text-xs text-gray-300 italic">No actions</span>
                     )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                  </div>
+                </div>
+
+                {isHostel && (booking.student_name || booking.guardian_name) && (
+                  <div className="px-6 pb-4 pt-0">
+                    <div className="bg-blue-50/60 rounded-xl p-4 grid grid-cols-2 md:grid-cols-4 gap-3">
+                      {booking.student_name && (
+                        <div>
+                          <p className="text-[9px] font-bold text-blue-400 uppercase tracking-widest mb-0.5">Student</p>
+                          <p className="text-xs font-bold text-gray-800">{booking.student_name}</p>
+                        </div>
+                      )}
+                      {booking.institution_name && (
+                        <div>
+                          <p className="text-[9px] font-bold text-blue-400 uppercase tracking-widest mb-0.5">
+                            {booking.institution_type || 'Institution'}
+                          </p>
+                          <p className="text-xs font-semibold text-gray-700">{booking.institution_name}</p>
+                        </div>
+                      )}
+                      {booking.guardian_name && (
+                        <div>
+                          <p className="text-[9px] font-bold text-blue-400 uppercase tracking-widest mb-0.5">Guardian</p>
+                          <p className="text-xs font-semibold text-gray-700">{booking.guardian_name}</p>
+                        </div>
+                      )}
+                      {booking.guardian_contact && (
+                        <div>
+                          <p className="text-[9px] font-bold text-blue-400 uppercase tracking-widest mb-0.5">Guardian Contact</p>
+                          <p className="text-xs font-semibold text-gray-700">{booking.guardian_contact}</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
+        </>
       )}
 
       <AnimatePresence>

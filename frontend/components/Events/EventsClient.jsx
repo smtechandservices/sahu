@@ -24,6 +24,7 @@ const todayInputValue = () => {
 
 export default function EventsClient() {
   const [events, setEvents] = useState([]);
+  const [pastEvents, setPastEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(null);
@@ -43,7 +44,10 @@ export default function EventsClient() {
       try {
         const eventsData = await fetchApi('/events/');
         setEvents(eventsData.filter(isPublicEvent));
-        
+
+        const pastData = await fetchApi('/events/?past=true');
+        setPastEvents(pastData);
+
         const newsData = await fetchApi('/articles/?category=News');
         setNews(newsData);
         
@@ -360,7 +364,7 @@ export default function EventsClient() {
                 </div>
 
                 {(selectedDate || filterStart || filterEnd) && (
-                  <button 
+                  <button
                     onClick={() => { setSelectedDate(null); setFilterStart(""); setFilterEnd(""); }}
                     className="mt-6 w-full py-3 text-gray-500 hover:text-primary font-bold text-sm border-t border-gray-100"
                   >
@@ -370,6 +374,122 @@ export default function EventsClient() {
               </div>
             </div>
           </div>
+        </div>
+
+        {/* Horizontal Scroll Sections */}
+        <div className="pb-16 space-y-12">
+          {/* Upcoming Events Row */}
+          <div>
+            <div className="px-8 flex items-center gap-3 mb-6">
+              <div className="w-3 h-3 rounded-full bg-green-500 animate-pulse" />
+              <h2 className="text-2xl font-bold text-gray-900">Upcoming Events</h2>
+              <span className="bg-green-100 text-green-700 text-sm font-bold px-3 py-1 rounded-full">{events.length}</span>
+            </div>
+            {loading ? (
+              <div className="px-8 text-sm text-gray-400">Loading...</div>
+            ) : events.length === 0 ? (
+              <div className="px-8 text-sm text-gray-400 italic">No upcoming events at the moment.</div>
+            ) : (
+              <div className="flex gap-6 overflow-x-auto px-8 pb-4 scrollbar-hide">
+                {events.map((event) => (
+                  <div
+                    key={event.id}
+                    className="flex-none w-80 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-all duration-300 group"
+                  >
+                    <div className="relative h-52 bg-gray-100">
+                      <Image
+                        src={event.image ? `data:${event.image_mimetype || 'image/jpeg'};base64,${event.image}` : '/assets/event1.png'}
+                        alt={event.title}
+                        fill
+                        sizes="320px"
+                        className="object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
+                      {isRegistered(event.id) && (
+                        <div className="absolute top-3 right-3 bg-green-500 text-white px-2.5 py-1 rounded-full text-xs font-bold flex items-center gap-1">
+                          <CheckCircle size={12} /> Registered
+                        </div>
+                      )}
+                    </div>
+                    <div className="p-5">
+                      <h3 className="font-bold text-gray-900 text-base mb-3 line-clamp-1 group-hover:text-primary transition-colors">{event.title}</h3>
+                      <div className="space-y-2 text-sm text-gray-500 mb-5">
+                        <div className="flex items-center gap-2">
+                          <CalendarIcon size={14} className="text-primary shrink-0" />
+                          <span>{new Date(event.event_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <MapPin size={14} className="text-primary shrink-0" />
+                          <span className="truncate">{event.location || '—'}</span>
+                        </div>
+                      </div>
+                      {isRegistered(event.id) ? (
+                        <div className="flex items-center justify-center gap-2 w-full py-2.5 bg-green-50 text-green-600 text-sm font-bold rounded-xl border border-green-100">
+                          <CheckCircle size={15} /> Already Registered
+                        </div>
+                      ) : user ? (
+                        <button
+                          onClick={() => setConfirmingEvent(event)}
+                          className="cursor-pointer w-full py-2.5 bg-primary text-white text-sm font-bold rounded-xl hover:bg-primary-dark transition-all"
+                        >
+                          Register Now
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => router.push('/login')}
+                          className="w-full py-2.5 bg-gray-100 text-gray-600 text-sm font-bold rounded-xl hover:bg-gray-200 transition-all flex items-center justify-center gap-2"
+                        >
+                          <LogIn size={15} /> Login to Register
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Past Events Row */}
+          {pastEvents.length > 0 && (
+            <div>
+              <div className="px-8 flex items-center gap-3 mb-6">
+                <div className="w-3 h-3 rounded-full bg-gray-400" />
+                <h2 className="text-2xl font-bold text-gray-500">Past Events</h2>
+                <span className="bg-gray-100 text-gray-500 text-sm font-bold px-3 py-1 rounded-full">{pastEvents.length}</span>
+              </div>
+              <div className="flex gap-6 overflow-x-auto px-8 pb-4 scrollbar-hide">
+                {pastEvents.map((event) => (
+                  <div
+                    key={event.id}
+                    className="flex-none w-72 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden"
+                  >
+                    <div className="relative h-48 bg-gray-100">
+                      <Image
+                        src={event.image ? `data:${event.image_mimetype || 'image/jpeg'};base64,${event.image}` : '/assets/event1.png'}
+                        alt={event.title}
+                        fill
+                        sizes="288px"
+                        className="object-cover grayscale-[25%]"
+                      />
+                      <div className="absolute inset-0 bg-black/15" />
+                    </div>
+                    <div className="p-5">
+                      <h3 className="font-bold text-gray-500 text-sm mb-3 line-clamp-1">{event.title}</h3>
+                      <div className="space-y-2 text-sm text-gray-400">
+                        <div className="flex items-center gap-2">
+                          <CalendarIcon size={14} className="shrink-0" />
+                          <span>{new Date(event.event_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <MapPin size={14} className="shrink-0" />
+                          <span className="truncate">{event.location || '—'}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Confirmation Modal */}
