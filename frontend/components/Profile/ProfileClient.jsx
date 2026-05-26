@@ -5,6 +5,7 @@ import Image from "next/image";
 import Header from "../Header/Header";
 import Footer from "../Footer/Footer";
 import { useAuth } from "../../context/AuthContext";
+import { getCookie } from "../../lib/cookies";
 import { 
   User as UserIcon, Mail, Phone, Calendar, 
   Camera, ShieldCheck, Edit3, Save, X,
@@ -94,7 +95,7 @@ export default function ProfileClient() {
         body: JSON.stringify(payload)
       });
       
-      login(updatedUser, localStorage.getItem('accessToken'), localStorage.getItem('refreshToken'));
+      login(updatedUser, getCookie('accessToken'), getCookie('refreshToken'));
       setIsEditing(false);
       setProfilePhoto(null);
       Swal.fire({
