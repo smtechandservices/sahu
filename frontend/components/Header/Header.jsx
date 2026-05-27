@@ -8,9 +8,9 @@ import { User as UserIcon, LogOut, Settings, ChevronDown, Menu, X } from 'lucide
 import { useState } from 'react';
 
 const aboutSections = [
-  { href: '/about#about-hero', label: 'Overview' },
-  { href: '/about#about-values', label: 'Our Values' },
-  { href: '/about#about-leadership', label: 'Leadership' },
+  { href: '/about/', label: 'Sabha Overview' },
+  { href: '/about#about-leadership', label: 'Leadership Team' },
+  { href: '/about#about-executive', label: 'Executive Committee' },
   { href: '/about#about-stats', label: 'Our Impact' },
 ];
 

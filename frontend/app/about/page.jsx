@@ -1,7 +1,7 @@
 import Header from '../../components/Header/Header';
 import Footer from '../../components/Footer/Footer';
-import AboutValues from '../../components/About/AboutValues';
 import AboutLeadership from '../../components/About/AboutLeadership';
+import ExecutiveCommittee from '../../components/About/ExecutiveCommittee';
 import AboutStats from '../../components/About/AboutStats';
 
 export const metadata = {
@@ -14,7 +14,7 @@ export default function AboutPage() {
     <>
       <Header />
       <main>
-        {/* About Hero Section */}
+        {/* Hero */}
         <section id="about-hero" className="relative min-h-[50vh] sm:min-h-[55vh] md:h-[60vh] flex items-center overflow-hidden bg-gray-900">
           <div className="absolute inset-0">
             <img
@@ -24,7 +24,6 @@ export default function AboutPage() {
             />
             <div className="absolute inset-0 bg-gradient-to-r from-gray-900 to-transparent"></div>
           </div>
-
           <div className="px-4 sm:px-6 md:px-8 lg:px-16 relative z-10 py-12 md:py-0">
             <div className="max-w-2xl">
               <span className="inline-block px-3 py-1 bg-primary text-white font-bold rounded-full mb-4 text-sm">
@@ -40,9 +39,8 @@ export default function AboutPage() {
             </div>
           </div>
         </section>
-
-        <AboutValues />
         <AboutLeadership />
+        <ExecutiveCommittee />
         <AboutStats />
       </main>
       <Footer />
