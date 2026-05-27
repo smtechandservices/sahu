@@ -267,7 +267,7 @@ class UserViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     filter_backends = [SearchFilter]
     search_fields = ['name', 'phone', 'email']
-    http_method_names = ['get', 'put', 'patch', 'delete', 'head', 'options']
+    http_method_names = ['get', 'post', 'put', 'patch', 'delete', 'head', 'options']
 
     def get_queryset(self):
         if not getattr(self.request.user, 'is_admin', False):
