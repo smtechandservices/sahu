@@ -2,6 +2,7 @@ import Header from '../../components/Header/Header';
 import Footer from '../../components/Footer/Footer';
 import AboutLeadership from '../../components/About/AboutLeadership';
 import ExecutiveCommittee from '../../components/About/ExecutiveCommittee';
+import AboutConstitution from '../../components/About/AboutConstitution';
 import AboutStats from '../../components/About/AboutStats';
 
 export const metadata = {
@@ -41,6 +42,7 @@ export default function AboutPage() {
         </section>
         <AboutLeadership />
         <ExecutiveCommittee />
+        <AboutConstitution />
         <AboutStats />
       </main>
       <Footer />

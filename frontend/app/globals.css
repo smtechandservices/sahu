@@ -71,7 +71,7 @@
   }
   
   .section-padding {
-    @apply py-20;
+    @apply py-12;
   }
 }
 

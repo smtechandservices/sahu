@@ -12,6 +12,7 @@ const aboutSections = [
   { href: '/about#about-leadership', label: 'Leadership Team' },
   { href: '/about#about-executive', label: 'Executive Committee' },
   { href: '/about#about-stats', label: 'Our Impact' },
+  { href: '/about#constitution', label: 'Constitution' },
 ];
 
 const Header = () => {
@@ -68,7 +69,7 @@ const Header = () => {
                       <ChevronDown size={14} className={`transition-transform mt-0.5 ${showAboutDropdown ? 'rotate-180' : ''}`} />
                     </Link>
                     {showAboutDropdown && (
-                      <div className="absolute top-full left-0 mt-0 w-44 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-50">
+                      <div className="absolute top-full left-0 mt-0 w-56 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-50">
                         {aboutSections.map((section) => (
                           <Link
                             key={section.href}
