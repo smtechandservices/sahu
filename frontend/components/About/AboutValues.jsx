@@ -28,11 +28,11 @@ const values = [
 
 const AboutValues = () => {
   return (
-    <section className="section-padding bg-white">
+    <section id="about-values" className="section-padding bg-white">
       <div className="px-4 sm:px-6 md:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold text-gray-900 mb-4">Our Core Values</h2>
-          <p className="text-xl text-[#564337] max-w-2xl mx-auto">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-4">Our Core Values</h2>
+          <p className="text-base sm:text-lg md:text-xl text-[#564337] max-w-2xl mx-auto">
             The foundation of Sahu Sabha is built on principles that guide our actions and inspire our community's growth.
           </p>
         </div>
@@ -45,7 +45,7 @@ const AboutValues = () => {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
               viewport={{ once: true }}
-              className="bg-[#FFFBF7] p-8 border border-yellow-200 rounded-md shadow-base hover:shadow-xl hover:border-primary/20 transition-all group"
+              className="bg-[#FFFBF7] p-5 sm:p-6 md:p-8 border border-yellow-200 rounded-md shadow-base hover:shadow-xl hover:border-primary/20 transition-all group"
             >
               <div className="w-20 h-20">
                 {value.icon}

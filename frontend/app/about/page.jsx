@@ -15,26 +15,26 @@ export default function AboutPage() {
       <Header />
       <main>
         {/* About Hero Section */}
-        <section className="relative h-[60vh] flex items-center overflow-hidden bg-gray-900">
+        <section id="about-hero" className="relative min-h-[50vh] sm:min-h-[55vh] md:h-[60vh] flex items-center overflow-hidden bg-gray-900">
           <div className="absolute inset-0">
-            <img 
-              src="/assets/rally-slide.png" 
-              alt="About Sahu Sabha" 
+            <img
+              src="/assets/rally-slide.png"
+              alt="About Sahu Sabha"
               className="w-full h-full object-cover opacity-40"
             />
             <div className="absolute inset-0 bg-gradient-to-r from-gray-900 to-transparent"></div>
           </div>
-          
-          <div className="px-4 sm:px-6 md:px-8 relative z-10">
+
+          <div className="px-4 sm:px-6 md:px-8 lg:px-16 relative z-10 py-12 md:py-0">
             <div className="max-w-2xl">
-              <span className="inline-block px-4 py-1 bg-primary text-white font-bold rounded-full mb-6">
+              <span className="inline-block px-3 py-1 bg-primary text-white font-bold rounded-full mb-4 text-sm">
                 Established 1980
               </span>
-              <h1 className="text-5xl lg:text-7xl font-bold text-white mb-6">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-bold text-white mb-4 sm:mb-6">
                 Uniting Hearts, <br />
                 <span className="text-primary">Building Legacy.</span>
               </h1>
-              <p className="text-xl text-gray-300 leading-relaxed">
+              <p className="text-base sm:text-lg md:text-xl text-gray-300 leading-relaxed max-w-xl">
                 Sahu Sabha is more than an organization; it's a family of millions connected by heritage and driven by a shared vision of progress.
               </p>
             </div>

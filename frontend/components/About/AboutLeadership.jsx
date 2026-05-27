@@ -32,11 +32,11 @@ const leaders = [
 
 const AboutLeadership = () => {
   return (
-    <section className="section-padding bg-white">
+    <section id="about-leadership" className="section-padding bg-white">
       <div className="px-4 sm:px-6 md:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold text-gray-900 mb-4">Leadership Team</h2>
-          <p className="text-xl text-[#564337] mx-auto">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-4">Leadership Team</h2>
+          <p className="text-base sm:text-lg md:text-xl text-[#564337] mx-auto">
             Meet the dedicated individuals who volunteer their time and expertise to lead Sahu Sabha.
           </p>
         </div>

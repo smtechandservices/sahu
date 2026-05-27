@@ -28,7 +28,7 @@ export default function GalleryPage() {
             <Images size={13} />
             Community Gallery
           </div>
-          <h1 className="text-4xl md:text-5xl font-black text-gray-900 mb-4">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black text-gray-900 mb-4">
             Our Cherished Moments
           </h1>
           <p className="text-gray-500 text-lg max-w-xl mx-auto font-medium">

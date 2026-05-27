@@ -61,12 +61,12 @@ const NewsEvents = () => {
   return (
     <section className="pb-12 bg-white overflow-hidden">
       <div className="px-4 sm:px-6 md:px-8 relative">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-16">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           
           {/* Upcoming Events Column - Spans 2/3 on desktop */}
           <div className="lg:col-span-2">
             <div className="flex justify-between items-end mb-12">
-              <h2 className="text-4xl font-bold text-slate-900">Upcoming Events</h2>
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-900">Upcoming Events</h2>
               <Link href="/events" className="text-yellow-700 font-bold text-sm hover:underline transition-all">
                 View Calendar
               </Link>
@@ -111,8 +111,8 @@ const NewsEvents = () => {
           </div>
           
           {/* Latest News Column - Positioned to the right */}
-          <div className="flex flex-col lg:pl-8 bg-white z-10">
-            <h2 className="text-4xl font-bold text-slate-900 mb-12">Latest News</h2>
+          <div className="flex flex-col bg-white z-10">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-900 mb-8 md:mb-12">Latest News</h2>
             
             <div className="space-y-6 flex-1 bg-white">
               {news.map((item, index) => (

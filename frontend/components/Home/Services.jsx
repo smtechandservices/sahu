@@ -22,26 +22,36 @@ const Services = () => {
         {/* Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Matrimonial Services - Large Card */}
-          <div className="md:col-span-2 bg-gradient-to-br from-yellow-50 via-white to-yellow-50/30 p-10 rounded-xl border border-yellow-200 relative overflow-hidden group hover:shadow-lg transition-all duration-500">
-            <div className="relative z-10 h-full flex flex-col">
-              <div className="bg-gray-200/50 p-4 rounded-lg w-fit mb-8">
+          <div className="md:col-span-2 bg-gray-100 p-6 sm:p-8 md:p-10 rounded-xl border border-yellow-200 relative overflow-hidden group hover:shadow-lg transition-all duration-500">
+            {/* Background Image */}
+            <div className="absolute inset-0 z-0 opacity-40">
+              <Image
+                src="/assets/event3.jpg"
+                alt="Matrimonial Background"
+                fill
+                className="object-cover transition-transform duration-700 group-hover:scale-105"
+              />
+            </div>
+            <div className="absolute inset-0 bg-gradient-to-r from-white/90 via-white/40 to-transparent z-[1]"></div>
+
+            <div className="relative z-10 h-full flex flex-col max-w-lg">
+              <div className="bg-yellow-50/80 p-4 rounded-lg w-fit mb-8">
                 <Heart className="text-yellow-600 fill-yellow-600" size={28} />
               </div>
               <h3 className="text-3xl font-bold mb-4 text-slate-900">Matrimonial Services</h3>
-              <p className="text-slate-600 text-base leading-relaxed mb-12 max-w-md">
+              <p className="text-slate-600 text-base leading-relaxed mb-12">
                 Find the Perfect Life Partner
                 Within Your Community
               </p>
-              <Link href="/matrimonial" className="mt-auto text-yellow-700 font-bold flex items-center gap-2 group/link">
+              <Link href="/matrimonial" className="mt-auto w-fit bg-white border border-gray-300 px-8 py-3 rounded-md font-bold text-slate-900 hover:bg-slate-50 transition-colors shadow-sm flex items-center gap-2 group/link">
                 Explore Profiles <ArrowRight size={18} className="group-hover/link:translate-x-1 transition-transform" />
               </Link>
             </div>
-            {/* Subtle background pattern/gradient effect can be added here */}
           </div>
 
           {/* Career Portal */}
-          <div className="bg-white p-10 rounded-xl border border-yellow-200 hover:shadow-lg transition-all duration-500 flex flex-col group">
-            <div className="bg-blue-50 p-4 rounded-lg w-fit mb-8">
+          <div className="bg-white p-6 sm:p-8 md:p-10 rounded-xl border border-yellow-200 hover:shadow-lg transition-all duration-500 flex flex-col group">
+            <div className="bg-blue-50 p-4 rounded-lg w-fit mb-6 md:mb-8">
               <Briefcase className="text-blue-900 fill-blue-900" size={28} />
             </div>
             <h3 className="text-2xl font-bold mb-4 text-slate-900">Opportunities</h3>
@@ -54,7 +64,7 @@ const Services = () => {
           </div>
 
           {/* Student Hostels */}
-          <div className="bg-white p-10 rounded-xl border border-yellow-200 hover:shadow-lg transition-all duration-500 flex flex-col group">
+          <div className="bg-white p-6 sm:p-8 md:p-10 rounded-xl border border-yellow-200 hover:shadow-lg transition-all duration-500 flex flex-col group">
             {/* Building Icon - prominent */}
             <div className="bg-amber-50 border border-amber-200 p-4 rounded-xl w-fit mb-4 group-hover:bg-amber-100 transition-colors duration-300">
               <Building2 className="text-amber-700" size={36} strokeWidth={1.5} />
@@ -70,7 +80,7 @@ const Services = () => {
           </div>
 
           {/* Monthly Magazine - Large Card with Background */}
-          <div className="md:col-span-2 bg-gray-100 p-10 rounded-xl border border-yellow-200 relative overflow-hidden group hover:shadow-lg transition-all duration-500">
+          <div className="md:col-span-2 bg-gray-100 p-6 sm:p-8 md:p-10 rounded-xl border border-yellow-200 relative overflow-hidden group hover:shadow-lg transition-all duration-500">
             {/* Background Image/Overlay */}
             <div className="absolute inset-0 z-0 opacity-40">
               <Image

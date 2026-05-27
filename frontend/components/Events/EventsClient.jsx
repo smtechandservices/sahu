@@ -159,7 +159,7 @@ export default function EventsClient() {
         {/* Hero Section */}
         <div className="bg-primary-dark text-white py-16">
           <div className="px-4 sm:px-6 md:px-8">
-            <h1 className="text-4xl font-bold mb-4">Community Events Calendar</h1>
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4">Community Events Calendar</h1>
             <p className="text-primary-light max-w-2xl">
               Discover and participate in cultural festivals, professional mixers, and community gatherings.
             </p>

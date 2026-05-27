@@ -67,10 +67,10 @@ const MagazineHero = () => {
                 Latest Issue: {latestLabel}
               </span>
             )}
-            <h1 className="text-5xl lg:text-7xl font-bold text-gray-900 leading-tight mb-6">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-bold text-gray-900 leading-tight mb-6">
               Celebrating Our <span className="text-primary italic">Roots</span>, Building Our Future.
             </h1>
-            <p className="text-xl text-gray-600 mb-8 max-w-lg leading-relaxed">
+            <p className="text-base sm:text-lg md:text-xl text-gray-600 mb-8 max-w-lg leading-relaxed">
               Explore the latest stories of heritage, achievement, and culture within the Sahu community. Dive into our community's monthly journey.
             </p>
 
