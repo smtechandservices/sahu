@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.utils import timezone
+from datetime import timedelta
 from django.conf import settings
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter
@@ -52,10 +53,14 @@ def create_user_session(user, refresh, request):
 
     jti = refresh.payload.get('jti')
 
+    # Expire sessions idle for more than 15 minutes before enforcing the device limit
+    cutoff = timezone.now() - timedelta(minutes=15)
+    UserSession.objects.filter(user=user, is_active=True, last_activity__lt=cutoff).update(is_active=False)
+
     # Max 2 device logins: raise ValidationError if there are 2 or more active sessions
     active_sessions = UserSession.objects.filter(user=user, is_active=True)
-    if active_sessions.count() >= 2:
-        raise ValidationError({'error': 'Maximum active session limit reached. You are already logged in from 2 devices. Please log out from another device first.'})
+    if active_sessions.count() >= 5:
+        raise ValidationError({'error': 'Maximum active session limit reached. You are already logged in from 5 devices. Please log out from another device first.'})
 
 
     UserSession.objects.create(
