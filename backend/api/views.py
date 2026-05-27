@@ -279,7 +279,7 @@ class UserViewSet(viewsets.ModelViewSet):
         if not getattr(request.user, 'is_admin', False):
             return Response(status=status.HTTP_403_FORBIDDEN)
         user = self.get_object()
-        sessions = UserSession.objects.filter(user=user)
+        sessions = UserSession.objects.filter(user=user, is_active=True)
         serializer = UserSessionSerializer(sessions, many=True)
         return Response(serializer.data)
 

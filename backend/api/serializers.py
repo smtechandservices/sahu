@@ -211,24 +211,33 @@ class UserSessionSerializer(serializers.ModelSerializer):
 from rest_framework_simplejwt.serializers import TokenRefreshSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.exceptions import AuthenticationFailed
+from django.utils import timezone
+from datetime import timedelta
+
+SESSION_IDLE_TIMEOUT = timedelta(minutes=15)
 
 class CustomTokenRefreshSerializer(TokenRefreshSerializer):
     def validate(self, attrs):
         data = super().validate(attrs)
-        
+
         refresh = RefreshToken(attrs['refresh'])
         jti = refresh.payload.get('jti')
-        
+
         try:
             session = UserSession.objects.get(refresh_jti=jti)
             if not session.is_active:
                 raise AuthenticationFailed('Session has been terminated.', code='session_terminated')
+            if timezone.now() - session.last_activity > SESSION_IDLE_TIMEOUT:
+                session.is_active = False
+                session.save()
+                raise AuthenticationFailed('Session expired due to inactivity.', code='session_expired')
+            session.save()  # updates last_activity via auto_now=True
         except UserSession.DoesNotExist:
             pass
 
         access_token = refresh.access_token
         access_token['refresh_jti'] = jti
         data['access'] = str(access_token)
-        
+
         return data
 

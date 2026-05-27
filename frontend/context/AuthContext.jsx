@@ -14,12 +14,15 @@ export function AuthProvider({ children }) {
     const storedUser = getCookie('user');
     const token = getCookie('accessToken');
 
-    if (storedUser && token) {
-      setUser(JSON.parse(storedUser));
+    if (token) {
+      if (storedUser) {
+        try { setUser(JSON.parse(storedUser)); } catch {}
+      }
       fetchApi('/auth/profile/')
         .then(data => {
             setUser(data);
-            setCookie('user', JSON.stringify(data));
+            const { profile_photo, profile_photo_mimetype, ...cookieSafeUser } = data;
+            setCookie('user', JSON.stringify(cookieSafeUser));
         })
         .catch(() => logout());
     }
@@ -28,9 +31,10 @@ export function AuthProvider({ children }) {
 
   const login = (userData, accessToken, refreshToken) => {
     setUser(userData);
-    setCookie('user', JSON.stringify(userData));
-    setCookie('accessToken', accessToken);
-    setCookie('refreshToken', refreshToken);
+    const { profile_photo, profile_photo_mimetype, ...cookieSafeUser } = userData;
+    setCookie('user', JSON.stringify(cookieSafeUser));
+    if (accessToken) setCookie('accessToken', accessToken);
+    if (refreshToken) setCookie('refreshToken', refreshToken);
   };
 
   const logout = async () => {
