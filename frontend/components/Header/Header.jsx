@@ -37,10 +37,11 @@ const Header = () => {
 
   return (
     <header className="bg-[#FFFBF7] shadow-sm sticky top-0 z-[1000]">
-      <div className="px-4 sm:px-6 lg:px-10 xl:px-12 flex justify-between items-center w-full h-16 lg:h-20">
+      <div className="px-4 sm:px-6 flex justify-between items-center w-full h-16 lg:h-20">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-3 shrink-0">
           <Image src="/assets/logo.png" alt="Sahu Sabha Logo" width={90} height={45} style={{ height: 'auto' }} priority />
+          <span className="hidden sm:block lg:hidden xl:block text-base font-semibold text-[#564337] md:text-xl leading-relaxed">Bihar Tailik Sahu Sabha</span>
         </Link>
 
         {/* Desktop Nav */}

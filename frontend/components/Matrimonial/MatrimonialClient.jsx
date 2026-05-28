@@ -53,6 +53,10 @@ export default function MatrimonialClient() {
     city: [], marital_status: [], manglik: [], complexion: [],
   });
 
+  // --- Pagination ---
+  const ITEMS_PER_PAGE = 6;
+  const [currentPage, setCurrentPage] = useState(1);
+
 
 
   const formatProfile = (p) => ({
@@ -78,7 +82,11 @@ export default function MatrimonialClient() {
     annual_income: p.annual_income || "—",
     mother_tongue: p.mother_tongue || "—",
     family_type: p.family_type || "—",
-    avatar: p.gender === "Male" ? "/assets/avatar_male.png" : "/assets/avatar_female.png",
+    avatar: p.photo
+      ? `data:${p.photo_mimetype || "image/jpeg"};base64,${p.photo}`
+      : p.gender === "Male"
+      ? "/assets/avatar_male.png"
+      : "/assets/avatar_female.png",
     bgColor: p.gender === "Male" ? "#1a7a6e" : "#1a2a4a",
   });
 
@@ -257,6 +265,15 @@ export default function MatrimonialClient() {
     });
   }, [profiles, receivedProfiles, searchQuery, showMyInterest, liked, matches, gender, ageMin, ageMax, maritalStatus, gotra, manglik, complexion, education, occupation, income, location, user]);
 
+  // Reset to page 1 whenever filters change
+  useEffect(() => { setCurrentPage(1); }, [filteredProfiles]);
+
+  const totalPages = Math.ceil(filteredProfiles.length / ITEMS_PER_PAGE);
+  const paginatedProfiles = filteredProfiles.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
+
   if (authLoading || loading)
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -271,15 +288,45 @@ export default function MatrimonialClient() {
     <>
       <Header />
       <main className="bg-gray-50 min-h-screen pb-20">
-        <MatrimonialHero
-          showMyInterest={showMyInterest}
-          onMyInterest={() => setShowMyInterest(!showMyInterest)}
-          myProfile={myProfile}
-          onCreateProfile={() => setShowCreateModal(true)}
-          onViewMyProfile={(profile) => setSelectedProfile(profile)}
-        />
+        <MatrimonialHero />
 
         <div className="px-4 sm:px-6 md:px-8 mt-10">
+          {/* Action bar — above filters and content */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+            <div>
+              <p className="text-sm text-gray-400 font-medium">
+                {filteredProfiles.length} profiles found
+              </p>
+            </div>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setShowMyInterest(!showMyInterest)}
+                className={`cursor-pointer btn-outline rounded-lg px-5 py-2.5 text-sm font-bold ${showMyInterest ? 'bg-primary/10 border-primary text-primary' : 'bg-white'}`}
+              >
+                {showMyInterest ? 'Show All' : 'My Interest'}
+              </button>
+              {myProfile ? (
+                <button
+                  onClick={() => setSelectedProfile(myProfile)}
+                  className="cursor-pointer btn-primary rounded-lg px-5 py-2.5 text-sm font-bold shadow-md shadow-primary/20 flex items-center gap-2"
+                >
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <circle cx="12" cy="8" r="4" />
+                    <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
+                  </svg>
+                  My Profile
+                </button>
+              ) : (
+                <button
+                  onClick={() => setShowCreateModal(true)}
+                  className="cursor-pointer btn-primary rounded-lg px-5 py-2.5 text-sm font-bold shadow-md shadow-primary/20"
+                >
+                  Create Profile
+                </button>
+              )}
+            </div>
+          </div>
+
           <div className="flex flex-col lg:flex-row gap-10">
             {/* Sidebar */}
             <MatrimonialFilterSidebar
@@ -349,7 +396,7 @@ export default function MatrimonialClient() {
 
               {/* Cards Grid */}
               <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-                {filteredProfiles.map(p => (
+                {paginatedProfiles.map(p => (
                   <MatrimonialCard
                     key={p.id}
                     profile={p}
@@ -378,22 +425,17 @@ export default function MatrimonialClient() {
               </div>
 
               {/* Pagination */}
-              {filteredProfiles.length > 0 && (
-                <div className="flex justify-center items-center gap-3 pt-8">
-                  <button className="w-10 h-10 flex items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-400 hover:border-primary hover:text-primary transition-all cursor-pointer">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                      <path d="M15 18l-6-6 6-6" />
-                    </svg>
-                  </button>
-                  <button className="w-10 h-10 flex items-center justify-center rounded-lg border bg-primary border-primary text-white shadow-lg shadow-primary/20 font-bold text-sm transition-all cursor-pointer">
-                    1
-                  </button>
-                  <button className="w-10 h-10 flex items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-400 hover:border-primary hover:text-primary transition-all cursor-pointer">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                      <path d="M9 18l6-6-6-6" />
-                    </svg>
-                  </button>
-                </div>
+              {totalPages > 1 && (
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  total={filteredProfiles.length}
+                  perPage={ITEMS_PER_PAGE}
+                  onChange={page => {
+                    setCurrentPage(page);
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }}
+                />
               )}
             </div>
           </div>
@@ -436,6 +478,70 @@ export default function MatrimonialClient() {
         />
       )}
     </>
+  );
+}
+
+function Pagination({ currentPage, totalPages, total, perPage, onChange }) {
+  const from = (currentPage - 1) * perPage + 1;
+  const to = Math.min(currentPage * perPage, total);
+
+  // Build page numbers with ellipsis
+  const pages = [];
+  if (totalPages <= 7) {
+    for (let i = 1; i <= totalPages; i++) pages.push(i);
+  } else {
+    pages.push(1);
+    if (currentPage > 3) pages.push('…');
+    for (let i = Math.max(2, currentPage - 1); i <= Math.min(totalPages - 1, currentPage + 1); i++) {
+      pages.push(i);
+    }
+    if (currentPage < totalPages - 2) pages.push('…');
+    pages.push(totalPages);
+  }
+
+  return (
+    <div className="flex flex-col items-center gap-3 pt-8">
+      <p className="text-sm text-gray-400">
+        Showing <span className="font-bold text-gray-700">{from}–{to}</span> of <span className="font-bold text-gray-700">{total}</span> profiles
+      </p>
+      <div className="flex items-center gap-1.5">
+        {/* Prev */}
+        <button
+          onClick={() => onChange(currentPage - 1)}
+          disabled={currentPage === 1}
+          className="w-9 h-9 flex items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-400 hover:border-primary hover:text-primary disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+
+        {pages.map((p, i) =>
+          p === '…' ? (
+            <span key={`ellipsis-${i}`} className="w-9 h-9 flex items-center justify-center text-gray-400 text-sm">…</span>
+          ) : (
+            <button
+              key={p}
+              onClick={() => onChange(p)}
+              className={`w-9 h-9 flex items-center justify-center rounded-lg border text-sm font-bold transition-all ${
+                p === currentPage
+                  ? 'bg-primary border-primary text-white shadow-md shadow-primary/25'
+                  : 'border-gray-200 bg-white text-gray-500 hover:border-primary hover:text-primary'
+              }`}
+            >
+              {p}
+            </button>
+          )
+        )}
+
+        {/* Next */}
+        <button
+          onClick={() => onChange(currentPage + 1)}
+          disabled={currentPage === totalPages}
+          className="w-9 h-9 flex items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-400 hover:border-primary hover:text-primary disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M9 18l6-6-6-6"/></svg>
+        </button>
+      </div>
+    </div>
   );
 }
 

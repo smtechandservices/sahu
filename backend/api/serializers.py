@@ -6,7 +6,7 @@ from .models import (
     User, OTPRecord, Accommodation, Booking,
     JobListing, Advertisement, MatrimonialProfile,
     Article, Event, EventRegistration, SiteSettings,
-    HeroCarouselImage, UserSession, GalleryImage
+    HeroCarouselImage, UserSession, Media
 )
 
 class Base64BinaryField(serializers.Field):
@@ -97,6 +97,7 @@ class MatrimonialPublicUserSerializer(serializers.ModelSerializer):
 class MatrimonialProfileSerializer(serializers.ModelSerializer):
     user_detail = MatrimonialPublicUserSerializer(source='user', read_only=True)
     contact_phone = serializers.SerializerMethodField()
+    photo = Base64BinaryField(required=False, allow_null=True)
     marital_status_display = serializers.CharField(source='get_marital_status_display', read_only=True)
     manglik_display = serializers.CharField(source='get_manglik_display', read_only=True)
     complexion_display = serializers.CharField(source='get_complexion_display', read_only=True)
@@ -106,7 +107,7 @@ class MatrimonialProfileSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'user', 'age', 'gender', 'city', 'education', 'occupation', 'family_type',
             'gotra', 'marital_status', 'manglik', 'complexion', 'height_cm', 'annual_income',
-            'mother_tongue', 'bio', 'is_approved', 'created_at',
+            'mother_tongue', 'photo', 'photo_mimetype', 'bio', 'is_approved', 'created_at',
             'user_detail', 'contact_phone',
             'marital_status_display', 'manglik_display', 'complexion_display',
         ]
@@ -194,12 +195,20 @@ class HeroCarouselImageSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class GalleryImageSerializer(serializers.ModelSerializer):
-    image = Base64BinaryField(required=True)
+class MediaSerializer(serializers.ModelSerializer):
+    image = Base64BinaryField(required=True, write_only=True)
+    image_url = serializers.SerializerMethodField()
 
     class Meta:
-        model = GalleryImage
-        fields = ['id', 'image', 'image_mimetype', 'title', 'is_active', 'created_at']
+        model = Media
+        fields = ['id', 'image', 'image_url', 'image_mimetype', 'title', 'media_type', 'is_active', 'created_at']
+
+    def get_image_url(self, obj):
+        request = self.context.get('request')
+        if not obj.image:
+            return None
+        url = f'/api/media/{obj.id}/image/'
+        return request.build_absolute_uri(url) if request else url
 
 
 class UserSessionSerializer(serializers.ModelSerializer):

@@ -75,6 +75,19 @@ export default function AccommodationClient() {
     return typeMatch && locMatch;
   });
 
+  // --- Pagination ---
+  const ITEMS_PER_PAGE = 6;
+  const [currentPage, setCurrentPage] = useState(1);
+
+  // Reset to page 1 whenever filters change
+  useEffect(() => { setCurrentPage(1); }, [filtered.length, selectedTypes, selectedLocation]);
+
+  const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
+  const paginated = filtered.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
+
   return (
     <>
       <Header />
@@ -82,25 +95,32 @@ export default function AccommodationClient() {
         <AccommodationHero />
 
         <div className="px-4 sm:px-6 md:px-8 mt-10 mx-auto">
-          {/* Tab Switcher */}
-          {user && (
-            <div className="flex bg-white p-1.5 rounded-2xl shadow-sm border border-gray-100 w-fit mb-10">
-              <button 
-                onClick={() => setActiveTab('explore')}
-                className={`cursor-pointer flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold transition-all ${activeTab === 'explore' ? 'bg-primary text-white shadow-md' : 'text-gray-400 hover:text-gray-600'}`}
-              >
-                <Search size={18} />
-                Explore
-              </button>
-              <button 
-                onClick={() => setActiveTab('enquiries')}
-                className={`cursor-pointer flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold transition-all ${activeTab === 'enquiries' ? 'bg-primary text-white shadow-md' : 'text-gray-400 hover:text-gray-600'}`}
-              >
-                <History size={18} />
-                My Enquiries
-              </button>
+          {/* Action Bar */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+            <div>
+              <p className="text-sm text-gray-400 font-medium">
+                {filtered.length} accommodations found
+              </p>
             </div>
-          )}
+            {user && (
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setActiveTab('explore')}
+                  className={`cursor-pointer flex items-center gap-2 btn-outline rounded-lg px-5 py-2.5 text-sm font-bold ${activeTab === 'explore' ? 'bg-primary/10 border-primary text-primary' : 'bg-white'}`}
+                >
+                  <Search size={16} />
+                  Explore
+                </button>
+                <button
+                  onClick={() => setActiveTab('enquiries')}
+                  className={`cursor-pointer flex items-center gap-2 btn-outline rounded-lg px-5 py-2.5 text-sm font-bold ${activeTab === 'enquiries' ? 'bg-primary/10 border-primary text-primary' : 'bg-white'}`}
+                >
+                  <History size={16} />
+                  My Enquiries
+                </button>
+              </div>
+            )}
+          </div>
 
           {activeTab === 'explore' ? (
             <div className="flex flex-col lg:flex-row gap-10">
@@ -127,11 +147,25 @@ export default function AccommodationClient() {
                     <p className="text-gray-400 mt-2">Try adjusting your filters to find what you're looking for.</p>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {filtered.map((item) => (
-                      <AccommodationCard key={item.id} item={item} />
-                    ))}
-                  </div>
+                  <>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {paginated.map((item) => (
+                        <AccommodationCard key={item.id} item={item} />
+                      ))}
+                    </div>
+                    {totalPages > 1 && (
+                      <Pagination
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        total={filtered.length}
+                        perPage={ITEMS_PER_PAGE}
+                        onChange={page => {
+                          setCurrentPage(page);
+                          window.scrollTo({ top: 0, behavior: 'smooth' });
+                        }}
+                      />
+                    )}
+                  </>
                 )}
               </div>
             </div>
@@ -201,5 +235,66 @@ export default function AccommodationClient() {
       </main>
       <Footer />
     </>
+  );
+}
+
+function Pagination({ currentPage, totalPages, total, perPage, onChange }) {
+  const from = (currentPage - 1) * perPage + 1;
+  const to = Math.min(currentPage * perPage, total);
+
+  const pages = [];
+  if (totalPages <= 7) {
+    for (let i = 1; i <= totalPages; i++) pages.push(i);
+  } else {
+    pages.push(1);
+    if (currentPage > 3) pages.push('…');
+    for (let i = Math.max(2, currentPage - 1); i <= Math.min(totalPages - 1, currentPage + 1); i++) {
+      pages.push(i);
+    }
+    if (currentPage < totalPages - 2) pages.push('…');
+    pages.push(totalPages);
+  }
+
+  return (
+    <div className="flex flex-col items-center gap-3 pt-8">
+      <p className="text-sm text-gray-400">
+        Showing <span className="font-bold text-gray-700">{from}–{to}</span> of <span className="font-bold text-gray-700">{total}</span> results
+      </p>
+      <div className="flex items-center gap-1.5">
+        <button
+          onClick={() => onChange(currentPage - 1)}
+          disabled={currentPage === 1}
+          className="w-9 h-9 flex items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-400 hover:border-primary hover:text-primary disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+
+        {pages.map((p, i) =>
+          p === '…' ? (
+            <span key={`ellipsis-${i}`} className="w-9 h-9 flex items-center justify-center text-gray-400 text-sm">…</span>
+          ) : (
+            <button
+              key={p}
+              onClick={() => onChange(p)}
+              className={`w-9 h-9 flex items-center justify-center rounded-lg border text-sm font-bold transition-all ${
+                p === currentPage
+                  ? 'bg-primary border-primary text-white shadow-md shadow-primary/25'
+                  : 'border-gray-200 bg-white text-gray-500 hover:border-primary hover:text-primary'
+              }`}
+            >
+              {p}
+            </button>
+          )
+        )}
+
+        <button
+          onClick={() => onChange(currentPage + 1)}
+          disabled={currentPage === totalPages}
+          className="w-9 h-9 flex items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-400 hover:border-primary hover:text-primary disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M9 18l6-6-6-6"/></svg>
+        </button>
+      </div>
+    </div>
   );
 }

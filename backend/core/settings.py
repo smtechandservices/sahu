@@ -102,6 +102,9 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Magazine article PDF uploads (stored as BinaryField)
 MAX_ARTICLE_PDF_SIZE_BYTES = 10 * 1024 * 1024  # 10 MB
 
+# Allow request bodies up to 14 MB to support video uploads in the media gallery
+DATA_UPLOAD_MAX_MEMORY_SIZE = 14 * 1024 * 1024  # 14 MB
+
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'api.authentication.CustomJWTAuthentication',

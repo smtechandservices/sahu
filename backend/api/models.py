@@ -179,6 +179,8 @@ class MatrimonialProfile(models.Model):
     height_cm = models.IntegerField(blank=True, null=True, help_text="Height in centimeters")
     annual_income = models.CharField(max_length=50, blank=True, null=True, help_text="e.g. 5-10 LPA")
     mother_tongue = models.CharField(max_length=50, blank=True, null=True)
+    photo = models.BinaryField(null=True, blank=True)
+    photo_mimetype = models.CharField(max_length=50, null=True, blank=True)
     bio = models.TextField()
     is_approved = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -258,10 +260,15 @@ class HeroCarouselImage(models.Model):
     def __str__(self):
         return f"Carousel Image {self.id}"
 
-class GalleryImage(models.Model):
+class Media(models.Model):
+    MEDIA_TYPE_CHOICES = (
+        ('gallery', 'Gallery'),
+        ('media', 'Media'),
+    )
     image = models.BinaryField()
     image_mimetype = models.CharField(max_length=50, default='image/jpeg')
     title = models.CharField(max_length=200, blank=True, default='')
+    media_type = models.CharField(max_length=10, choices=MEDIA_TYPE_CHOICES, default='gallery')
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -269,7 +276,7 @@ class GalleryImage(models.Model):
         ordering = ['-created_at']
 
     def __str__(self):
-        return self.title or f"Gallery Image {self.id}"
+        return self.title or f"Media {self.id}"
 
 
 class SiteSettings(models.Model):

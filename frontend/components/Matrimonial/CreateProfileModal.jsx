@@ -26,6 +26,7 @@ export default function CreateProfileModal({ isOpen, onClose, onCreated }) {
     mother_tongue: "Hindi",
     bio: "",
   });
+  const [photo, setPhoto] = useState(null);
 
 
   // Lock body scroll when open
@@ -43,6 +44,15 @@ export default function CreateProfileModal({ isOpen, onClose, onCreated }) {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  const handlePhotoChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => setPhoto(reader.result);
+      reader.readAsDataURL(file);
+    }
+  };
+
 
 
   const handleSubmit = async (e) => {
@@ -51,6 +61,12 @@ export default function CreateProfileModal({ isOpen, onClose, onCreated }) {
     try {
       const { fetchApi } = await import("../../lib/api");
       const payload = { ...formData };
+      if (photo) {
+        const [meta, base64Data] = photo.split(",");
+        const mimetype = meta.split(":")[1].split(";")[0];
+        payload.photo = base64Data;
+        payload.photo_mimetype = mimetype;
+      }
 
       await fetchApi("/matrimonial/", {
         method: "POST",
@@ -108,6 +124,22 @@ export default function CreateProfileModal({ isOpen, onClose, onCreated }) {
 
         {/* Body */}
         <form onSubmit={handleSubmit} className="px-8 py-6 space-y-6">
+          <div>
+            <label className="block text-sm font-bold text-gray-700 mb-2">Profile Photo</label>
+            <div className="flex items-center gap-4">
+              <div className="w-20 h-20 rounded-xl overflow-hidden flex-shrink-0 bg-gray-100 border border-gray-200 flex items-center justify-center">
+                {photo ? (
+                  <img src={photo} alt="Preview" className="w-full h-full object-cover" />
+                ) : (
+                  <svg className="w-8 h-8 text-gray-300" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                  </svg>
+                )}
+              </div>
+              <input type="file" accept="image/*" onChange={handlePhotoChange} className="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 outline-none focus:border-primary transition-colors text-sm" />
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-bold text-gray-700 mb-2">Age</label>
@@ -183,8 +215,6 @@ export default function CreateProfileModal({ isOpen, onClose, onCreated }) {
             <label className="block text-sm font-bold text-gray-700 mb-2">About You (Bio)</label>
             <textarea name="bio" required rows="4" value={formData.bio} onChange={handleChange} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 outline-none focus:border-primary transition-colors" />
           </div>
-
-
 
           <div className="pt-2 pb-2 flex justify-end gap-4">
             <button type="button" onClick={onClose} className="px-6 py-3 rounded-xl font-bold text-gray-500 hover:bg-gray-100 transition-colors">

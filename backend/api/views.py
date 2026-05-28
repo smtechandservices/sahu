@@ -11,13 +11,12 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter
 from django.db.models.functions import TruncMonth
 from django.db.models import Count
-import itertools
-
+from django.http import HttpResponse
 from .models import (
     User, OTPRecord, Accommodation, Booking,
     JobListing, Advertisement, MatrimonialProfile, MatrimonialInterest,
     Article, Event, EventRegistration, SiteSettings,
-    HeroCarouselImage, UserSession, GalleryImage
+    HeroCarouselImage, UserSession, Media
 )
 from .serializers import (
     UserSerializer, AdminUserSerializer, AccommodationSerializer, BookingSerializer,
@@ -25,7 +24,7 @@ from .serializers import (
     MatrimonialProfileSerializer, ArticleSerializer,
     EventSerializer, EventRegistrationSerializer, SiteSettingsSerializer,
     HeroCarouselImageSerializer, UserSessionSerializer, CustomTokenRefreshSerializer,
-    GalleryImageSerializer
+    MediaSerializer
 )
 from .permissions import IsAdminOrReadOnly
 
@@ -718,12 +717,12 @@ class HeroCarouselImageViewSet(viewsets.ModelViewSet):
             serializer.save()
 
 
-class GalleryImageViewSet(viewsets.ModelViewSet):
-    serializer_class = GalleryImageSerializer
+class MediaViewSet(viewsets.ModelViewSet):
+    serializer_class = MediaSerializer
     permission_classes = [IsAdminOrReadOnly]
 
     def get_queryset(self):
-        qs = GalleryImage.objects.all()
+        qs = Media.objects.all()
         if not (self.request.user.is_authenticated and getattr(self.request.user, 'is_admin', False)):
             qs = qs.filter(is_active=True)
         return qs
@@ -734,6 +733,16 @@ class GalleryImageViewSet(viewsets.ModelViewSet):
             serializer.save(image=image_file.read(), image_mimetype=image_file.content_type)
         else:
             serializer.save()
+
+    @action(detail=True, methods=['get'], permission_classes=[AllowAny], url_path='image')
+    def image(self, request, pk=None):
+        obj = self.get_object()
+        if not obj.image:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        data = bytes(obj.image)
+        resp = HttpResponse(data, content_type=obj.image_mimetype or 'image/jpeg')
+        resp['Cache-Control'] = 'public, max-age=86400'
+        return resp
 
 
 from rest_framework_simplejwt.views import TokenRefreshView

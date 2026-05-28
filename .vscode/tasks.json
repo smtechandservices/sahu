@@ -1,0 +1,61 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "frontend (3000)",
+      "type": "shell",
+      "command": "npm run dev -- --port 3000",
+      "options": {
+        "cwd": "${workspaceFolder}/frontend"
+      },
+      "presentation": {
+        "panel": "dedicated",
+        "group": "dev-servers",
+        "reveal": "always"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "frontend-admin (3001)",
+      "type": "shell",
+      "command": "npm run dev -- --port 3001",
+      "options": {
+        "cwd": "${workspaceFolder}/frontend-admin"
+      },
+      "presentation": {
+        "panel": "dedicated",
+        "group": "dev-servers",
+        "reveal": "always"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "backend (8000)",
+      "type": "shell",
+      "command": "python manage.py runserver 8000",
+      "options": {
+        "cwd": "${workspaceFolder}/backend"
+      },
+      "presentation": {
+        "panel": "dedicated",
+        "group": "dev-servers",
+        "reveal": "always"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Start All",
+      "dependsOn": [
+        "frontend (3000)",
+        "frontend-admin (3001)",
+        "backend (8000)"
+      ],
+      "dependsOrder": "parallel",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": []
+    }
+  ]
+}
