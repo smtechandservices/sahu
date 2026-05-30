@@ -3,10 +3,10 @@
 import { motion } from 'framer-motion';
 
 const stats = [
-  { label: "ACTIVE MEMBERS", value: "5K+" },
+  { label: "ACTIVE MEMBERS", value: "30K+" },
   { label: "EVENTS ORGANIZED", value: "50+" },
-  { label: "YEARS OF SERVICE", value: "30+" },
-  { label: "DISTRICTS", value: "15+" }
+  { label: "YEARS OF SERVICE", value: "50+" },
+  { label: "DISTRICTS", value: "38+" }
 ];
 
 const AboutStats = () => {

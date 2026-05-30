@@ -2,7 +2,7 @@ import Image from 'next/image';
 
 const About = () => {
   return (
-    <section className="section-padding bg-bg-section mx-2 sm:mx-4 md:mx-8">
+    <section className="section-padding bg-bg-section">
       <div className="px-4 sm:px-6 md:px-8 flex flex-col lg:flex-row items-center gap-8 lg:gap-20">
         <div className="relative">
           <div className="overflow-hidden">

@@ -106,9 +106,9 @@ export default function LoginPage() {
             {/* Logo */}
             <Link href="/" className="inline-block transition-transform active:scale-95 duration-300">
               <Image 
-                src="/assets/logo.png" 
+                src="/assets/logo-sahu.png" 
                 alt="Sahu Sabha Logo" 
-                width={120} 
+                width={240} 
                 height={60} 
                 style={{ height: 'auto' }}
                 priority

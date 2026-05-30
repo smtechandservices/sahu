@@ -8,26 +8,8 @@ const leaders = [
     name: "Ranvijay Sahu",
     role: "President",
     image: "/assets/president.png",
-    bio: "Dedicated to community welfare for over 25 years, leading with vision and integrity."
+    bio: "Dedicated to community welfare, leading with vision and integrity."
   },
-  {
-    name: "Sunita Sahu",
-    role: "Vice President",
-    image: "/assets/event4.png", // Using available assets as placeholders
-    bio: "Focusing on women's empowerment and educational initiatives within the community."
-  },
-  {
-    name: "Alok Sahu",
-    role: "General Secretary",
-    image: "/assets/event2.png",
-    bio: "Expert in organizational management and digital transformation of community services."
-  },
-  {
-    name: "Nitin Sahu",
-    role: "Treasurer",
-    image: "/assets/event1.png",
-    bio: "Ensuring financial transparency and sustainable growth for our welfare projects."
-  }
 ];
 
 const AboutLeadership = () => {

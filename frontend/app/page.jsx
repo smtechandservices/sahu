@@ -12,9 +12,9 @@ export default function Home() {
   return (
     <>
       <Header />
-      <NewsMarquee />
       <main>
         <Hero />
+        <NewsMarquee />
         <About />
         <Inspirational />
         <Services />

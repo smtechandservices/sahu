@@ -70,7 +70,7 @@ class Accommodation(models.Model):
     description = models.TextField()
     type = models.CharField(max_length=50, choices=AccommodationType.choices)
     badge = models.CharField(max_length=100, blank=True, null=True)
-    image = models.BinaryField()
+    image = models.BinaryField(null=True, blank=True)
     image_mimetype = models.CharField(max_length=50, null=True, blank=True)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     unit = models.CharField(max_length=50, default="/ night")
@@ -135,7 +135,7 @@ class JobListing(models.Model):
 class Advertisement(models.Model):
     title = models.CharField(max_length=255)
     company = models.CharField(max_length=255)
-    image = models.BinaryField()
+    image = models.BinaryField(null=True, blank=True)
     image_mimetype = models.CharField(max_length=50, null=True, blank=True)
     description = models.TextField()
     link = models.URLField(blank=True, null=True)
@@ -249,7 +249,7 @@ class EventRegistration(models.Model):
 
 # --- Core (Settings) Models ---
 class HeroCarouselImage(models.Model):
-    image = models.BinaryField()
+    image = models.BinaryField(null=True, blank=True)
     image_mimetype = models.CharField(max_length=50, default='image/jpeg')
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -265,7 +265,7 @@ class Media(models.Model):
         ('gallery', 'Gallery'),
         ('media', 'Media'),
     )
-    image = models.BinaryField()
+    image = models.BinaryField(null=True, blank=True)
     image_mimetype = models.CharField(max_length=50, default='image/jpeg')
     title = models.CharField(max_length=200, blank=True, default='')
     media_type = models.CharField(max_length=10, choices=MEDIA_TYPE_CHOICES, default='gallery')

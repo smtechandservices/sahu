@@ -7,7 +7,7 @@ const figures = [
   {
     name: 'Daanveer Bhamashah',
     title: 'Symbol of Generosity',
-    image: '/assets/figures/bhamashah.jpg',
+    image: '/assets/figures/bhamashah.jpeg',
     description: {
       hi: 'भामाशाह मेवाड़ राज्य के एक महान मंत्री और दानवीर थे, जिन्होंने महाराणा प्रताप को स्वाधीनता संग्राम के लिए अपनी संपूर्ण व्यक्तिगत संपदा दान कर दी। उनका यह निःस्वार्थ बलिदान साहू समाज के लिए उदारता और देशभक्ति का चिरस्थायी प्रतीक बन गया।',
       en: 'Bhamashah was a great minister and philanthropist of the Mewar kingdom, who donated his entire personal wealth to Maharana Pratap to fund the struggle for independence. His selfless sacrifice became an eternal symbol of generosity and patriotism for the Sahu community.',
@@ -16,7 +16,7 @@ const figures = [
   {
     name: 'Baba Badal Nayak',
     title: 'Legendary Leader',
-    image: '/assets/figures/badal_nayak.png',
+    image: '/assets/figures/badal_nayak.jpeg',
     description: {
       hi: 'बाबा बादल नायक एक पूजनीय आध्यात्मिक एवं सामुदायिक नेता थे, जिन्होंने कठिन परिस्थितियों में साहू समाज का मार्गदर्शन किया। उनकी बुद्धिमत्ता, साहस और न्याय के प्रति अटूट समर्पण ने उन्हें एक महान विभूति बनाया, जिनकी शिक्षाएँ आज भी पीढ़ियों को प्रेरित करती हैं।',
       en: 'Baba Badal Nayak was a revered spiritual and community leader who guided the Sahu community through difficult times. His wisdom, courage, and unwavering dedication to justice made him a great figure whose teachings continue to inspire generations even today.',
@@ -77,7 +77,7 @@ const Inspirational = () => {
           {figures.map((figure, index) => (
             <div
               key={index}
-              className="cursor-pointer h-[380px] sm:h-[460px] lg:h-[560px]"
+              className="cursor-pointer h-[560px]"
               style={{ perspective: '1000px' }}
               onClick={() => handleFlip(index)}
             >
@@ -96,7 +96,7 @@ const Inspirational = () => {
                   style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden' }}
                   className="absolute inset-0 bg-[#FFFBF7] overflow-hidden shadow-base hover:-translate-y-2 hover:shadow-md transition-all duration-300"
                 >
-                  <div className="relative h-[280px] sm:h-[360px] lg:h-[460px] w-full">
+                  <div className="relative h-[460px] w-full">
                     <Image
                       src={figure.image}
                       alt={figure.name}
@@ -120,15 +120,6 @@ const Inspirational = () => {
                   }}
                   className="absolute inset-0 bg-[#5C3D2E] overflow-hidden shadow-base flex flex-col items-center justify-center p-10 text-center"
                 >
-                  <div className="relative h-28 w-28 rounded-full overflow-hidden mb-6 border-4 border-white/30">
-                    <Image
-                      src={figure.image}
-                      alt={figure.name}
-                      fill
-                      sizes="112px"
-                      className="object-cover"
-                    />
-                  </div>
                   <h3 className="text-2xl font-bold text-white mb-2">{figure.name}</h3>
                   <p className="text-sm font-semibold text-amber-300 uppercase tracking-widest mb-6">{figure.title}</p>
                   <p className={`text-white/90 text-base leading-loose tracking-wide ${lang === 'hi' ? '' : 'text-sm'}`}>
