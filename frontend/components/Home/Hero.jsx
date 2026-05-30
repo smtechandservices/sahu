@@ -37,8 +37,8 @@ const Hero = () => {
 
   return (
     <section className="bg-gray-50">
-      <div className="">
-        <div className="relative overflow-hidden h-[550px] flex items-center bg-white">
+      <div className="relative">
+        <div className="relative overflow-hidden h-[600px] flex items-center bg-white">
           <AnimatePresence mode="wait">
             <motion.div 
               key={current}
@@ -59,17 +59,27 @@ const Hero = () => {
           </AnimatePresence>
         </div>
 
-        {/* Dots */}
         {slides.length > 1 && (
-          <div className="flex justify-center gap-2 mt-6">
-            {slides.map((_, i) => (
-              <button 
-                key={i} 
-                onClick={() => setCurrent(i)}
-                className={`h-2 rounded-full transition-all ${current === i ? 'w-8 bg-primary' : 'w-2 bg-slate-300'}`}
-              />
-            ))}
-          </div>
+          <>
+            <button
+              onClick={() => setCurrent((current - 1 + slides.length) % slides.length)}
+              aria-label="Previous slide"
+              className="absolute left-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-black/10 hover:bg-black/55 text-white flex items-center justify-center transition-colors backdrop-blur-sm"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+            <button
+              onClick={() => setCurrent((current + 1) % slides.length)}
+              aria-label="Next slide"
+              className="absolute right-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-black/10 hover:bg-black/55 text-white flex items-center justify-center transition-colors backdrop-blur-sm"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          </>
         )}
       </div>
     </section>

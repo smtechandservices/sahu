@@ -47,6 +47,13 @@ const Header = () => {
         </svg>
         <span className="font-semibold">Contact us:</span>
         <span className="font-medium cursor-default select-text">+91 6122303994</span>
+        <span className="mx-1 opacity-40">|</span>
+        <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <span className="font-medium">Mon – Sun</span>
+        <span>:</span>
+        <span className="font-medium">8:00 AM – 8:00 PM</span>
       </div>
 
       {/* Row 1: Logo + Actions */}
