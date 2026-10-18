@@ -92,8 +92,12 @@ import os
 DEV_OTP_ENABLED = os.environ.get('DEV_OTP_ENABLED', 'False').lower() == 'true'
 DEV_OTP_CODE = os.environ.get('DEV_OTP_CODE', '')
 
-def _is_dev_otp(code):
-    return DEV_OTP_ENABLED and bool(DEV_OTP_CODE) and code == DEV_OTP_CODE
+def _is_dev_otp(code, phone):
+    if not (DEV_OTP_ENABLED and DEV_OTP_CODE and code == DEV_OTP_CODE):
+        return False
+    # Never let the shared bypass code log in as an admin: an admin's OTP
+    # token carries full admin rights over the API.
+    return not User.objects.filter(phone=phone, is_admin=True).exists()
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
@@ -104,7 +108,7 @@ def verify_otp(request):
     if not phone or not code:
         return Response({'error': 'Phone and code are required'}, status=status.HTTP_400_BAD_REQUEST)
 
-    if not _is_dev_otp(code):
+    if not _is_dev_otp(code, phone):
         otp = OTPRecord.objects.filter(phone=phone, code=code, is_used=False).order_by('-created_at').first()
         if not otp:
             return Response({'error': 'Invalid or expired OTP'}, status=status.HTTP_400_BAD_REQUEST)
@@ -158,7 +162,7 @@ def verify_register_otp(request):
     if User.objects.filter(phone=phone).exists():
         return Response({'error': 'An account with this number already exists. Please login.'}, status=status.HTTP_400_BAD_REQUEST)
 
-    if not _is_dev_otp(code):
+    if not _is_dev_otp(code, phone):
         otp = OTPRecord.objects.filter(phone=phone, code=code, is_used=False).order_by('-created_at').first()
         if not otp:
             return Response({'error': 'Invalid or expired OTP'}, status=status.HTTP_400_BAD_REQUEST)
@@ -186,7 +190,7 @@ def register(request):
     if User.objects.filter(phone=phone).exists():
         return Response({'error': 'User with this phone already exists. Please login.'}, status=status.HTTP_400_BAD_REQUEST)
 
-    if not _is_dev_otp(code):
+    if not _is_dev_otp(code, phone):
         otp = OTPRecord.objects.filter(phone=phone, code=code, is_used=False).order_by('-created_at').first()
         if not otp:
             return Response({'error': 'Invalid or expired OTP'}, status=status.HTTP_400_BAD_REQUEST)
