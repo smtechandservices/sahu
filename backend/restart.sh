@@ -3,8 +3,8 @@
 #   ./restart.sh            install deps, migrate, collectstatic, restart
 #   ./restart.sh --quick    restart only
 #   ./restart.sh --stop     stop only
-# On the server (after deploy/setup.sh) this restarts the sahu-backend systemd
-# service; elsewhere it runs gunicorn in the background itself.
+# On the server, if the sahu-backend systemd service is installed, this restarts
+# that service; otherwise it runs gunicorn in the background itself.
 # Env overrides for the non-systemd mode: PORT (8000), HOST (127.0.0.1), WORKERS (3)
 set -euo pipefail
 

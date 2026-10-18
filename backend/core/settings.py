@@ -12,7 +12,7 @@ DEBUG = os.getenv('DEBUG', 'True') == 'True'
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '*').split(',')
 CSRF_TRUSTED_ORIGINS = [o for o in os.getenv('CSRF_TRUSTED_ORIGINS', '').split(',') if o]
 
-# Behind nginx: trust its X-Forwarded-Proto so Django knows requests are HTTPS
+# Behind a reverse proxy (Caddy): trust its X-Forwarded-Proto so Django knows requests are HTTPS
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 INSTALLED_APPS = [
