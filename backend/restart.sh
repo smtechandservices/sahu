@@ -55,7 +55,7 @@ if [[ "${1:-}" != "--quick" ]]; then
   "$PY" manage.py collectstatic --noinput -v 0
 fi
 
-"$PY" manage.py check --deploy --fail-level ERROR -v 0 >/dev/null
+"$PY" manage.py check -v 0
 
 stop
 

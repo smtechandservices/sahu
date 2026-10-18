@@ -162,3 +162,6 @@ db.sqlite3
 db.sqlite3-journal
 
 media/
+# gunicorn (restart.sh)
+logs/
+gunicorn.pid
