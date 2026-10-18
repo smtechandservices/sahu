@@ -80,7 +80,7 @@ const Footer = () => {
                 src="/assets/logo-sahu.png"
                 alt="Sahu Sabha Logo"
                 width={160}
-                height={80}
+                height={48}
                 style={{ height: 'auto' }}
                 className="-ms-2 opacity-90"
               />

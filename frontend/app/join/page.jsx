@@ -102,7 +102,7 @@ export default function JoinCommunity() {
                 src="/assets/logo-sahu.png" 
                 alt="Sahu Sabha Logo" 
                 width={240} 
-                height={60}
+                height={72}
                 style={{ height: 'auto' }}
               />
             </Link>

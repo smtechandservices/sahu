@@ -57,7 +57,7 @@ const Header = () => {
       <div className="pe-2 md:pe-4 flex justify-between items-center w-full h-22">
         {/* Logo */}
         <Link href="/" className="shrink-0">
-          <Image src="/assets/logo-sahu.png" alt="Sahu Sabha Logo" width={220} height={120} style={{ height: 'auto' }} priority />
+          <Image src="/assets/logo-sahu.png" alt="Sahu Sabha Logo" width={220} height={66} style={{ height: 'auto' }} priority />
         </Link>
 
         {/* Desktop Actions */}
