@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Header from '../Header/Header';
 import Footer from '../Footer/Footer';
 import GalleryClient from './GalleryClient';
 import { fetchApi } from '../../lib/api';
+import { useMarquee } from '../../lib/useMarquee';
 import { Images, Film, Image } from 'lucide-react';
 
 const TABS = [
@@ -25,8 +26,10 @@ export default function GalleryPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  const galleryItems = allItems.filter(i => i.media_type === 'gallery');
-  const mediaItems   = allItems.filter(i => i.media_type === 'media');
+  const galleryItems = useMemo(() => allItems.filter(i => i.media_type === 'gallery'), [allItems]);
+  const mediaItems   = useMemo(() => allItems.filter(i => i.media_type === 'media'), [allItems]);
+  const { trackRef: galleryTrackRef, items: galleryLoop } = useMarquee(galleryItems);
+  const { trackRef: mediaTrackRef,   items: mediaLoop }   = useMarquee(mediaItems);
 
   const displayItems =
     activeTab === 'gallery' ? galleryItems :
@@ -71,8 +74,8 @@ export default function GalleryPage() {
               {/* Row 1 — gallery images, scrolls left */}
               {(loading || galleryItems.length > 0) && (
                 <div className="overflow-hidden w-full">
-                  <div className={`flex gap-3 w-max ${galleryItems.length > 0 ? 'marquee-left' : ''}`}>
-                    {(loading ? Array(10).fill(null) : [...galleryItems, ...galleryItems]).map((img, i) => (
+                  <div ref={galleryTrackRef} className={`flex w-max ${galleryItems.length > 0 ? 'marquee-left' : ''}`}>
+                    {(loading ? Array(10).fill(null) : galleryLoop).map((img, i) => (
                       <MarqueeThumb key={i} img={img} loading={loading} />
                     ))}
                   </div>
@@ -81,8 +84,8 @@ export default function GalleryPage() {
               {/* Row 2 — media images, scrolls right */}
               {(loading || mediaItems.length > 0) && (
                 <div className="overflow-hidden w-full">
-                  <div className={`flex gap-3 w-max ${mediaItems.length > 0 ? 'marquee-right' : ''}`}>
-                    {(loading ? Array(10).fill(null) : [...mediaItems, ...mediaItems]).map((img, i) => (
+                  <div ref={mediaTrackRef} className={`flex w-max ${mediaItems.length > 0 ? 'marquee-right' : ''}`}>
+                    {(loading ? Array(10).fill(null) : mediaLoop).map((img, i) => (
                       <MarqueeThumb key={i} img={img} loading={loading} />
                     ))}
                   </div>
@@ -208,7 +211,7 @@ function EmptyState() {
 
 function MarqueeThumb({ img, loading }) {
   return (
-    <div className="relative w-28 h-20 rounded-xl overflow-hidden shrink-0 shadow-sm">
+    <div className="relative w-28 h-20 mr-3 rounded-xl overflow-hidden shrink-0 shadow-sm">
       {loading || !img ? (
         <div className="w-full h-full bg-gray-200 animate-pulse" />
       ) : (
