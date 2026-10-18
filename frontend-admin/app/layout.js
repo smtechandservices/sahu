@@ -5,6 +5,7 @@ import "./globals.css";
 import { AuthProvider } from "../context/AuthContext";
 import Sidebar from "../components/Sidebar/Sidebar";
 import { usePathname } from "next/navigation";
+import { Analytics } from "@vercel/analytics/next";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -32,6 +33,7 @@ export default function RootLayout({ children }) {
             </main>
           </div>
         </AuthProvider>
+        <Analytics />
       </body>
     </html>
   );
