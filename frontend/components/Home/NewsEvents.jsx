@@ -74,7 +74,7 @@ const NewsEvents = () => {
             </div>
             
             {/* Scrollable Container - Can scroll across full width on desktop */}
-            <div className="flex overflow-x-auto flex-nowrap scrollbar-thin-x gap-6 pb-6 mb-2 snap-x snap-mandatory relative z-0 lg:pr-[40%]">
+            <div className="flex overflow-x-auto flex-nowrap scrollbar-thin-x gap-6 pb-6 mb-2 snap-x snap-mandatory relative z-0">
               {events.length === 0 ? (
                 <p className="text-slate-500 text-sm font-medium py-8">No upcoming events right now.</p>
               ) : events.map((event, index) => (
