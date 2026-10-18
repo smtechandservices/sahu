@@ -165,3 +165,7 @@ media/
 # gunicorn (restart.sh)
 logs/
 gunicorn.pid
+
+# Per-environment env files (keep the template)
+.env.*
+!.env.example

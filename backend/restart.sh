@@ -3,7 +3,9 @@
 #   ./restart.sh            install deps, migrate, collectstatic, restart
 #   ./restart.sh --quick    restart only
 #   ./restart.sh --stop     stop only
-# Env overrides: PORT (8000), HOST (127.0.0.1), WORKERS (3)
+# On the server (after deploy/setup.sh) this restarts the sahu-backend systemd
+# service; elsewhere it runs gunicorn in the background itself.
+# Env overrides for the non-systemd mode: PORT (8000), HOST (127.0.0.1), WORKERS (3)
 set -euo pipefail
 
 cd "$(dirname "$0")"
@@ -14,6 +16,11 @@ WORKERS="${WORKERS:-3}"
 VENV=".venv"
 PIDFILE="gunicorn.pid"
 LOGDIR="logs"
+SERVICE="sahu-backend"
+
+has_service() {
+  command -v systemctl >/dev/null 2>&1 && [[ -f "/etc/systemd/system/$SERVICE.service" ]]
+}
 
 stop() {
   if [[ -f "$PIDFILE" ]] && kill -0 "$(cat "$PIDFILE")" 2>/dev/null; then
@@ -36,7 +43,7 @@ stop() {
 }
 
 if [[ "${1:-}" == "--stop" ]]; then
-  stop
+  if has_service; then systemctl stop "$SERVICE"; echo "Stopped $SERVICE."; else stop; fi
   exit 0
 fi
 
@@ -56,6 +63,19 @@ if [[ "${1:-}" != "--quick" ]]; then
 fi
 
 "$PY" manage.py check -v 0
+
+if has_service; then
+  echo "Restarting $SERVICE..."
+  systemctl restart "$SERVICE"
+  sleep 2
+  if systemctl is-active --quiet "$SERVICE"; then
+    echo "Running. Logs: journalctl -u $SERVICE -f"
+    exit 0
+  fi
+  echo "$SERVICE failed to start:"
+  journalctl -u "$SERVICE" -n 30 --no-pager
+  exit 1
+fi
 
 stop
 
