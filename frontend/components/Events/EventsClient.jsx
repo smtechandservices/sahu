@@ -321,7 +321,8 @@ export default function EventsClient() {
                           <div key={idx} className="group p-4 border border-gray-100 rounded-xl hover:border-primary transition-all bg-gray-50 hover:bg-white hover:shadow-md">
                             <div className="relative h-32 w-full mb-4 rounded-lg overflow-hidden">
                               <Image 
-                                src={event.image ? `data:${event.image_mimetype || 'image/jpeg'};base64,${event.image}` : '/assets/event1.png'} 
+                                unoptimized
+                                src={event.image || '/assets/event1.png'} 
                                 alt={event.title}
                                 fill
                                 sizes="400px"
@@ -413,7 +414,8 @@ export default function EventsClient() {
                   >
                     <div className="relative h-52 bg-gray-100">
                       <Image
-                        src={event.image ? `data:${event.image_mimetype || 'image/jpeg'};base64,${event.image}` : '/assets/event1.png'}
+                        unoptimized
+                        src={event.image || '/assets/event1.png'}
                         alt={event.title}
                         fill
                         sizes="320px"
@@ -479,7 +481,8 @@ export default function EventsClient() {
                   >
                     <div className="relative h-48 bg-gray-100">
                       <Image
-                        src={event.image ? `data:${event.image_mimetype || 'image/jpeg'};base64,${event.image}` : '/assets/event1.png'}
+                        unoptimized
+                        src={event.image || '/assets/event1.png'}
                         alt={event.title}
                         fill
                         sizes="288px"

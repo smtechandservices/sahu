@@ -163,7 +163,7 @@ export default function MatrimonialManager() {
               {/* Photo */}
               <div className="relative h-52 bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center text-primary/30">
                 {profile.photo ? (
-                  <img src={`data:${profile.photo_mimetype || 'image/jpeg'};base64,${profile.photo}`} alt={profile.user_detail?.name} className="w-full h-full object-cover" />
+                  <img src={profile.photo} alt={profile.user_detail?.name} className="w-full h-full object-cover" />
                 ) : (
                   <User size={56} />
                 )}
@@ -223,7 +223,7 @@ export default function MatrimonialManager() {
 
               <div className="relative h-56 bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center shrink-0 text-primary/30">
                 {selectedProfile?.photo ? (
-                  <img src={`data:${selectedProfile.photo_mimetype || 'image/jpeg'};base64,${selectedProfile.photo}`} alt={selectedProfile.user_detail?.name} className="w-full h-full object-cover" />
+                  <img src={selectedProfile.photo} alt={selectedProfile.user_detail?.name} className="w-full h-full object-cover" />
                 ) : (
                   <User size={72} />
                 )}

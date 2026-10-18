@@ -69,7 +69,7 @@ export default function EventsManager() {
       image_mimetype: null,
     });
     setImagePreview(
-      event.image ? `data:${event.image_mimetype || 'image/jpeg'};base64,${event.image}` : null
+      event.image || null
     );
     setModalOpen(true);
   };
@@ -156,7 +156,7 @@ export default function EventsManager() {
       <div className="h-48 bg-gray-100 relative">
         {event.image && (
           <img
-            src={`data:${event.image_mimetype || 'image/jpeg'};base64,${event.image}`}
+            src={event.image}
             alt={event.title}
             className={`w-full h-full object-cover transition-transform duration-500 ${isPast ? 'grayscale-[30%]' : 'group-hover:scale-105'}`}
           />

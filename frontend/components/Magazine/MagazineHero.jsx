@@ -4,13 +4,7 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { FileText, Download } from 'lucide-react';
-
-const makeBlobUrl = (b64data) => {
-  const binary = atob(b64data);
-  const bytes = new Uint8Array(binary.length);
-  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-  return URL.createObjectURL(new Blob([bytes], { type: 'application/pdf' }));
-};
+import { downloadFile } from '../../lib/download';
 
 const MagazineHero = () => {
   const [stats, setStats] = useState({ subscriber_count: null, magazine_count: null });
@@ -34,15 +28,12 @@ const MagazineHero = () => {
   }, []);
 
   const handleRead = () => {
-    if (latest?.pdf) window.open(makeBlobUrl(latest.pdf), '_blank');
+    if (latest?.pdf) window.open(latest.pdf, '_blank');
   };
 
   const handleDownload = () => {
     if (!latest?.pdf) return;
-    const a = document.createElement('a');
-    a.href = makeBlobUrl(latest.pdf);
-    a.download = latest.pdf_filename || 'magazine.pdf';
-    a.click();
+    downloadFile(latest.pdf, latest.pdf_filename || 'magazine.pdf');
   };
 
   const fmt = (n) => (n === null ? '...' : n >= 1000 ? `${(n / 1000).toFixed(1)}k+` : `${n}+`);

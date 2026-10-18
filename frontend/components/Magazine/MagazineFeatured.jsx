@@ -4,13 +4,7 @@ import { useState, useEffect } from "react";
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { FileText, Download, Sparkles } from 'lucide-react';
-
-const makeBlobUrl = (b64data) => {
-  const binary = atob(b64data);
-  const bytes = new Uint8Array(binary.length);
-  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-  return URL.createObjectURL(new Blob([bytes], { type: 'application/pdf' }));
-};
+import { downloadFile } from '../../lib/download';
 
 const MagazineFeatured = () => {
   const [featured, setFeatured] = useState([]);
@@ -37,14 +31,10 @@ const MagazineFeatured = () => {
   const formatDate = (dateStr) =>
     new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
 
-  const handleRead = (article) => window.open(makeBlobUrl(article.pdf), '_blank');
+  const handleRead = (article) => window.open(article.pdf, '_blank');
 
-  const handleDownload = (article) => {
-    const a = document.createElement('a');
-    a.href = makeBlobUrl(article.pdf);
-    a.download = article.pdf_filename || 'magazine.pdf';
-    a.click();
-  };
+  const handleDownload = (article) =>
+    downloadFile(article.pdf, article.pdf_filename || 'magazine.pdf');
 
   if (loading || featured.length === 0) return null;
 
@@ -75,13 +65,10 @@ const MagazineFeatured = () => {
                 {/* Cover image */}
                 <div className="relative aspect-[4/3] overflow-hidden rounded-2xl mb-5 shadow-md group-hover:shadow-xl transition-all">
                   <Image
-                    src={
-                      article.image
-                        ? `data:${article.image_mimetype || 'image/jpeg'};base64,${article.image}`
-                        : '/assets/event1.png'
-                    }
+                    src={article.image || '/assets/event1.png'}
                     alt={article.title}
                     fill
+                    unoptimized
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                     className="object-cover group-hover:scale-105 transition-transform duration-500"
                   />

@@ -81,7 +81,8 @@ const NewsEvents = () => {
                 <div key={index} className="min-w-[280px] sm:min-w-[360px] md:min-w-[450px] bg-[#FFFBF7] rounded-md border border-yellow-200 shadow-sm overflow-hidden group hover:shadow-md transition-all duration-300 flex flex-col snap-start">
                   <div className="relative h-56 w-full overflow-hidden">
                     <Image 
-                      src={event.image ? `data:${event.image_mimetype || 'image/jpeg'};base64,${event.image}` : '/assets/event1.png'} 
+                      unoptimized
+                      src={event.image || '/assets/event1.png'} 
                       alt={event.title} 
                       fill 
                       sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"

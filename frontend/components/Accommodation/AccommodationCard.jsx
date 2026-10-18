@@ -23,7 +23,8 @@ const AccommodationCard = ({ item }) => {
         {/* Image with badge */}
         <div className="relative h-56 w-full overflow-hidden">
           <Image
-            src={item.image ? `data:${item.image_mimetype || 'image/jpeg'};base64,${item.image}` : '/placeholder.png'}
+            unoptimized
+            src={item.image || '/placeholder.png'}
             alt={item.title || 'Accommodation'}
             fill
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"

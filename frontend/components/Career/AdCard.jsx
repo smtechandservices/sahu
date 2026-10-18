@@ -36,7 +36,8 @@ const AdCard = ({ ad }) => {
     <div className="bg-white border border-gray-100 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all group">
       <div className="relative h-48 w-full overflow-hidden">
         <Image 
-          src={ad.image ? `data:${ad.image_mimetype || 'image/jpeg'};base64,${ad.image}` : '/placeholder.png'} 
+          unoptimized
+          src={ad.image || '/placeholder.png'} 
           alt={ad.title || 'Advertisement'} 
           fill 
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"

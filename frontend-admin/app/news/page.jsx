@@ -57,10 +57,7 @@ export default function NewsManager() {
       image_mimetype: article.image_mimetype || '',
       is_published: article.is_published,
     });
-    setPreview(article.image
-      ? `data:${article.image_mimetype || 'image/jpeg'};base64,${article.image}`
-      : null
-    );
+    setPreview(article.image || null);
     setShowModal(true);
   };
 
@@ -195,7 +192,7 @@ export default function NewsManager() {
               <div className="h-44 bg-gradient-to-br from-yellow-50 to-gray-50 relative overflow-hidden flex items-center justify-center">
                 {article.image ? (
                   <img
-                    src={`data:${article.image_mimetype || 'image/jpeg'};base64,${article.image}`}
+                    src={article.image}
                     alt={article.title}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />
@@ -334,7 +331,7 @@ export default function NewsManager() {
               {previewArticle.image && (
                 <div className="h-56 shrink-0 overflow-hidden">
                   <img
-                    src={`data:${previewArticle.image_mimetype || 'image/jpeg'};base64,${previewArticle.image}`}
+                    src={previewArticle.image}
                     alt={previewArticle.title}
                     className="w-full h-full object-cover"
                   />

@@ -4,6 +4,8 @@ from django.utils import timezone
 from django.conf import settings
 import random
 
+from core.storages import public_storage, private_storage
+
 # --- Auth Models ---
 class UserManager(BaseUserManager):
     def create_user(self, phone, name, password=None, **extra_fields):
@@ -31,7 +33,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     phone = models.CharField(max_length=15, unique=True)
     name = models.CharField(max_length=255)
     email = models.EmailField(blank=True, null=True)
-    profile_photo = models.BinaryField(null=True, blank=True)
+    profile_photo = models.FileField(upload_to='profiles/', storage=private_storage, max_length=255, null=True, blank=True)
     profile_photo_mimetype = models.CharField(max_length=50, null=True, blank=True)
     is_member = models.BooleanField(default=False)
     is_admin = models.BooleanField(default=False)
@@ -70,7 +72,7 @@ class Accommodation(models.Model):
     description = models.TextField()
     type = models.CharField(max_length=50, choices=AccommodationType.choices)
     badge = models.CharField(max_length=100, blank=True, null=True)
-    image = models.BinaryField(null=True, blank=True)
+    image = models.FileField(upload_to='accommodation/', storage=public_storage, max_length=255, null=True, blank=True)
     image_mimetype = models.CharField(max_length=50, null=True, blank=True)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     unit = models.CharField(max_length=50, default="/ night")
@@ -135,7 +137,7 @@ class JobListing(models.Model):
 class Advertisement(models.Model):
     title = models.CharField(max_length=255)
     company = models.CharField(max_length=255)
-    image = models.BinaryField(null=True, blank=True)
+    image = models.FileField(upload_to='ads/', storage=public_storage, max_length=255, null=True, blank=True)
     image_mimetype = models.CharField(max_length=50, null=True, blank=True)
     description = models.TextField()
     link = models.URLField(blank=True, null=True)
@@ -179,7 +181,7 @@ class MatrimonialProfile(models.Model):
     height_cm = models.IntegerField(blank=True, null=True, help_text="Height in centimeters")
     annual_income = models.CharField(max_length=50, blank=True, null=True, help_text="e.g. 5-10 LPA")
     mother_tongue = models.CharField(max_length=50, blank=True, null=True)
-    photo = models.BinaryField(null=True, blank=True)
+    photo = models.FileField(upload_to='matrimonial/', storage=private_storage, max_length=255, null=True, blank=True)
     photo_mimetype = models.CharField(max_length=50, null=True, blank=True)
     bio = models.TextField()
     is_approved = models.BooleanField(default=False)
@@ -205,9 +207,9 @@ class MatrimonialInterest(models.Model):
 class Article(models.Model):
     title = models.CharField(max_length=255)
     content = models.TextField()
-    image = models.BinaryField(null=True, blank=True)
+    image = models.FileField(upload_to='magazine/images/', storage=public_storage, max_length=255, null=True, blank=True)
     image_mimetype = models.CharField(max_length=50, null=True, blank=True)
-    pdf = models.BinaryField(null=True, blank=True)
+    pdf = models.FileField(upload_to='magazine/pdfs/', storage=public_storage, max_length=255, null=True, blank=True)
     pdf_filename = models.CharField(max_length=255, null=True, blank=True)
     category = models.CharField(max_length=100) # e.g. 'Magazine', 'News'
     published_at = models.DateTimeField(auto_now_add=True)
@@ -224,7 +226,7 @@ class EventQuerySet(models.QuerySet):
 class Event(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField()
-    image = models.BinaryField(null=True, blank=True)
+    image = models.FileField(upload_to='events/', storage=public_storage, max_length=255, null=True, blank=True)
     image_mimetype = models.CharField(max_length=50, null=True, blank=True)
     event_date = models.DateTimeField()
     location = models.CharField(max_length=255, blank=True, null=True)
@@ -249,7 +251,7 @@ class EventRegistration(models.Model):
 
 # --- Core (Settings) Models ---
 class HeroCarouselImage(models.Model):
-    image = models.BinaryField(null=True, blank=True)
+    image = models.FileField(upload_to='carousel/', storage=public_storage, max_length=255, null=True, blank=True)
     image_mimetype = models.CharField(max_length=50, default='image/jpeg')
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -265,7 +267,7 @@ class Media(models.Model):
         ('gallery', 'Gallery'),
         ('media', 'Media'),
     )
-    image = models.BinaryField(null=True, blank=True)
+    image = models.FileField(upload_to='gallery/', storage=public_storage, max_length=255, null=True, blank=True)
     image_mimetype = models.CharField(max_length=50, default='image/jpeg')
     title = models.CharField(max_length=200, blank=True, default='')
     media_type = models.CharField(max_length=10, choices=MEDIA_TYPE_CHOICES, default='gallery')

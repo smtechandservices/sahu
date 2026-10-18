@@ -1,5 +1,9 @@
 import base64
+import mimetypes
+import uuid
 from django.conf import settings
+from django.core.files.base import ContentFile
+from django.core.files.uploadedfile import UploadedFile
 from django.utils import timezone
 from rest_framework import serializers
 from .models import (
@@ -9,33 +13,51 @@ from .models import (
     HeroCarouselImage, UserSession, Media, Donation
 )
 
-class Base64BinaryField(serializers.Field):
+
+class Base64FileField(serializers.Field):
     """
-    Custom field for Base64 encoded binary data.
+    File stored via the model field's storage (S3 or local disk).
+    Write: accepts base64 / data URI or an uploaded file.
+    Read: returns the file's URL.
     """
+    def __init__(self, mimetype_field=None, default_ext='', **kwargs):
+        self.mimetype_field = mimetype_field
+        self.default_ext = default_ext
+        super().__init__(**kwargs)
+
     def to_representation(self, value):
         if not value:
             return None
-        # Convert binary data to base64 string
-        return base64.b64encode(value).decode('utf-8')
+        url = value.url
+        request = self.context.get('request')
+        if request and url.startswith('/'):
+            return request.build_absolute_uri(url)
+        return url
 
     def to_internal_value(self, data):
         if not data:
             return None
+        if isinstance(data, UploadedFile):
+            return data
+        if isinstance(data, str) and data.startswith(('http://', 'https://', '/')):
+            # Edit forms echo back the existing file's URL: leave it unchanged.
+            raise serializers.SkipField()
+        mimetype = None
         try:
-            # Check if it's already binary (e.g. from tests or multipart)
-            if isinstance(data, bytes):
-                return data
-            # Handle data:image/...;base64,... prefix
-            if 'base64,' in data:
-                _, data = data.split('base64,')
-            return base64.b64decode(data)
+            if isinstance(data, str) and 'base64,' in data:
+                meta, data = data.split('base64,', 1)
+                mimetype = meta.removeprefix('data:').rstrip(';') or None
+            raw = data if isinstance(data, bytes) else base64.b64decode(data)
         except (TypeError, ValueError):
             raise serializers.ValidationError("Invalid base64 data")
+        if not mimetype and self.mimetype_field:
+            mimetype = self.parent.initial_data.get(self.mimetype_field)
+        ext = (mimetypes.guess_extension(mimetype) if mimetype else None) or self.default_ext
+        return ContentFile(raw, name=f'{uuid.uuid4().hex}{ext}')
 
 # --- Auth Serializers ---
 class UserSerializer(serializers.ModelSerializer):
-    profile_photo = Base64BinaryField(required=False, allow_null=True)
+    profile_photo = Base64FileField(mimetype_field='profile_photo_mimetype', required=False, allow_null=True)
 
     class Meta:
         model = User
@@ -43,7 +65,7 @@ class UserSerializer(serializers.ModelSerializer):
         read_only_fields = ['is_admin', 'date_joined', 'is_member']
 
 class AdminUserSerializer(serializers.ModelSerializer):
-    profile_photo = Base64BinaryField(required=False, allow_null=True)
+    profile_photo = Base64FileField(mimetype_field='profile_photo_mimetype', required=False, allow_null=True)
 
     class Meta:
         model = User
@@ -52,7 +74,7 @@ class AdminUserSerializer(serializers.ModelSerializer):
 
 # --- Accommodation Serializers ---
 class AccommodationSerializer(serializers.ModelSerializer):
-    image = Base64BinaryField(required=False, allow_null=True)
+    image = Base64FileField(mimetype_field='image_mimetype', required=False, allow_null=True)
     
     class Meta:
         model = Accommodation
@@ -79,7 +101,7 @@ class JobListingSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class AdvertisementSerializer(serializers.ModelSerializer):
-    image = Base64BinaryField()
+    image = Base64FileField(mimetype_field='image_mimetype')
     
     class Meta:
         model = Advertisement
@@ -97,7 +119,7 @@ class MatrimonialPublicUserSerializer(serializers.ModelSerializer):
 class MatrimonialProfileSerializer(serializers.ModelSerializer):
     user_detail = MatrimonialPublicUserSerializer(source='user', read_only=True)
     contact_phone = serializers.SerializerMethodField()
-    photo = Base64BinaryField(required=False, allow_null=True)
+    photo = Base64FileField(mimetype_field='photo_mimetype', required=False, allow_null=True)
     marital_status_display = serializers.CharField(source='get_marital_status_display', read_only=True)
     manglik_display = serializers.CharField(source='get_manglik_display', read_only=True)
     complexion_display = serializers.CharField(source='get_complexion_display', read_only=True)
@@ -135,14 +157,14 @@ class AdminMatrimonialProfileSerializer(MatrimonialProfileSerializer):
 
 # --- Magazine Serializers ---
 class ArticleSerializer(serializers.ModelSerializer):
-    image = Base64BinaryField(required=False, allow_null=True)
-    pdf = Base64BinaryField(required=False, allow_null=True)
+    image = Base64FileField(mimetype_field='image_mimetype', required=False, allow_null=True)
+    pdf = Base64FileField(default_ext='.pdf', required=False, allow_null=True)
 
     def validate_pdf(self, value):
         if value is None:
             return value
         max_size = getattr(settings, 'MAX_ARTICLE_PDF_SIZE_BYTES', 10 * 1024 * 1024)
-        if len(value) > max_size:
+        if value.size > max_size:
             max_mb = max_size // (1024 * 1024)
             raise serializers.ValidationError(f'PDF must be {max_mb} MB or smaller.')
         return value
@@ -154,7 +176,10 @@ class ArticleSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Article
-        fields = '__all__'
+        fields = [
+            'id', 'title', 'content', 'image', 'image_mimetype', 'pdf', 'pdf_filename',
+            'category', 'published_at', 'is_published',
+        ]
 
 class EventRegistrationSerializer(serializers.ModelSerializer):
     user_detail = UserSerializer(source='user', read_only=True)
@@ -170,7 +195,7 @@ class EventRegistrationSerializer(serializers.ModelSerializer):
         read_only_fields = ['user', 'registered_at']
 
 class EventSerializer(serializers.ModelSerializer):
-    image = Base64BinaryField(required=False, allow_null=True)
+    image = Base64FileField(mimetype_field='image_mimetype', required=False, allow_null=True)
     attendee_count = serializers.IntegerField(source='registrations.count', read_only=True)
     # Optional: include first few attendees
     recent_registrations = EventRegistrationSerializer(source='registrations', many=True, read_only=True)
@@ -190,13 +215,15 @@ class SiteSettingsSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class HeroCarouselImageSerializer(serializers.ModelSerializer):
+    image = Base64FileField(mimetype_field='image_mimetype', required=False, allow_null=True)
+
     class Meta:
         model = HeroCarouselImage
         fields = '__all__'
 
 
 class MediaSerializer(serializers.ModelSerializer):
-    image = Base64BinaryField(required=True, write_only=True)
+    image = Base64FileField(mimetype_field='image_mimetype', required=True, write_only=True)
     image_url = serializers.SerializerMethodField()
 
     class Meta:
@@ -204,11 +231,11 @@ class MediaSerializer(serializers.ModelSerializer):
         fields = ['id', 'image', 'image_url', 'image_mimetype', 'title', 'media_type', 'is_active', 'created_at']
 
     def get_image_url(self, obj):
-        request = self.context.get('request')
         if not obj.image:
             return None
-        url = f'/api/media/{obj.id}/image/'
-        return request.build_absolute_uri(url) if request else url
+        url = obj.image.url
+        request = self.context.get('request')
+        return request.build_absolute_uri(url) if request and url.startswith('/') else url
 
 
 class UserSessionSerializer(serializers.ModelSerializer):

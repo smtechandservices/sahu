@@ -70,7 +70,9 @@ import dj_database_url
 if os.environ.get('DATABASE_URL'):
     DATABASES = {
         'default': dj_database_url.config(
-            default=os.environ.get('DATABASE_URL')
+            default=os.environ.get('DATABASE_URL'),
+            conn_max_age=600,
+            conn_health_checks=True,
         )
     }
 else:
@@ -96,6 +98,58 @@ USE_TZ = True
 STATIC_URL = 'static/'
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+
+# File storage. With AWS_STORAGE_BUCKET_NAME set, uploads go to S3:
+#   public/  -> gallery + magazine files, plain cacheable URLs (needs a bucket
+#               policy allowing s3:GetObject on public/*)
+#   private/ -> matrimonial photos, short-lived signed URLs
+# Credentials come from AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY in the env, or
+# the instance's IAM role. Without a bucket, files are written to MEDIA_ROOT.
+AWS_STORAGE_BUCKET_NAME = os.getenv('AWS_STORAGE_BUCKET_NAME')
+
+if AWS_STORAGE_BUCKET_NAME:
+    _region = os.getenv('AWS_S3_REGION_NAME', 'ap-southeast-2')
+    _s3 = {
+        'bucket_name': AWS_STORAGE_BUCKET_NAME,
+        'region_name': _region,
+        'endpoint_url': f'https://s3.{_region}.amazonaws.com',
+        'addressing_style': 'virtual',
+        'signature_version': 's3v4',
+        'custom_domain': os.getenv('AWS_S3_CUSTOM_DOMAIN') or None,
+        'file_overwrite': False,
+        'default_acl': None,
+    }
+    _private = {
+        'BACKEND': 'storages.backends.s3.S3Storage',
+        'OPTIONS': {
+            **_s3,
+            'custom_domain': None,  # signed URLs must hit S3 directly
+            'location': 'private',
+            'querystring_auth': True,
+            'querystring_expire': int(os.getenv('AWS_QUERYSTRING_EXPIRE', '3600')),
+        },
+    }
+    _public = {
+        'BACKEND': 'storages.backends.s3.S3Storage',
+        'OPTIONS': {
+            **_s3,
+            'location': 'public',
+            'querystring_auth': False,
+            'object_parameters': {'CacheControl': 'public, max-age=31536000, immutable'},
+        },
+    }
+else:
+    _private = _public = {'BACKEND': 'django.core.files.storage.FileSystemStorage'}
+
+STORAGES = {
+    'default': _private,
+    'public': _public,
+    'private': _private,
+    'staticfiles': {'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage'},
+}
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 

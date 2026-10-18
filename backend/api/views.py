@@ -12,7 +12,7 @@ from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.pagination import PageNumberPagination
 from django.db.models.functions import TruncMonth
 from django.db.models import Count, Sum
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from .models import (
     User, OTPRecord, Accommodation, Booking,
     JobListing, Advertisement, MatrimonialProfile, MatrimonialInterest,
@@ -844,7 +844,7 @@ class HeroCarouselImageViewSet(viewsets.ModelViewSet):
         image_file = self.request.FILES.get('image_file')
         if image_file:
             serializer.save(
-                image=image_file.read(),
+                image=image_file,
                 image_mimetype=image_file.content_type
             )
         else:
@@ -854,7 +854,7 @@ class HeroCarouselImageViewSet(viewsets.ModelViewSet):
         image_file = self.request.FILES.get('image_file')
         if image_file:
             serializer.save(
-                image=image_file.read(),
+                image=image_file,
                 image_mimetype=image_file.content_type
             )
         else:
@@ -874,7 +874,7 @@ class MediaViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         image_file = self.request.FILES.get('image_file')
         if image_file:
-            serializer.save(image=image_file.read(), image_mimetype=image_file.content_type)
+            serializer.save(image=image_file, image_mimetype=image_file.content_type)
         else:
             serializer.save()
 
@@ -883,10 +883,7 @@ class MediaViewSet(viewsets.ModelViewSet):
         obj = self.get_object()
         if not obj.image:
             return Response(status=status.HTTP_404_NOT_FOUND)
-        data = bytes(obj.image)
-        resp = HttpResponse(data, content_type=obj.image_mimetype or 'image/jpeg')
-        resp['Cache-Control'] = 'public, max-age=86400'
-        return resp
+        return HttpResponseRedirect(obj.image.url)
 
 
 from rest_framework_simplejwt.views import TokenRefreshView

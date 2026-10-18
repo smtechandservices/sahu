@@ -97,7 +97,7 @@ export default function SiteSettingsManager() {
               <div key={img.id} className="bg-white border border-gray-100 shadow-sm overflow-hidden group">
                 <div className="h-64 bg-gray-50 relative">
                   <img 
-                    src={`data:${img.image_mimetype};base64,${img.image}`} 
+                    src={img.image} 
                     alt="Carousel Slide"
                     className="w-full h-full object-cover"
                   />

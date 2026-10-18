@@ -132,7 +132,8 @@ export default function ProfileClient() {
                 <div className="w-40 h-40 rounded-3xl bg-white p-1 overflow-hidden border-4 border-white">
                   {profilePhoto || user.profile_photo ? (
                     <Image 
-                      src={profilePhoto || `data:${user.profile_photo_mimetype || 'image/jpeg'};base64,${user.profile_photo}`} 
+                      unoptimized
+                      src={profilePhoto || user.profile_photo} 
                       alt={user.name} 
                       width={160} 
                       height={160} 

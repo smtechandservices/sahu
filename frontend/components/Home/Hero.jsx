@@ -16,7 +16,7 @@ const Hero = () => {
         if (data && data.length > 0) {
           const dynamicSlides = data.map(img => ({
             id: img.id,
-            image: `data:${img.image_mimetype};base64,${img.image}`
+            image: img.image
           }));
           setSlides(dynamicSlides);
         }

@@ -3,13 +3,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FileText, Download, BookOpen } from 'lucide-react';
-
-const makeBlobUrl = (b64data) => {
-  const binary = atob(b64data);
-  const bytes = new Uint8Array(binary.length);
-  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-  return URL.createObjectURL(new Blob([bytes], { type: 'application/pdf' }));
-};
+import { downloadFile } from '../../lib/download';
 
 const MagazineArchives = () => {
   const [articles, setArticles] = useState([]);
@@ -39,14 +33,10 @@ const MagazineArchives = () => {
     ? articles
     : articles.filter(a => new Date(a.published_at).getFullYear() === activeYear);
 
-  const handleRead = (article) => window.open(makeBlobUrl(article.pdf), '_blank');
+  const handleRead = (article) => window.open(article.pdf, '_blank');
 
-  const handleDownload = (article) => {
-    const a = document.createElement('a');
-    a.href = makeBlobUrl(article.pdf);
-    a.download = article.pdf_filename || 'magazine.pdf';
-    a.click();
-  };
+  const handleDownload = (article) =>
+    downloadFile(article.pdf, article.pdf_filename || 'magazine.pdf');
 
   if (loading) {
     return (
@@ -108,7 +98,7 @@ const MagazineArchives = () => {
                     <div className="relative aspect-[3/4] bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-xl hover:-translate-y-2 transition-all duration-300 flex items-center justify-center">
                       {article.image ? (
                         <img
-                          src={`data:${article.image_mimetype || 'image/jpeg'};base64,${article.image}`}
+                          src={article.image}
                           alt={article.title}
                           className="w-full h-full object-cover"
                         />

@@ -79,7 +79,7 @@ export default function AccommodationManager() {
       image_mimetype: acc.image_mimetype || null,
     });
     setImagePreview(
-      acc.image ? `data:${acc.image_mimetype || 'image/jpeg'};base64,${acc.image}` : null
+      acc.image || null
     );
     setModalOpen(true);
   };
@@ -212,7 +212,7 @@ export default function AccommodationManager() {
                 <div className="h-48 bg-gray-100 relative">
                   {acc.image && (
                     <img
-                      src={`data:${acc.image_mimetype || 'image/jpeg'};base64,${acc.image}`}
+                      src={acc.image}
                       alt={acc.title}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />

@@ -65,13 +65,10 @@ const NewsList = ({ searchQuery }) => {
               >
                 <div className="relative aspect-[4/3] md:aspect-auto min-h-64 overflow-hidden">
                   <Image
-                    src={
-                      featured.image
-                        ? `data:${featured.image_mimetype || "image/jpeg"};base64,${featured.image}`
-                        : "/assets/event1.png"
-                    }
+                    src={featured.image || "/assets/event1.png"}
                     alt={featured.title}
                     fill
+                    unoptimized
                     sizes="(max-width: 768px) 100vw, 50vw"
                     className="object-cover group-hover:scale-105 transition-transform duration-500"
                   />
@@ -111,13 +108,10 @@ const NewsList = ({ searchQuery }) => {
                 >
                   <div className="relative aspect-[16/9] overflow-hidden bg-gray-50">
                     <Image
-                      src={
-                        article.image
-                          ? `data:${article.image_mimetype || "image/jpeg"};base64,${article.image}`
-                          : "/assets/event1.png"
-                      }
+                      src={article.image || "/assets/event1.png"}
                       alt={article.title}
                       fill
+                      unoptimized
                       sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                       className="object-cover group-hover:scale-105 transition-transform duration-500"
                     />
@@ -171,9 +165,10 @@ const NewsList = ({ searchQuery }) => {
               {selectedArticle.image && (
                 <div className="relative h-56 md:h-72 shrink-0 overflow-hidden">
                   <Image
-                    src={`data:${selectedArticle.image_mimetype || "image/jpeg"};base64,${selectedArticle.image}`}
+                    src={selectedArticle.image}
                     alt={selectedArticle.title}
                     fill
+                    unoptimized
                     sizes="(max-width: 768px) 100vw, 672px"
                     className="object-cover"
                   />

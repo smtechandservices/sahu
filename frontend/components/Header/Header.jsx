@@ -75,7 +75,8 @@ const Header = () => {
                 <div className="w-9 h-9 rounded-full bg-primary/10 border-2 border-primary/20 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all overflow-hidden">
                   {user.profile_photo ? (
                     <Image
-                      src={`data:${user.profile_photo_mimetype || 'image/jpeg'};base64,${user.profile_photo}`}
+                      unoptimized
+                      src={user.profile_photo}
                       alt={user.name}
                       width={36}
                       height={36}
@@ -134,7 +135,8 @@ const Header = () => {
               >
                 {user.profile_photo ? (
                   <Image
-                    src={`data:${user.profile_photo_mimetype || 'image/jpeg'};base64,${user.profile_photo}`}
+                    unoptimized
+                    src={user.profile_photo}
                     alt={user.name}
                     width={36}
                     height={36}

@@ -83,7 +83,7 @@ export default function MatrimonialClient() {
     mother_tongue: p.mother_tongue || "—",
     family_type: p.family_type || "—",
     avatar: p.photo
-      ? `data:${p.photo_mimetype || "image/jpeg"};base64,${p.photo}`
+      ? p.photo
       : p.gender === "Male"
       ? "/assets/avatar_male.png"
       : "/assets/avatar_female.png",

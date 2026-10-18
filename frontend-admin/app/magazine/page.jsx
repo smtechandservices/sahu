@@ -65,10 +65,7 @@ export default function MagazineManager() {
       pdf_filename: article.pdf_filename || '',
       is_published: article.is_published,
     });
-    setPreview(article.image
-      ? `data:${article.image_mimetype || 'image/jpeg'};base64,${article.image}`
-      : null
-    );
+    setPreview(article.image || null);
     setShowModal(true);
   };
 
@@ -110,14 +107,6 @@ export default function MagazineManager() {
       setForm(f => ({ ...f, pdf: b64data, pdf_filename: file.name }));
     };
     reader.readAsDataURL(file);
-  };
-
-  const openPdfBlob = (b64data) => {
-    const binary = atob(b64data);
-    const bytes = new Uint8Array(binary.length);
-    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-    const blob = new Blob([bytes], { type: 'application/pdf' });
-    window.open(URL.createObjectURL(blob), '_blank');
   };
 
   const handleSave = async (e) => {
@@ -233,7 +222,7 @@ export default function MagazineManager() {
               <div className="h-52 bg-gradient-to-br from-indigo-50 to-gray-50 relative overflow-hidden flex items-center justify-center">
                 {article.image ? (
                   <img
-                    src={`data:${article.image_mimetype || 'image/jpeg'};base64,${article.image}`}
+                    src={article.image}
                     alt={article.title}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />
@@ -278,7 +267,7 @@ export default function MagazineManager() {
                   </button>
                   {article.pdf && (
                     <button
-                      onClick={() => openPdfBlob(article.pdf)}
+                      onClick={() => window.open(article.pdf, '_blank')}
                       className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
                       title="View PDF"
                     >
@@ -434,7 +423,7 @@ export default function MagazineManager() {
               {previewArticle.image && (
                 <div className="h-64 shrink-0 overflow-hidden">
                   <img
-                    src={`data:${previewArticle.image_mimetype || 'image/jpeg'};base64,${previewArticle.image}`}
+                    src={previewArticle.image}
                     alt={previewArticle.title}
                     className="w-full h-full object-cover"
                   />
@@ -458,7 +447,7 @@ export default function MagazineManager() {
                 )}
                 {previewArticle.pdf && (
                   <button
-                    onClick={() => openPdfBlob(previewArticle.pdf)}
+                    onClick={() => window.open(previewArticle.pdf, '_blank')}
                     className="mt-6 flex items-center gap-2 px-4 py-2.5 rounded-xl bg-red-50 text-red-600 font-bold text-sm hover:bg-red-100 transition-all"
                   >
                     <FileText size={16} /> Open PDF — {previewArticle.pdf_filename || 'magazine.pdf'}
