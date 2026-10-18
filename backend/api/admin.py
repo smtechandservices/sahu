@@ -3,7 +3,7 @@ from .models import (
     User, OTPRecord, Accommodation, Booking,
     JobListing, Advertisement, MatrimonialProfile, MatrimonialInterest,
     Article, Event, EventRegistration,
-    HeroCarouselImage, Media, SiteSettings, UserSession
+    HeroCarouselImage, Media, SiteSettings, UserSession, Donation
 )
 
 @admin.register(User)
@@ -95,3 +95,9 @@ class UserSessionAdmin(admin.ModelAdmin):
     list_display = ('user', 'device_name', 'ip_address', 'is_active', 'created_at', 'last_activity')
     list_filter = ('is_active',)
     search_fields = ('user__name', 'user__phone', 'device_name', 'ip_address')
+
+@admin.register(Donation)
+class DonationAdmin(admin.ModelAdmin):
+    list_display = ('name', 'phone', 'amount', 'purpose', 'payment_method', 'status', 'created_at')
+    list_filter = ('status', 'purpose', 'payment_method')
+    search_fields = ('name', 'phone', 'email', 'transaction_ref')

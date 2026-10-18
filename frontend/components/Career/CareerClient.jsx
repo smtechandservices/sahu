@@ -5,16 +5,24 @@ import Header from "../Header/Header";
 import Footer from "../Footer/Footer";
 import CareerHero from "./CareerHero";
 import JobCard from "./JobCard";
+import Pagination from "../Pagination/Pagination";
 import { Search, SlidersHorizontal, X } from "lucide-react";
 
 const JOB_TYPES = ["All", "Full-time", "Part-time", "Contract", "Remote"];
+const ITEMS_PER_PAGE = 9;
 
 export default function CareerClient() {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState("");
-  const [typeFilter, setTypeFilter] = useState("All");
-  const [locationFilter, setLocationFilter] = useState("");
+  const [search, _setSearch] = useState("");
+  const [typeFilter, _setTypeFilter] = useState("All");
+  const [locationFilter, _setLocationFilter] = useState("");
+  const [page, setPage] = useState(1);
+
+  // Any filter change goes back to page 1
+  const setSearch = (v) => { _setSearch(v); setPage(1); };
+  const setTypeFilter = (v) => { _setTypeFilter(v); setPage(1); };
+  const setLocationFilter = (v) => { _setLocationFilter(v); setPage(1); };
 
   useEffect(() => {
     import('../../lib/api').then(({ fetchApi }) => {
@@ -46,6 +54,10 @@ export default function CareerClient() {
       return matchesSearch && matchesType && matchesLocation;
     });
   }, [jobs, search, typeFilter, locationFilter]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
+  const currentPage = Math.min(page, totalPages);
+  const paginated = filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
   const hasActiveFilters = search || typeFilter !== "All" || locationFilter;
 
@@ -174,11 +186,25 @@ export default function CareerClient() {
               )}
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-              {filtered.map(job => (
-                <JobCard key={job.id} job={job} />
-              ))}
-            </div>
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                {paginated.map(job => (
+                  <JobCard key={job.id} job={job} />
+                ))}
+              </div>
+              {totalPages > 1 && (
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  total={filtered.length}
+                  perPage={ITEMS_PER_PAGE}
+                  onChange={p => {
+                    setPage(p);
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }}
+                />
+              )}
+            </>
           )}
 
         </div>

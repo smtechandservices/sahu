@@ -8,6 +8,7 @@
       "options": {
         "cwd": "${workspaceFolder}/frontend"
       },
+      "isBackground": true,
       "presentation": {
         "panel": "dedicated",
         "group": "dev-servers",
@@ -22,6 +23,7 @@
       "options": {
         "cwd": "${workspaceFolder}/frontend-admin"
       },
+      "isBackground": true,
       "presentation": {
         "panel": "dedicated",
         "group": "dev-servers",
@@ -32,10 +34,11 @@
     {
       "label": "backend (8000)",
       "type": "shell",
-      "command": "python manage.py runserver 8000",
+      "command": ".venv/bin/python manage.py runserver 8000",
       "options": {
         "cwd": "${workspaceFolder}/backend"
       },
+      "isBackground": true,
       "presentation": {
         "panel": "dedicated",
         "group": "dev-servers",
@@ -46,14 +49,69 @@
     {
       "label": "Start All",
       "dependsOn": [
+        "backend (8000)",
         "frontend (3000)",
-        "frontend-admin (3001)",
-        "backend (8000)"
+        "frontend-admin (3001)"
       ],
       "dependsOrder": "parallel",
       "group": {
         "kind": "build",
         "isDefault": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "setup: backend",
+      "type": "shell",
+      "command": "[ -d .venv ] || python3.13 -m venv .venv; .venv/bin/pip install -r requirements.txt && { [ -f .env ] || cp .env.example .env; } && .venv/bin/python manage.py migrate --run-syncdb",
+      "options": {
+        "cwd": "${workspaceFolder}/backend"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "setup: frontend",
+      "type": "shell",
+      "command": "npm ci",
+      "options": {
+        "cwd": "${workspaceFolder}/frontend"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "setup: frontend-admin",
+      "type": "shell",
+      "command": "npm ci",
+      "options": {
+        "cwd": "${workspaceFolder}/frontend-admin"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Setup All",
+      "dependsOn": [
+        "setup: backend",
+        "setup: frontend",
+        "setup: frontend-admin"
+      ],
+      "dependsOrder": "parallel",
+      "problemMatcher": []
+    },
+    {
+      "label": "backend: migrate",
+      "type": "shell",
+      "command": ".venv/bin/python manage.py migrate --run-syncdb",
+      "options": {
+        "cwd": "${workspaceFolder}/backend"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "backend: createsuperuser",
+      "type": "shell",
+      "command": ".venv/bin/python manage.py createsuperuser",
+      "options": {
+        "cwd": "${workspaceFolder}/backend"
       },
       "problemMatcher": []
     }

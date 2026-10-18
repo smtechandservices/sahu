@@ -1,10 +1,11 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard, Home, Calendar, BookOpen,
-  Users, Briefcase, Settings, LogOut, Heart, Newspaper, Images
+  Users, Briefcase, Settings, LogOut, Heart, Newspaper, Images, HandCoins
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
@@ -17,6 +18,7 @@ const menuItems = [
   { icon: Heart, label: 'Matrimonial', href: '/matrimonial' },
   { icon: Briefcase, label: 'Careers', href: '/career' },
   { icon: Images, label: 'Gallery', href: '/gallery' },
+  { icon: HandCoins, label: 'Donations', href: '/donations' },
   { icon: Users, label: 'Users', href: '/users' },
   { icon: Settings, label: 'Site Settings', href: '/settings' },
 ];
@@ -26,12 +28,12 @@ export default function Sidebar() {
   const { logout, user } = useAuth();
 
   return (
-    <aside className="w-64 bg-[#111827] text-white flex flex-col fixed inset-y-0 z-50">
-      <div className="p-6">
-        <h1 className="text-xl font-bold text-primary flex items-center gap-2">
-          <div className="w-8 h-8 bg-primary rounded flex items-center justify-center text-white font-black text-xs italic">S</div>
-          Sahu Admin
-        </h1>
+    <aside className="w-64 bg-[#1a120b] text-white flex flex-col fixed inset-y-0 z-50">
+      <div className="p-4">
+        <Link href="/" className="block px-1 py-2">
+          <Image src="/assets/logo-sahu.png" alt="Sahu Sabha Logo" width={1365} height={410} className="w-full h-auto opacity-90" priority />
+        </Link>
+        <p className="mt-2 text-center text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">Admin Panel</p>
       </div>
 
       <nav className="flex-1 px-4 space-y-1">

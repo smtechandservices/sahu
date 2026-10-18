@@ -2,11 +2,15 @@
 
 import { useState, useEffect } from 'react';
 import { fetchApi } from '../../lib/api';
+import { useAuth } from '../../context/AuthContext';
+import Pagination from '../../components/Pagination/Pagination';
 import {
-  Users, Search, Edit, Trash2, X, Shield, CheckCircle, XCircle, Phone, Mail
+  Users, Search, Edit, Trash2, X, Shield, CheckCircle, XCircle, Phone, Mail, Loader2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Swal from 'sweetalert2';
+
+const PAGE_SIZE = 20;
 
 const EMPTY_FORM = {
   name: '',
@@ -17,9 +21,13 @@ const EMPTY_FORM = {
 };
 
 export default function UsersManager() {
+  const { user: currentUser } = useAuth();
   const [users, setUsers] = useState([]);
+  const [totalCount, setTotalCount] = useState(0);
+  const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
 
   const [modalOpen, setModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
@@ -30,20 +38,52 @@ export default function UsersManager() {
   const [sessions, setSessions] = useState([]);
   const [loadingSessions, setLoadingSessions] = useState(false);
 
+  // Wait for the admin to stop typing before searching, and go back to page 1
   useEffect(() => {
-    fetchUsers();
-  }, []);
+    const query = searchQuery.trim();
+    if (query === debouncedSearch) return;
+    const t = setTimeout(() => {
+      setLoading(true);
+      setDebouncedSearch(query);
+      setPage(1);
+    }, 300);
+    return () => clearTimeout(t);
+  }, [searchQuery, debouncedSearch]);
 
-  const fetchUsers = async () => {
-    try {
-      const data = await fetchApi('/users/');
-      setUsers(data);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
+  const goToPage = (p) => {
+    setLoading(true);
+    setPage(p);
   };
+
+  // Bump to re-fetch the current page (after an edit or delete)
+  const [reloadKey, setReloadKey] = useState(0);
+  const refreshUsers = () => {
+    setLoading(true);
+    setReloadKey(k => k + 1);
+  };
+
+  useEffect(() => {
+    let cancelled = false;
+    const params = new URLSearchParams({ page, page_size: PAGE_SIZE });
+    if (debouncedSearch) params.set('search', debouncedSearch);
+    fetchApi(`/users/?${params}`)
+      .then((data) => {
+        if (cancelled) return;
+        // A delete can leave the last page empty — step back one page
+        if (data.results.length === 0 && page > 1) {
+          setPage(p => p - 1);
+          return;
+        }
+        setUsers(data.results);
+        setTotalCount(data.count);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error(err);
+        if (!cancelled) setLoading(false);
+      });
+    return () => { cancelled = true; };
+  }, [page, debouncedSearch, reloadKey]);
 
   const fetchSessions = async (userId) => {
     setLoadingSessions(true);
@@ -91,7 +131,7 @@ export default function UsersManager() {
           is_active: form.is_active,
         }),
       });
-      await fetchUsers();
+      refreshUsers();
       Swal.fire({
         icon: 'success',
         title: 'Success',
@@ -126,10 +166,10 @@ export default function UsersManager() {
         setDeletingId(user.id);
         try {
           await fetchApi(`/users/${user.id}/`, { method: 'DELETE' });
-          setUsers(prev => prev.filter(u => u.id !== user.id));
+          refreshUsers();
           Swal.fire('Deleted!', 'User has been deleted.', 'success');
         } catch (err) {
-          Swal.fire('Error', 'Failed to delete user.', 'error');
+          Swal.fire('Error', err.message || 'Failed to delete user.', 'error');
         } finally {
           setDeletingId(null);
         }
@@ -186,12 +226,6 @@ export default function UsersManager() {
     });
   };
 
-  const filteredUsers = users.filter(u =>
-    u.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    u.phone?.includes(searchQuery) ||
-    (u.email || '').toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
   return (
     <div className="space-y-8">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -201,7 +235,9 @@ export default function UsersManager() {
         </div>
         <div className="flex items-center gap-3 bg-white border border-gray-100 rounded-2xl px-5 py-3 shadow-sm">
           <Users size={18} className="text-primary" />
-          <span className="text-sm font-bold text-gray-700">{users.length} Total Users</span>
+          <span className="text-sm font-bold text-gray-700">
+            {totalCount} {debouncedSearch ? 'Matching' : 'Total'} Users
+          </span>
         </div>
       </div>
 
@@ -219,15 +255,15 @@ export default function UsersManager() {
         </div>
       </div>
 
-      {loading ? (
+      {loading && users.length === 0 ? (
         <div className="py-20 text-center text-gray-400 font-bold">Loading users...</div>
-      ) : filteredUsers.length === 0 ? (
+      ) : users.length === 0 ? (
         <div className="py-20 text-center">
           <Users size={48} className="mx-auto text-gray-200 mb-4" />
           <p className="text-gray-400 font-bold">No users found.</p>
         </div>
       ) : (
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <div className={`bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden transition-opacity ${loading ? 'opacity-60' : ''}`}>
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-gray-100 text-left">
@@ -241,7 +277,7 @@ export default function UsersManager() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
-              {filteredUsers.map((user) => (
+              {users.map((user) => (
                 <motion.tr
                   key={user.id}
                   initial={{ opacity: 0 }}
@@ -289,12 +325,31 @@ export default function UsersManager() {
                       >
                         <Edit size={16} />
                       </button>
+                      {user.id !== currentUser?.id && (
+                        <button
+                          onClick={(e) => handleDelete(e, user)}
+                          disabled={deletingId === user.id}
+                          className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all disabled:opacity-50"
+                          title="Delete User"
+                        >
+                          {deletingId === user.id ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
+                        </button>
+                      )}
                     </div>
                   </td>
                 </motion.tr>
               ))}
             </tbody>
           </table>
+
+          <Pagination
+            page={page}
+            pageSize={PAGE_SIZE}
+            totalCount={totalCount}
+            onPageChange={goToPage}
+            disabled={loading}
+            className="px-6 py-4 border-t border-gray-100"
+          />
         </div>
       )}
 

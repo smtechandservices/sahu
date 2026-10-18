@@ -8,15 +8,16 @@ from django.utils import timezone
 from datetime import timedelta
 from django.conf import settings
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.filters import SearchFilter
+from rest_framework.filters import SearchFilter, OrderingFilter
+from rest_framework.pagination import PageNumberPagination
 from django.db.models.functions import TruncMonth
-from django.db.models import Count
+from django.db.models import Count, Sum
 from django.http import HttpResponse
 from .models import (
     User, OTPRecord, Accommodation, Booking,
     JobListing, Advertisement, MatrimonialProfile, MatrimonialInterest,
     Article, Event, EventRegistration, SiteSettings,
-    HeroCarouselImage, UserSession, Media
+    HeroCarouselImage, UserSession, Media, Donation
 )
 from .serializers import (
     UserSerializer, AdminUserSerializer, AccommodationSerializer, BookingSerializer,
@@ -24,7 +25,7 @@ from .serializers import (
     MatrimonialProfileSerializer, ArticleSerializer,
     EventSerializer, EventRegistrationSerializer, SiteSettingsSerializer,
     HeroCarouselImageSerializer, UserSessionSerializer, CustomTokenRefreshSerializer,
-    MediaSerializer
+    MediaSerializer, DonationSerializer, AdminDonationSerializer
 )
 from .permissions import IsAdminOrReadOnly
 
@@ -266,9 +267,16 @@ def profile_view(request):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 # --- User Management Views ---
+class UserPagination(PageNumberPagination):
+    page_size = 20
+    page_size_query_param = 'page_size'
+    max_page_size = 100
+
+
 class UserViewSet(viewsets.ModelViewSet):
     serializer_class = AdminUserSerializer
     permission_classes = [IsAuthenticated]
+    pagination_class = UserPagination
     filter_backends = [SearchFilter]
     search_fields = ['name', 'phone', 'email']
     http_method_names = ['get', 'post', 'put', 'patch', 'delete', 'head', 'options']
@@ -314,7 +322,143 @@ class UserViewSet(viewsets.ModelViewSet):
     def destroy(self, request, *args, **kwargs):
         if not getattr(request.user, 'is_admin', False):
             return Response(status=status.HTTP_403_FORBIDDEN)
+        if self.get_object().pk == request.user.pk:
+            return Response({'error': 'You cannot delete your own account.'}, status=status.HTTP_400_BAD_REQUEST)
         return super().destroy(request, *args, **kwargs)
+
+# --- Donation Views ---
+class DonationPagination(PageNumberPagination):
+    page_size = 20
+    page_size_query_param = 'page_size'
+    max_page_size = 100
+
+
+class DonationViewSet(viewsets.ModelViewSet):
+    """
+    Donors (logged in) POST here from the Donate page; it's saved as Pending until an
+    admin confirms the payment. Admins see every donation and can update/delete them.
+    """
+    permission_classes = [IsAuthenticated]
+    pagination_class = DonationPagination
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_fields = ['status', 'purpose', 'payment_method']
+    search_fields = ['name', 'phone', 'email', 'transaction_ref']
+    ordering_fields = ['created_at', 'amount']
+    ordering = ['-created_at']
+
+    def _is_admin(self):
+        return getattr(self.request.user, 'is_admin', False)
+
+    def get_serializer_class(self):
+        return AdminDonationSerializer if self._is_admin() else DonationSerializer
+
+    def get_queryset(self):
+        qs = Donation.objects.select_related('user', 'recorded_by')
+        if not self._is_admin():
+            return qs.filter(user=self.request.user)
+        # Optional date range: ?from=YYYY-MM-DD&to=YYYY-MM-DD
+        date_from = self.request.query_params.get('from')
+        date_to = self.request.query_params.get('to')
+        if date_from:
+            qs = qs.filter(created_at__date__gte=date_from)
+        if date_to:
+            qs = qs.filter(created_at__date__lte=date_to)
+        return qs
+
+    def check_permissions(self, request):
+        super().check_permissions(request)
+        # Donors may only create and view their own; everything else is admin-only
+        if self.action not in ('create', 'list', 'retrieve') and not self._is_admin():
+            self.permission_denied(request, message='Administrator privileges required.')
+
+    def perform_create(self, serializer):
+        # Website donations always start as Pending online payments, even when an admin donates
+        serializer.save(user=self.request.user, status='Pending', payment_method='Online',
+                        transaction_ref='', notes='')
+
+    @action(detail=False, methods=['post'])
+    def record(self, request):
+        """Admin records an offline donation (cash, cheque, bank transfer...)."""
+        if not self._is_admin():
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        serializer = AdminDonationSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        donor = User.objects.filter(phone=serializer.validated_data['phone']).first()
+        serializer.save(user=donor, recorded_by=request.user)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    @action(detail=False, methods=['get'])
+    def summary(self, request):
+        if not self._is_admin():
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
+        completed = Donation.objects.filter(status='Completed')
+        pending = Donation.objects.filter(status='Pending')
+        now = timezone.now()
+        month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+
+        def total(qs):
+            return qs.aggregate(s=Sum('amount'))['s'] or 0
+
+        by_purpose = {
+            r['purpose']: {'total': r['total'], 'count': r['count']}
+            for r in completed.values('purpose').annotate(total=Sum('amount'), count=Count('id'))
+        }
+
+        # Last 6 calendar months, oldest first
+        months = []
+        y, m = now.year, now.month
+        for _ in range(6):
+            months.append((y, m))
+            y, m = (y - 1, 12) if m == 1 else (y, m - 1)
+        months.reverse()
+        monthly_map = {
+            (r['month'].year, r['month'].month): r['total']
+            for r in completed.filter(created_at__gte=timezone.datetime(months[0][0], months[0][1], 1, tzinfo=now.tzinfo))
+            .annotate(month=TruncMonth('created_at')).values('month').annotate(total=Sum('amount'))
+        }
+
+        completed_count = completed.count()
+        total_received = total(completed)
+        return Response({
+            'total_received': total_received,
+            'received_this_month': total(completed.filter(created_at__gte=month_start)),
+            'completed_count': completed_count,
+            'average_donation': round(total_received / completed_count, 2) if completed_count else 0,
+            'donor_count': completed.values('phone').distinct().count(),
+            'pending_count': pending.count(),
+            'pending_amount': total(pending),
+            'status_counts': dict(Donation.objects.values_list('status').annotate(c=Count('id'))),
+            'by_purpose': [
+                {'purpose': key, 'label': label, **by_purpose.get(key, {'total': 0, 'count': 0})}
+                for key, label in Donation.PURPOSE_CHOICES
+            ],
+            'monthly': [
+                {'name': timezone.datetime(y, m, 1).strftime('%b'), 'total': monthly_map.get((y, m), 0)}
+                for y, m in months
+            ],
+        })
+
+    @action(detail=False, methods=['get'])
+    def export(self, request):
+        """CSV of donations matching the current filters."""
+        if not self._is_admin():
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        import csv
+        qs = self.filter_queryset(self.get_queryset())
+        resp = HttpResponse(content_type='text/csv')
+        resp['Content-Disposition'] = f'attachment; filename="donations-{timezone.now():%Y-%m-%d}.csv"'
+        writer = csv.writer(resp)
+        writer.writerow(['ID', 'Date', 'Name', 'Phone', 'Email', 'Amount', 'Purpose', 'Payment Method',
+                         'Status', 'Transaction Ref', 'Notes', 'Recorded By'])
+        for d in qs:
+            writer.writerow([
+                d.id, timezone.localtime(d.created_at).strftime('%Y-%m-%d %H:%M'), d.name, d.phone, d.email or '',
+                d.amount, d.get_purpose_display(), d.payment_method, d.status, d.transaction_ref, d.notes,
+                d.recorded_by.name if d.recorded_by else '',
+            ])
+        return resp
+
 
 # --- Accommodation Views ---
 class AccommodationViewSet(viewsets.ModelViewSet):

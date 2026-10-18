@@ -8,6 +8,9 @@ router = DefaultRouter()
 # Users
 router.register(r'users', views.UserViewSet, basename='user')
 
+# Donations
+router.register(r'donations', views.DonationViewSet, basename='donation')
+
 # Accommodation
 router.register(r'accommodations', views.AccommodationViewSet, basename='accommodation')
 router.register(r'bookings', views.BookingViewSet, basename='booking')

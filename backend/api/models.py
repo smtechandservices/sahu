@@ -299,6 +299,49 @@ class SiteSettings(models.Model):
         return "Site Settings"
 
 
+class Donation(models.Model):
+    PURPOSE_CHOICES = (
+        ('General Welfare', 'General Welfare Fund'),
+        ('Education', 'Education & Scholarships'),
+        ('Hostel', 'Hostel Maintenance'),
+        ('Medical', 'Community Medical Aid'),
+    )
+    STATUS_CHOICES = (
+        ('Pending', 'Pending'),
+        ('Completed', 'Completed'),
+        ('Failed', 'Failed'),
+        ('Refunded', 'Refunded'),
+    )
+    METHOD_CHOICES = (
+        ('Online', 'Online'),
+        ('UPI', 'UPI'),
+        ('Cash', 'Cash'),
+        ('Cheque', 'Cheque'),
+        ('Bank Transfer', 'Bank Transfer'),
+    )
+
+    # Set when a logged-in user donates from the website; empty for offline donations an admin records
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='donations')
+    name = models.CharField(max_length=255)
+    phone = models.CharField(max_length=15)
+    email = models.EmailField(blank=True, null=True)
+    amount = models.DecimalField(max_digits=12, decimal_places=2)
+    purpose = models.CharField(max_length=30, choices=PURPOSE_CHOICES, default='General Welfare')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending')
+    payment_method = models.CharField(max_length=20, choices=METHOD_CHOICES, default='Online')
+    transaction_ref = models.CharField(max_length=100, blank=True, default='', help_text="UPI / bank / receipt reference")
+    notes = models.TextField(blank=True, default='')
+    recorded_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='recorded_donations')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.name} - ₹{self.amount} ({self.status})"
+
+
 class UserSession(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='sessions')
     refresh_jti = models.CharField(max_length=255, unique=True)

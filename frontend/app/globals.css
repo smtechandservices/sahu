@@ -84,6 +84,36 @@
     scrollbar-width: none;
   }
 
+  /* Slim horizontal scrollbar for card carousels, always visible.
+     Chrome/Safari: the standard scrollbar-width/color properties switch Chrome to macOS
+     overlay scrollbars that auto-hide, so unset them and use the ::-webkit-scrollbar styles
+     (which are always drawn). Firefox has no webkit styles, so keep the standard ones there. */
+  .scrollbar-thin-x {
+    scrollbar-width: auto;
+    scrollbar-color: auto;
+  }
+  @supports (-moz-appearance: none) {
+    .scrollbar-thin-x {
+      scrollbar-width: thin;
+      scrollbar-color: #EAB308 #F3F4F6;
+    }
+  }
+  .scrollbar-thin-x::-webkit-scrollbar {
+    height: 6px;
+  }
+  .scrollbar-thin-x::-webkit-scrollbar-track {
+    background: #F3F4F6;
+    border-radius: 9999px;
+  }
+  .scrollbar-thin-x::-webkit-scrollbar-thumb {
+    background: #EAB308;
+    border: none;
+    border-radius: 9999px;
+  }
+  .scrollbar-thin-x::-webkit-scrollbar-thumb:hover {
+    background: #A16207;
+  }
+
   @keyframes marquee {
     0% { transform: translateX(0); }
     100% { transform: translateX(-50%); }

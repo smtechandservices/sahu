@@ -3,9 +3,11 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { fetchApi } from "../../lib/api";
+import { useMarquee } from "../../lib/useMarquee";
 
 export default function NewsMarquee() {
   const [news, setNews] = useState([]);
+  const { trackRef, items } = useMarquee(news);
 
   useEffect(() => {
     fetchApi("/articles/?category=News")
@@ -15,8 +17,6 @@ export default function NewsMarquee() {
 
   if (news.length === 0) return null;
 
-  const items = [...news, ...news, ...news];
-
   return (
     <div className="bg-primary-dark text-white py-2.5 relative overflow-hidden group">
       {/* Left fade */}
@@ -24,7 +24,7 @@ export default function NewsMarquee() {
       {/* Right fade */}
       <div className="absolute right-0 top-0 bottom-0 w-24 bg-gradient-to-l from-primary-dark to-transparent z-10 pointer-events-none" />
 
-      <div className="flex animate-marquee whitespace-nowrap w-max">
+      <div ref={trackRef} className="flex animate-marquee whitespace-nowrap w-max">
         {items.map((item, idx) => (
           <div
             key={idx}

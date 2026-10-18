@@ -9,6 +9,7 @@ import { Calendar as CalendarIcon, MapPin, ChevronLeft, ChevronRight, Clock, Ext
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "../../context/AuthContext";
 import { fetchApi } from "../../lib/api";
+import { useMarquee } from "../../lib/useMarquee";
 import { useRouter } from "next/navigation";
 
 import Swal from "sweetalert2";
@@ -34,6 +35,7 @@ export default function EventsClient() {
   const [registeringId, setRegisteringId] = useState(null);
   const [confirmingEvent, setConfirmingEvent] = useState(null);
   const [news, setNews] = useState([]);
+  const { trackRef: newsTrackRef, items: newsItems } = useMarquee(news);
   
   const { user } = useAuth();
   const router = useRouter();
@@ -171,8 +173,8 @@ export default function EventsClient() {
           <div className="bg-white border-b border-gray-200 py-3 relative overflow-hidden">
             <div className="absolute left-0 top-0 bottom-0 w-20 bg-gradient-to-r from-white to-transparent z-10" />
             <div className="absolute right-0 top-0 bottom-0 w-20 bg-gradient-to-l from-white to-transparent z-10" />
-            <div className="flex animate-marquee whitespace-nowrap w-max">
-              {[...news, ...news, ...news].map((item, idx) => (
+            <div ref={newsTrackRef} className="flex animate-marquee whitespace-nowrap w-max">
+              {newsItems.map((item, idx) => (
                 <div key={idx} className="flex items-center gap-6 px-12 border-r border-gray-100 group/item">
                   <div className="flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />

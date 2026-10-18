@@ -13,6 +13,7 @@ import Link from 'next/link';
 import { Lock } from 'lucide-react';
 
 import Swal from 'sweetalert2';
+import { fetchApi } from '../../lib/api';
 
 const DonateClient = () => {
   const { user, loading } = useAuth();
@@ -24,6 +25,7 @@ const DonateClient = () => {
   });
 
   const [selectedTier, setSelectedTier] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
 
   if (loading) return <div className="min-h-screen bg-gray-50 flex items-center justify-center">Loading...</div>;
 
@@ -37,7 +39,7 @@ const DonateClient = () => {
     }
   };
 
-  const handleDonate = () => {
+  const handleDonate = async () => {
     if (!formData.amount || formData.amount <= 0) {
       Swal.fire({
         icon: 'warning',
@@ -47,13 +49,47 @@ const DonateClient = () => {
       });
       return;
     }
-    Swal.fire({
-      icon: 'success',
-      title: 'Thank You!',
-      text: `Thank you for your generous contribution of ₹${formData.amount}!`,
-      confirmButtonColor: '#EAB308',
-    });
-    // Payment integration logic would go here
+    if (!formData.name.trim() || !formData.phone.trim()) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Missing Details',
+        text: 'Please enter your name and phone number.',
+        confirmButtonColor: '#EAB308',
+      });
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      // Saved as Pending; the Sabha team confirms it once the payment is received.
+      // Payment gateway integration would go here.
+      await fetchApi('/donations/', {
+        method: 'POST',
+        body: JSON.stringify({
+          name: formData.name.trim(),
+          phone: formData.phone,
+          purpose: formData.purpose,
+          amount: formData.amount,
+        }),
+      });
+      Swal.fire({
+        icon: 'success',
+        title: 'Thank You!',
+        text: `Your contribution of ₹${Number(formData.amount).toLocaleString('en-IN')} has been recorded. Our team will contact you to complete the payment.`,
+        confirmButtonColor: '#EAB308',
+      });
+      setSelectedTier(null);
+      setFormData(prev => ({ ...prev, amount: '' }));
+    } catch (err) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Something went wrong',
+        text: err.message || 'Could not record your donation. Please try again.',
+        confirmButtonColor: '#EAB308',
+      });
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -76,7 +112,8 @@ const DonateClient = () => {
               <DonateForm 
                 formData={formData} 
                 setFormData={setFormData} 
-                onDonate={handleDonate} 
+                onDonate={handleDonate}
+                submitting={submitting}
               />
             </div>
 

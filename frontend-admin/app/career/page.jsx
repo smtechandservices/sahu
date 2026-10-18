@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { fetchApi } from '../../lib/api';
+import Pagination from '../../components/Pagination/Pagination';
 import {
   Briefcase, Plus, Search, Edit, Trash2,
   MapPin, Clock, ExternalLink, X, Check
@@ -10,6 +11,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Swal from 'sweetalert2';
 
 const JOB_TYPES = ['Full-time', 'Part-time', 'Remote', 'Contract'];
+const PAGE_SIZE = 10;
 
 const emptyForm = {
   title: '', company: '', location: '', type: 'Full-time',
@@ -21,6 +23,7 @@ export default function CareerManager() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState('All');
+  const [page, setPage] = useState(1);
   const [showModal, setShowModal] = useState(false);
   const [editingJob, setEditingJob] = useState(null);
   const [form, setForm] = useState(emptyForm);
@@ -82,6 +85,15 @@ export default function CareerManager() {
     return matchSearch && matchType;
   });
 
+  // Clamp so a delete on the last page doesn't leave it empty
+  const currentPage = Math.min(page, Math.max(1, Math.ceil(filtered.length / PAGE_SIZE)));
+  const pageJobs = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+
+  const changePage = (p) => {
+    setPage(p);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   const typeColor = {
     'Full-time': 'bg-blue-100 text-blue-700',
     'Part-time': 'bg-purple-100 text-purple-700',
@@ -109,7 +121,7 @@ export default function CareerManager() {
           return (
             <button
               key={type}
-              onClick={() => setFilterType(type)}
+              onClick={() => { setFilterType(type); setPage(1); }}
               className={`p-4 rounded-2xl border text-left transition-all ${filterType === type ? 'border-primary bg-primary/5' : 'border-gray-100 bg-white hover:border-primary/30'}`}
             >
               <p className="text-2xl font-black text-gray-900">{count}</p>
@@ -127,7 +139,7 @@ export default function CareerManager() {
             type="text"
             placeholder="Search by job title or company..."
             value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
+            onChange={e => { setSearchQuery(e.target.value); setPage(1); }}
             className="input-field pl-12"
           />
         </div>
@@ -143,7 +155,7 @@ export default function CareerManager() {
         </div>
       ) : (
         <div className="space-y-4">
-          {filtered.map(job => (
+          {pageJobs.map(job => (
             <motion.div
               key={job.id}
               initial={{ opacity: 0, y: 8 }}
@@ -187,6 +199,14 @@ export default function CareerManager() {
               </div>
             </motion.div>
           ))}
+
+          <Pagination
+            page={currentPage}
+            pageSize={PAGE_SIZE}
+            totalCount={filtered.length}
+            onPageChange={changePage}
+            className="bg-white rounded-2xl border border-gray-100 shadow-sm px-6 py-4"
+          />
         </div>
       )}
 

@@ -6,7 +6,7 @@ from .models import (
     User, OTPRecord, Accommodation, Booking,
     JobListing, Advertisement, MatrimonialProfile,
     Article, Event, EventRegistration, SiteSettings,
-    HeroCarouselImage, UserSession, Media
+    HeroCarouselImage, UserSession, Media, Donation
 )
 
 class Base64BinaryField(serializers.Field):
@@ -250,3 +250,37 @@ class CustomTokenRefreshSerializer(TokenRefreshSerializer):
 
         return data
 
+
+
+# --- Donation Serializers ---
+class DonationSerializer(serializers.ModelSerializer):
+    """Used by donors on the website: they can only submit who/how much/what for."""
+    class Meta:
+        model = Donation
+        fields = ['id', 'name', 'phone', 'email', 'amount', 'purpose', 'status', 'payment_method', 'created_at']
+        read_only_fields = ['status', 'payment_method', 'created_at']
+
+    def validate_amount(self, value):
+        if value <= 0:
+            raise serializers.ValidationError('Amount must be greater than zero.')
+        return value
+
+    def validate_phone(self, value):
+        digits = ''.join(ch for ch in value if ch.isdigit())
+        if len(digits) < 10:
+            raise serializers.ValidationError('Enter a valid phone number.')
+        return digits[-10:]
+
+
+class AdminDonationSerializer(DonationSerializer):
+    """Admins can see and edit everything, including status and payment details."""
+    user_name = serializers.CharField(source='user.name', read_only=True, default=None)
+    recorded_by_name = serializers.CharField(source='recorded_by.name', read_only=True, default=None)
+
+    class Meta(DonationSerializer.Meta):
+        fields = [
+            'id', 'user', 'user_name', 'name', 'phone', 'email', 'amount', 'purpose', 'status',
+            'payment_method', 'transaction_ref', 'notes', 'recorded_by', 'recorded_by_name',
+            'created_at', 'updated_at',
+        ]
+        read_only_fields = ['user', 'recorded_by', 'created_at', 'updated_at']
