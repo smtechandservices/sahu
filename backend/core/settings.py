@@ -116,7 +116,7 @@ MEDIA_ROOT = BASE_DIR / 'media'
 AWS_STORAGE_BUCKET_NAME = os.getenv('AWS_STORAGE_BUCKET_NAME')
 
 if AWS_STORAGE_BUCKET_NAME:
-    _region = os.getenv('AWS_S3_REGION_NAME', 'ap-southeast-2')
+    _region = os.getenv('AWS_S3_REGION_NAME', 'ap-south-1')
     _s3 = {
         'bucket_name': AWS_STORAGE_BUCKET_NAME,
         'region_name': _region,
