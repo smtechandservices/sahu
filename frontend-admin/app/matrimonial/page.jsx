@@ -8,6 +8,9 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Swal from 'sweetalert2';
+import Pagination from '../../components/Pagination/Pagination';
+
+const PAGE_SIZE = 12;
 
 export default function MatrimonialManager() {
   const [profiles, setProfiles] = useState([]);
@@ -19,8 +22,15 @@ export default function MatrimonialManager() {
   const [selectedProfile, setSelectedProfile] = useState(null);
   const [editingProfile, setEditingProfile] = useState(null);
   const [processing, setProcessing] = useState(null);
+  const [page, setPage] = useState(1);
 
   useEffect(() => { fetchProfiles(); }, []);
+
+  // Any filter change goes back to page 1
+  const withReset = (setter) => (e) => {
+    setter(e.target.value);
+    setPage(1);
+  };
 
   const fetchProfiles = async () => {
     try {
@@ -90,8 +100,20 @@ export default function MatrimonialManager() {
     return matchSearch && matchGender && matchStatus && matchGotra;
   });
 
+  // A delete can leave the last page empty — show the new last page instead
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const currentPage = Math.min(page, totalPages);
+  const pageProfiles = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+
+  const goToPage = (p) => {
+    setPage(p);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   const pending = profiles.filter(p => !p.is_approved).length;
   const approved = profiles.filter(p => p.is_approved).length;
+  const male = profiles.filter(p => p.gender === 'Male').length;
+  const female = profiles.filter(p => p.gender === 'Female').length;
 
   return (
     <div className="space-y-8">
@@ -102,9 +124,11 @@ export default function MatrimonialManager() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
         {[
           { label: 'Total Profiles', value: profiles.length, color: 'text-gray-900' },
+          { label: 'Male', value: male, color: 'text-blue-600' },
+          { label: 'Female', value: female, color: 'text-pink-600' },
           { label: 'Pending Review', value: pending, color: 'text-yellow-600' },
           { label: 'Approved', value: approved, color: 'text-green-600' },
         ].map(s => (
@@ -121,21 +145,21 @@ export default function MatrimonialManager() {
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
           <input
             type="text" placeholder="Search by name or city..."
-            value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
+            value={searchQuery} onChange={withReset(setSearchQuery)}
             className="input-field pl-12"
           />
         </div>
-        <select value={filterGender} onChange={e => setFilterGender(e.target.value)} className="input-field md:w-36">
+        <select value={filterGender} onChange={withReset(setFilterGender)} className="input-field md:w-36">
           <option value="All">All Genders</option>
           <option value="Male">Male</option>
           <option value="Female">Female</option>
         </select>
-        <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)} className="input-field md:w-36">
+        <select value={filterStatus} onChange={withReset(setFilterStatus)} className="input-field md:w-36">
           <option value="All">All Status</option>
           <option value="Pending">Pending</option>
           <option value="Approved">Approved</option>
         </select>
-        <select value={filterGotra} onChange={e => setFilterGotra(e.target.value)} className="input-field md:w-40">
+        <select value={filterGotra} onChange={withReset(setFilterGotra)} className="input-field md:w-40">
           <option value="All">All Gotras</option>
           {['Kashyap','Bharadwaj','Vashisht','Gautam','Atri','Vishwamitra','Jamadagni','Shandilya','Parashar','Garg','Angiras'].map(g => (
             <option key={g} value={g}>{g}</option>
@@ -152,62 +176,72 @@ export default function MatrimonialManager() {
           <p className="text-gray-400 font-bold">No profiles found.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filtered.map(profile => (
-            <motion.div
-              key={profile.id}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden group hover:shadow-md transition-all"
-            >
-              {/* Photo */}
-              <div className="relative h-52 bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center text-primary/30">
-                {profile.photo ? (
-                  <img src={profile.photo} alt={profile.user_detail?.name} className="w-full h-full object-cover" />
-                ) : (
-                  <User size={56} />
-                )}
-                <div className={`absolute top-4 right-4 px-3 py-1 rounded-full text-[10px] font-black uppercase ${profile.is_approved ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
-                  {profile.is_approved ? 'Approved' : 'Pending'}
-                </div>
-                <div className="absolute top-4 left-4 px-3 py-1 rounded-full text-[10px] font-black uppercase bg-white/90 text-gray-700">
-                  {profile.gender}
-                </div>
-              </div>
-
-              {/* Info */}
-              <div className="p-6">
-                <h3 className="text-lg font-bold text-gray-900 mb-1">{profile.user_detail?.name}</h3>
-                <div className="flex flex-wrap gap-3 text-xs text-gray-500 mb-4">
-                  <span className="flex items-center gap-1"><MapPin size={12} />{profile.city}</span>
-                  <span className="flex items-center gap-1"><User size={12} />{profile.age} yrs</span>
-                  <span className="flex items-center gap-1"><GraduationCap size={12} />{profile.education}</span>
-                </div>
-                <p className="text-xs text-gray-400 line-clamp-2 mb-4">{profile.bio}</p>
-
-                <div className="flex gap-2 pt-4 border-t border-gray-50">
-                  <button onClick={() => setSelectedProfile(profile)}
-                    className="flex-1 py-2 text-xs font-bold text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 transition-all flex items-center justify-center gap-1">
-                    <Eye size={14} /> View
-                  </button>
-                  <button onClick={() => setEditingProfile(profile)}
-                    className="flex-1 py-2 text-xs font-bold text-blue-600 border border-blue-200 rounded-lg hover:bg-blue-50 transition-all flex items-center justify-center gap-1">
-                    <Edit size={14} /> Edit
-                  </button>
-                  {!profile.is_approved && (
-                    <button onClick={() => handleApprove(profile.id)} disabled={processing === profile.id}
-                      className="flex-1 py-2 text-xs font-bold text-green-600 border border-green-200 rounded-lg hover:bg-green-50 transition-all flex items-center justify-center gap-1 disabled:opacity-50">
-                      <Check size={14} /> Approve
-                    </button>
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {pageProfiles.map(profile => (
+              <motion.div
+                key={profile.id}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden group hover:shadow-md transition-all"
+              >
+                {/* Photo */}
+                <div className="relative h-52 bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center text-primary/30">
+                  {profile.photo ? (
+                    <img src={profile.photo} alt={profile.user_detail?.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <User size={56} />
                   )}
-                  <button onClick={() => handleDelete(profile.id)} disabled={processing === profile.id}
-                    className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all disabled:opacity-50">
-                    <Trash2 size={16} />
-                  </button>
+                  <div className={`absolute top-4 right-4 px-3 py-1 rounded-full text-[10px] font-black uppercase ${profile.is_approved ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
+                    {profile.is_approved ? 'Approved' : 'Pending'}
+                  </div>
+                  <div className="absolute top-4 left-4 px-3 py-1 rounded-full text-[10px] font-black uppercase bg-white/90 text-gray-700">
+                    {profile.gender}
+                  </div>
                 </div>
-              </div>
-            </motion.div>
-          ))}
+
+                {/* Info */}
+                <div className="p-6">
+                  <h3 className="text-lg font-bold text-gray-900 mb-1">{profile.user_detail?.name}</h3>
+                  <div className="flex flex-wrap gap-3 text-xs text-gray-500 mb-4">
+                    <span className="flex items-center gap-1"><MapPin size={12} />{profile.city}</span>
+                    <span className="flex items-center gap-1"><User size={12} />{profile.age} yrs</span>
+                    <span className="flex items-center gap-1"><GraduationCap size={12} />{profile.education}</span>
+                  </div>
+                  <p className="text-xs text-gray-400 line-clamp-2 mb-4">{profile.bio}</p>
+
+                  <div className="flex gap-2 pt-4 border-t border-gray-50">
+                    <button onClick={() => setSelectedProfile(profile)}
+                      className="flex-1 py-2 text-xs font-bold text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 transition-all flex items-center justify-center gap-1">
+                      <Eye size={14} /> View
+                    </button>
+                    <button onClick={() => setEditingProfile(profile)}
+                      className="flex-1 py-2 text-xs font-bold text-blue-600 border border-blue-200 rounded-lg hover:bg-blue-50 transition-all flex items-center justify-center gap-1">
+                      <Edit size={14} /> Edit
+                    </button>
+                    {!profile.is_approved && (
+                      <button onClick={() => handleApprove(profile.id)} disabled={processing === profile.id}
+                        className="flex-1 py-2 text-xs font-bold text-green-600 border border-green-200 rounded-lg hover:bg-green-50 transition-all flex items-center justify-center gap-1 disabled:opacity-50">
+                        <Check size={14} /> Approve
+                      </button>
+                    )}
+                    <button onClick={() => handleDelete(profile.id)} disabled={processing === profile.id}
+                      className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all disabled:opacity-50">
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+
+          <Pagination
+            page={currentPage}
+            pageSize={PAGE_SIZE}
+            totalCount={filtered.length}
+            onPageChange={goToPage}
+            className="bg-white px-6 py-4 rounded-2xl border border-gray-100 shadow-sm"
+          />
         </div>
       )}
 
