@@ -45,15 +45,8 @@ const AccommodationCard = ({ item }) => {
             {item.description}
           </p>
 
-          {/* Price Row */}
+          {/* Location */}
           <div className="flex items-end justify-between mb-6">
-            <div>
-              <p className="text-2xl font-bold text-primary leading-none">
-                ₹{item.price}
-                <span className="text-xs font-normal text-gray-400 ml-1 italic">{item.unit}</span>
-              </p>
-            </div>
-            {/* Location */}
             <div className="flex items-center gap-1.5 text-gray-400 text-xs bg-gray-50 px-2 py-1 rounded-md">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />

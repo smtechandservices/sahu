@@ -117,7 +117,7 @@ export default function AccommodationManager() {
         description: form.description,
         type: form.type,
         badge: form.badge || null,
-        price: form.price,
+        price: form.price === '' ? null : form.price,
         unit: form.unit,
         location: form.location,
         is_active: form.is_active,
@@ -233,7 +233,11 @@ export default function AccommodationManager() {
                   </p>
                   <div className="flex items-center justify-between pt-4 border-t border-gray-50">
                     <span className="text-primary font-bold">
-                      ₹{acc.price} <span className="text-[10px] text-gray-400">{acc.unit}</span>
+                      {acc.price != null ? (
+                        <>₹{acc.price} <span className="text-[10px] text-gray-400">{acc.unit}</span></>
+                      ) : (
+                        <span className="text-sm font-medium text-gray-400">No price set</span>
+                      )}
                     </span>
                     <div className="flex gap-2">
                       <button
@@ -476,10 +480,9 @@ export default function AccommodationManager() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-bold text-gray-700 mb-2">
-                      Price <span className="text-red-400">*</span>
+                      Price <span className="text-gray-400 font-normal">(optional)</span>
                     </label>
                     <input
-                      required
                       type="number"
                       min="0"
                       step="0.01"
