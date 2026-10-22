@@ -148,67 +148,15 @@ export default function GalleryPage() {
               ))}
             </div>
           </div>
-        ) : activeTab === 'all' && allItems.length > 0 ? (
-          /* Split view for "All" tab */
-          <div>
-            {galleryItems.length > 0 && (
-              <section className="py-10 px-4 sm:px-8 md:px-12">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-9 h-9 rounded-xl bg-emerald-500/10 flex items-center justify-center">
-                    <Image size={18} className="text-emerald-600" />
-                  </div>
-                  <div>
-                    <h2 className="text-xl font-black text-gray-900">{t('Gallery', 'गैलरी')}</h2>
-                    <p className="text-sm text-gray-400 font-medium">{t('Community events & celebrations', 'सामुदायिक कार्यक्रम एवं उत्सव')}</p>
-                  </div>
-                  <span className="ml-auto text-xs font-bold bg-emerald-50 text-emerald-600 px-3 py-1 rounded-full">
-                    {galleryItems.length} {t('photos', 'फ़ोटो')}
-                  </span>
-                </div>
-                <GalleryClient initialImages={galleryItems} />
-              </section>
-            )}
-
-            {mediaItems.length > 0 && (
-              <section className={`py-10 px-4 sm:px-8 md:px-12 ${galleryItems.length > 0 ? 'border-t border-gray-100' : ''}`}>
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-9 h-9 rounded-xl bg-blue-500/10 flex items-center justify-center">
-                    <Film size={18} className="text-blue-600" />
-                  </div>
-                  <div>
-                    <h2 className="text-xl font-black text-gray-900">{t('Media', 'मीडिया')}</h2>
-                    <p className="text-sm text-gray-400 font-medium">{t('Official media & press', 'आधिकारिक मीडिया एवं प्रेस')}</p>
-                  </div>
-                  <span className="ml-auto text-xs font-bold bg-blue-50 text-blue-600 px-3 py-1 rounded-full">
-                    {mediaItems.length} {t('photos', 'फ़ोटो')}
-                  </span>
-                </div>
-                <GalleryClient initialImages={mediaItems} />
-              </section>
-            )}
-
-            {allItems.length === 0 && (
-              <EmptyState onlyMedia={false} />
-            )}
-          </div>
         ) : (
-          /* Single filtered view */
-          <GalleryClient initialImages={displayItems} accentColor={activeTab === 'media' ? 'blue' : 'emerald'} />
+          /* One combined grid; the tabs above filter it */
+          <div className="py-10 px-4 sm:px-8 md:px-12">
+            <GalleryClient key={activeTab} initialImages={displayItems} />
+          </div>
         )}
       </main>
       <Footer />
     </>
-  );
-}
-
-function EmptyState() {
-  const { t } = useLanguage();
-  return (
-    <div className="py-24 text-center">
-      <Images size={56} className="mx-auto text-gray-200 mb-5" />
-      <p className="text-gray-400 font-bold text-lg">{t('No photos yet.', 'अभी कोई फ़ोटो नहीं है।')}</p>
-      <p className="text-gray-300 text-sm mt-2">{t('Check back soon for community highlights!', 'समाज की झलकियों के लिए जल्द ही फिर देखें!')}</p>
-    </div>
   );
 }
 
