@@ -1,4 +1,5 @@
 import React from 'react';
+import { Phone, Clock } from 'lucide-react';
 
 const AccommodationHero = () => {
   return (
@@ -15,6 +16,20 @@ const AccommodationHero = () => {
           Reserve community halls for events, book comfortable hostel stays for students, 
           or find temporary room accommodations.
         </p>
+
+        <div className="mt-6 inline-flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-6 px-4 py-3 bg-primary/10 border border-primary/20 rounded-xl text-gray-800">
+          <p className="flex items-center gap-2 text-sm sm:text-base">
+            <Phone className="w-4 h-4 text-primary shrink-0" />
+            Please contact for booking on{' '}
+            <a href="tel:+916122303994" className="font-semibold text-gray-900 hover:text-primary">
+              6122303994
+            </a>
+          </p>
+          <p className="flex items-center gap-2 text-sm sm:text-base">
+            <Clock className="w-4 h-4 text-primary shrink-0" />
+            Timing: <span className="font-semibold text-gray-900">10am – 5pm</span>
+          </p>
+        </div>
       </div>
     </section>
   );
