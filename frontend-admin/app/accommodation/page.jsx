@@ -16,7 +16,7 @@ const EMPTY_FORM = {
   type: 'Hostel',
   badge: '',
   price: '',
-  unit: '/ night',
+  unit: '',
   location: '',
   is_active: true,
   image: null,
@@ -72,7 +72,7 @@ export default function AccommodationManager() {
       type: acc.type || 'Hostel',
       badge: acc.badge || '',
       price: acc.price != null ? String(acc.price) : '',
-      unit: acc.unit || '/ night',
+      unit: acc.unit || '',
       location: acc.location || '',
       is_active: acc.is_active ?? true,
       image: acc.image || null,
@@ -493,7 +493,9 @@ export default function AccommodationManager() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2">Unit</label>
+                    <label className="block text-sm font-bold text-gray-700 mb-2">
+                      Unit <span className="text-gray-400 font-normal">(optional)</span>
+                    </label>
                     <input
                       type="text"
                       value={form.unit}
