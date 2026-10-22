@@ -5,6 +5,7 @@ import Header from "../Header/Header";
 import Footer from "../Footer/Footer";
 import CareerHero from "./CareerHero";
 import JobCard from "./JobCard";
+import AdCarousel from "./AdCarousel";
 import Pagination from "../Pagination/Pagination";
 import { Search, SlidersHorizontal, X } from "lucide-react";
 
@@ -73,7 +74,8 @@ export default function CareerClient() {
       <main className="bg-gray-50 min-h-screen pb-20">
         <CareerHero />
 
-        <div className="px-4 sm:px-6 md:px-8 py-12">
+        <div className="px-4 sm:px-6 md:px-8 py-12 flex flex-col lg:flex-row lg:items-start gap-8">
+          <div className="flex-1 min-w-0">
 
           {/* Filters bar */}
           <div className="bg-white border border-gray-200 rounded-xl p-4 mb-8 shadow-sm">
@@ -89,29 +91,6 @@ export default function CareerClient() {
                   className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                 />
               </div>
-
-              {/* Type filter */}
-              <select
-                value={typeFilter}
-                onChange={e => setTypeFilter(e.target.value)}
-                className="px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all min-w-[140px]"
-              >
-                {JOB_TYPES.map(t => (
-                  <option key={t} value={t}>{t === "All" ? "All Types" : t}</option>
-                ))}
-              </select>
-
-              {/* Location filter */}
-              <select
-                value={locationFilter}
-                onChange={e => setLocationFilter(e.target.value)}
-                className="px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all min-w-[160px]"
-              >
-                <option value="">All Locations</option>
-                {locations.map(loc => (
-                  <option key={loc} value={loc}>{loc}</option>
-                ))}
-              </select>
 
               {hasActiveFilters && (
                 <button
@@ -164,7 +143,7 @@ export default function CareerClient() {
 
           {/* Job grid */}
           {loading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-6">
               {[...Array(6)].map((_, i) => (
                 <div key={i} className="bg-white border border-gray-100 rounded-xl p-6 animate-pulse">
                   <div className="h-4 bg-gray-200 rounded w-3/4 mb-3" />
@@ -187,7 +166,7 @@ export default function CareerClient() {
             </div>
           ) : (
             <>
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-6">
                 {paginated.map(job => (
                   <JobCard key={job.id} job={job} />
                 ))}
@@ -207,6 +186,42 @@ export default function CareerClient() {
             </>
           )}
 
+          </div>
+
+          {/* Kaamlee ad: right sidebar on desktop, above the search bar on mobile */}
+          {/* Sidebar: on mobile its children join the page flow (filters first, ad last) */}
+          <div className="contents lg:flex lg:flex-col lg:gap-6 lg:w-80 lg:shrink-0 lg:sticky lg:top-6">
+            <div className="order-first lg:order-none bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+              <h3 className="flex items-center gap-2 text-sm font-bold text-gray-900 mb-4">
+                <SlidersHorizontal className="w-4 h-4 text-gray-400" /> Filters
+              </h3>
+              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2" htmlFor="job-type-filter">Job Type</label>
+              <select
+                id="job-type-filter"
+                value={typeFilter}
+                onChange={e => setTypeFilter(e.target.value)}
+                className="px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all w-full"
+              >
+                {JOB_TYPES.map(t => (
+                  <option key={t} value={t}>{t === "All" ? "All Types" : t}</option>
+                ))}
+              </select>
+
+              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 mt-4" htmlFor="job-location-filter">Location</label>
+              <select
+                id="job-location-filter"
+                value={locationFilter}
+                onChange={e => setLocationFilter(e.target.value)}
+                className="px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all w-full"
+              >
+                <option value="">All Locations</option>
+                {locations.map(loc => (
+                  <option key={loc} value={loc}>{loc}</option>
+                ))}
+              </select>
+            </div>
+            <AdCarousel className="order-last lg:order-none w-full" />
+          </div>
         </div>
       </main>
       <Footer />

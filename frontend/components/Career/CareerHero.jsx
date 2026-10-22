@@ -1,5 +1,4 @@
 import React from 'react';
-import KaamleeBanner from './KaamleeBanner';
 
 const CareerHero = () => {
   return (
@@ -18,7 +17,6 @@ const CareerHero = () => {
               Find your next role or promote your services to millions of members.
             </p>
           </div>
-          <KaamleeBanner />
         </div>
       </div>
     </section>
