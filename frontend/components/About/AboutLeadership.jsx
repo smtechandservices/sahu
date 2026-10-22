@@ -12,8 +12,8 @@ const president = {
 
 const digitalCommittee = [
   { name: "Vinay Kumar", role: "Digital Committee Member", image: "/assets/vinay.png" },
-  { name: "Bimal Kishore Bittu", role: "Digital Committee Member", image: "/assets/bimal.png" },
-  { name: "Sanjiv Kumar Shekhar", role: "Digital Committee Member", image: "/assets/sanjiv.png" },
+  { name: "Bimal Kishore Bittu", role: "Digital Committee Member", image: "/assets/bimal.jpg" },
+  { name: "Sanjiv Kumar Shekhar", role: "Digital Committee Member", image: "/assets/sanjiv.jpg" },
 ];
 
 const AboutLeadership = () => {
