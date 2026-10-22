@@ -2,22 +2,14 @@
 
 import { HandHeart } from 'lucide-react';
 
-import { useAuth } from '../../context/AuthContext';
 import { useRouter } from 'next/navigation';
 import { useLanguage } from '../../context/LanguageContext';
 
 const Support = () => {
-  const { user } = useAuth();
   const router = useRouter();
   const { t } = useLanguage();
 
-  const handleContribute = () => {
-    if (!user) {
-      router.push('/login');
-    } else {
-      router.push('/donate');
-    }
-  };
+  const handleContribute = () => router.push('/donate');
 
   return (
     <section className="pb-8 bg-white">
@@ -35,17 +27,11 @@ const Support = () => {
           <div className="shrink-0 w-full lg:w-auto text-center">
             <button
               onClick={handleContribute}
-              disabled={!user}
-              className={`w-full lg:w-auto bg-[#c08200] hover:bg-[#a06c00] text-white px-8 py-4 sm:px-12 sm:py-6 rounded-lg font-bold flex items-center justify-center gap-3 sm:gap-4 transition-all shadow-lg group ${!user ? 'opacity-50 cursor-not-allowed grayscale' : ''}`}
+              className={`cursor-pointer w-full lg:w-auto bg-[#c08200] hover:bg-[#a06c00] text-white px-8 py-4 sm:px-12 sm:py-6 rounded-lg font-bold flex items-center justify-center gap-3 sm:gap-4 transition-all shadow-lg group`}
             >
-              <HandHeart className={`${user ? 'group-hover:scale-110' : ''} transition-transform`} size={24} />
+              <HandHeart className="group-hover:scale-110 transition-transform" size={24} />
               <span className="text-lg sm:text-xl">{t('Contribute Now', 'अभी योगदान करें')}</span>
             </button>
-            {!user && (
-              <p className="text-[#502600] text-sm mt-3 font-bold animate-pulse">
-                {t('Please login to contribute to community initiatives', 'समाज की पहलों में योगदान के लिए कृपया लॉग इन करें')}
-              </p>
-            )}
           </div>
         </div>
       </div>

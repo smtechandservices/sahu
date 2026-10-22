@@ -97,6 +97,11 @@ const DonateClient = () => {
     }
   };
 
+  // The donation QR is revealed only once every field of the form is filled in
+  const detailsComplete = Boolean(
+    formData.name.trim() && formData.phone.trim() && formData.purpose && Number(formData.amount) > 0
+  );
+
   return (
     <>
       <Header />
@@ -124,7 +129,7 @@ const DonateClient = () => {
 
             {/* Right Column: Sidebar */}
             <div className="lg:col-span-4">
-              <DonateSidebar />
+              <DonateSidebar canShowQr={detailsComplete} />
             </div>
 
           </div>

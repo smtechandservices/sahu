@@ -3,6 +3,7 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.decorators import api_view, permission_classes, action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.throttling import AnonRateThrottle
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.utils import timezone
 from datetime import timedelta
@@ -337,9 +338,14 @@ class DonationPagination(PageNumberPagination):
     max_page_size = 100
 
 
+class DonationAnonThrottle(AnonRateThrottle):
+    # Donating doesn't need an account, so cap anonymous submissions per IP
+    rate = '10/hour'
+
+
 class DonationViewSet(viewsets.ModelViewSet):
     """
-    Donors (logged in) POST here from the Donate page; it's saved as Pending until an
+    Donors POST here from the Donate page, logged in or not; it's saved as Pending until an
     admin confirms the payment. Admins see every donation and can update/delete them.
     """
     permission_classes = [IsAuthenticated]
@@ -352,6 +358,16 @@ class DonationViewSet(viewsets.ModelViewSet):
 
     def _is_admin(self):
         return getattr(self.request.user, 'is_admin', False)
+
+    def get_permissions(self):
+        if self.action == 'create':
+            return [AllowAny()]
+        return super().get_permissions()
+
+    def get_throttles(self):
+        if self.action == 'create':
+            return [DonationAnonThrottle()]
+        return super().get_throttles()
 
     def get_serializer_class(self):
         return AdminDonationSerializer if self._is_admin() else DonationSerializer
@@ -377,7 +393,8 @@ class DonationViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         # Website donations always start as Pending online payments, even when an admin donates
-        serializer.save(user=self.request.user, status='Pending', payment_method='Online',
+        user = self.request.user if self.request.user.is_authenticated else None
+        serializer.save(user=user, status='Pending', payment_method='Online',
                         transaction_ref='', notes='')
 
     @action(detail=False, methods=['post'])
