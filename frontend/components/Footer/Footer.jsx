@@ -1,29 +1,32 @@
+'use client';
+
 import Link from 'next/link';
 import Image from 'next/image';
+import { useLanguage } from '../../context/LanguageContext';
 
 const quickLinks = [
-  { href: '/', label: 'Home' },
-  { href: '/events', label: 'Events' },
-  { href: '/news', label: 'News' },
-  { href: '/gallery', label: 'Gallery' },
-  { href: '/magazine', label: 'Magazine' },
-  { href: '/career', label: 'Opportunities' },
-  { href: '/accommodation', label: 'Accommodation' },
-  { href: '/donate', label: 'Donate' },
+  { href: '/', label: ['Home', 'होम'] },
+  { href: '/events', label: ['Events', 'कार्यक्रम'] },
+  { href: '/news', label: ['News', 'समाचार'] },
+  { href: '/gallery', label: ['Gallery', 'गैलरी'] },
+  { href: '/magazine', label: ['Magazine', 'पत्रिका'] },
+  { href: '/career', label: ['Opportunities', 'अवसर'] },
+  { href: '/accommodation', label: ['Accommodation', 'आवास'] },
+  { href: '/donate', label: ['Donate', 'दान करें'] },
 ];
 
 const aboutLinks = [
-  { href: '/about', label: 'Sabha Overview' },
-  { href: '/about#about-leadership', label: 'Leadership Team' },
-  { href: '/about#about-executive', label: 'Executive Committee' },
-  { href: '/about#about-stats', label: 'Our Impact' },
-  { href: '/about#constitution', label: 'Constitution' },
-  { href: '/matrimonial', label: 'Matrimonial' },
+  { href: '/about#about-history', label: ['Sahu History', 'साहू इतिहास'] },
+  { href: '/about#about-leadership', label: ['Leadership Team', 'नेतृत्व दल'] },
+  { href: '/about#about-executive', label: ['Executive Committee', 'कार्यकारिणी समिति'] },
+  { href: '/about#about-stats', label: ['Our Impact', 'हमारा प्रभाव'] },
+  { href: '/about#constitution', label: ['Constitution', 'संविधान'] },
+  { href: '/matrimonial', label: ['Matrimonial', 'वैवाहिक'] },
 ];
 
 const legalLinks = [
-  { href: '/terms', label: 'Terms of Service' },
-  { href: '/policy', label: 'Advertisement Policy' },
+  { href: '/terms', label: ['Terms of Service', 'सेवा की शर्तें'] },
+  { href: '/policy', label: ['Advertisement Policy', 'विज्ञापन नीति'] },
 ];
 
 const FacebookIcon = () => (
@@ -64,6 +67,7 @@ const LocationIcon = () => (
 );
 
 const Footer = () => {
+  const { t } = useLanguage();
   return (
     <footer className="bg-[#1a120b] text-gray-300">
       {/* Top accent bar matching header */}
@@ -78,7 +82,7 @@ const Footer = () => {
             <Link href="/" className="inline-block">
               <Image
                 src="/assets/logo-sahu.png"
-                alt="Sahu Sabha Logo"
+                alt={t('Sahu Sabha Logo', 'साहू सभा लोगो')}
                 width={160}
                 height={48}
                 style={{ height: 'auto' }}
@@ -86,7 +90,10 @@ const Footer = () => {
               />
             </Link>
             <p className="text-sm text-gray-400 leading-loose max-w-xs">
-              बिहार तैलिक साहू सभा पटना के बकरगंज इलाके में स्थित एक प्रमुख सामुदायिक सभा है, जो मुख्य रूप से शादी-ब्याह, सम्मेलनों और अन्य समारोहों के लिए आयोजित की जाती है।
+              {t(
+                'Bihar Tailik Sahu Sabha is a leading community sabha located in the Bakarganj area of Patna, mainly hosting weddings, conferences and other ceremonies.',
+                'बिहार तैलिक साहू सभा पटना के बकरगंज इलाके में स्थित एक प्रमुख सामुदायिक सभा है, जो मुख्य रूप से शादी-ब्याह, सम्मेलनों और अन्य समारोहों के लिए आयोजित की जाती है।'
+              )}
             </p>
 
             {/* Social icons */}
@@ -124,7 +131,7 @@ const Footer = () => {
           {/* Column 2: Quick Links */}
           <div className="flex flex-col gap-4">
             <h4 className="text-white font-bold text-base uppercase tracking-wider border-b border-white/10 pb-2">
-              Quick Links
+              {t('Quick Links', 'त्वरित लिंक')}
             </h4>
             <ul className="flex flex-col gap-2.5">
               {quickLinks.map((link) => (
@@ -134,7 +141,7 @@ const Footer = () => {
                     className="text-sm text-gray-400 hover:text-[#f5b301] transition-colors flex items-center gap-1.5 group"
                   >
                     <span className="w-1 h-1 rounded-full bg-[#f5b301] opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
-                    {link.label}
+                    {t(...link.label)}
                   </Link>
                 </li>
               ))}
@@ -144,7 +151,7 @@ const Footer = () => {
           {/* Column 3: About Sabha */}
           <div className="flex flex-col gap-4">
             <h4 className="text-white font-bold text-base uppercase tracking-wider border-b border-white/10 pb-2">
-              About Sabha
+              {t('About Sabha', 'सभा के बारे में')}
             </h4>
             <ul className="flex flex-col gap-2.5">
               {aboutLinks.map((link) => (
@@ -154,7 +161,7 @@ const Footer = () => {
                     className="text-sm text-gray-400 hover:text-[#f5b301] transition-colors flex items-center gap-1.5 group"
                   >
                     <span className="w-1 h-1 rounded-full bg-[#f5b301] opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
-                    {link.label}
+                    {t(...link.label)}
                   </Link>
                 </li>
               ))}
@@ -164,7 +171,7 @@ const Footer = () => {
           {/* Column 4: Contact */}
           <div className="flex flex-col gap-4">
             <h4 className="text-white font-bold text-base uppercase tracking-wider border-b border-white/10 pb-2">
-              Get In Touch
+              {t('Get In Touch', 'संपर्क करें')}
             </h4>
             <ul className="flex flex-col gap-4">
               <li>
@@ -187,7 +194,7 @@ const Footer = () => {
               </li> */}
               <li className="flex items-start gap-2.5 text-sm text-gray-400">
                 <span className="text-[#f5b301] mt-0.5"><LocationIcon /></span>
-                <span>J585+HCG, Sahu bhawan, Langer toli chauraha, Bihari Sao Ln, Patna, Bihar 800004, India</span>
+                <span>{t('J585+HCG, Sahu bhawan, Langer toli chauraha, Bihari Sao Ln, Patna, Bihar 800004, India', 'J585+HCG, साहू भवन, लंगर टोली चौराहा, बिहारी साव लेन, पटना, बिहार 800004, भारत')}</span>
               </li>
               <li className="flex items-start gap-2.5 text-sm text-gray-400">
                 <span className="text-[#f5b301] mt-0.5">
@@ -196,7 +203,7 @@ const Footer = () => {
                   </svg>
                 </span>
                 <span>
-                  Mon – Sun &nbsp;·&nbsp; 8:00 AM – 8:00 PM
+                  {t('Mon – Sun', 'सोम – रवि')} &nbsp;·&nbsp; {t('8:00 AM – 8:00 PM', 'सुबह 8:00 – रात 8:00')}
                 </span>
               </li>
             </ul>
@@ -206,7 +213,7 @@ const Footer = () => {
               href="/join"
               className="mt-2 inline-block text-center bg-[#f5b301] text-[#1a120b] font-bold text-sm px-5 py-2.5 rounded-lg hover:bg-yellow-400 transition-colors"
             >
-              Join Community
+              {t('Join Community', 'समाज से जुड़ें')}
             </Link>
           </div>
         </div>
@@ -216,7 +223,7 @@ const Footer = () => {
       <div className="border-t border-white/10">
         <div className="px-6 lg:px-8 py-5 mx-auto max-w-7xl flex flex-col sm:flex-row justify-between items-center gap-3">
           <p className="text-xs text-gray-500 text-center sm:text-left">
-            © {new Date().getFullYear()} {' '} Bihar Tailik Sahu Sabha. &nbsp;&nbsp; All rights reserved. &nbsp;&nbsp; Made with care by &nbsp;
+            © {new Date().getFullYear()} {' '} {t('Bihar Tailik Sahu Sabha.', 'बिहार तैलिक साहू सभा।')} &nbsp;&nbsp; {t('All rights reserved.', 'सर्वाधिकार सुरक्षित।')} &nbsp;&nbsp; {t('Made with care by', 'निर्माण:')} &nbsp;
             <a href="https://commhawk.in/" target="_blank">
               <span className="text-[#f5b301] font-semibold">Commhawk</span>
             </a>
@@ -229,7 +236,7 @@ const Footer = () => {
                     href={link.href}
                     className="text-xs text-gray-500 hover:text-[#f5b301] transition-colors"
                   >
-                    {link.label}
+                    {t(...link.label)}
                   </Link>
                 </li>
               ))}

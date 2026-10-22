@@ -3,12 +3,14 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ChevronLeft, ChevronRight, Images, ZoomIn } from 'lucide-react';
+import { useLanguage } from '../../context/LanguageContext';
 
 const isVideo = (m) => m?.startsWith('video/');
 
 export default function GalleryClient({ initialImages }) {
   const images = initialImages || [];
   const [lightboxIndex, setLightboxIndex] = useState(null);
+  const { t } = useLanguage();
 
   const openLightbox = (index) => setLightboxIndex(index);
   const closeLightbox = () => setLightboxIndex(null);
@@ -38,8 +40,8 @@ export default function GalleryClient({ initialImages }) {
     return (
       <div className="py-24 text-center">
         <Images size={56} className="mx-auto text-gray-200 mb-5" />
-        <p className="text-gray-400 font-bold text-lg">No photos yet.</p>
-        <p className="text-gray-300 text-sm mt-2">Check back soon for community highlights!</p>
+        <p className="text-gray-400 font-bold text-lg">{t('No photos yet.', 'अभी कोई फ़ोटो नहीं है।')}</p>
+        <p className="text-gray-300 text-sm mt-2">{t('Check back soon for community highlights!', 'समाज की झलकियों के लिए जल्द ही फिर देखें!')}</p>
       </div>
     );
   }
@@ -72,7 +74,7 @@ export default function GalleryClient({ initialImages }) {
               ) : (
                 <img
                   src={img.image_url}
-                  alt={img.title || 'Photo'}
+                  alt={img.title || t('Photo', 'फ़ोटो')}
                   className="w-full h-auto block group-hover:scale-[1.03] transition-transform duration-500"
                   loading="lazy"
                 />
@@ -92,7 +94,7 @@ export default function GalleryClient({ initialImages }) {
 
               {/* Video badge */}
               {isVideo(img.image_mimetype) && (
-                <div className="absolute bottom-2 left-2 bg-black/60 text-white text-[9px] font-bold px-2 py-0.5 rounded-full">▶ Video</div>
+                <div className="absolute bottom-2 left-2 bg-black/60 text-white text-[9px] font-bold px-2 py-0.5 rounded-full">▶ {t('Video', 'वीडियो')}</div>
               )}
 
               {/* Title pill at bottom */}
@@ -118,6 +120,7 @@ export default function GalleryClient({ initialImages }) {
           >
             <button
               onClick={closeLightbox}
+              aria-label={t('Close', 'बंद करें')}
               className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/10 hover:bg-white/25 flex items-center justify-center text-white transition-all z-10"
             >
               <X size={20} />
@@ -127,12 +130,14 @@ export default function GalleryClient({ initialImages }) {
               <>
                 <button
                   onClick={(e) => { e.stopPropagation(); goPrev(); }}
+                  aria-label={t('Previous', 'पिछला')}
                   className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/10 hover:bg-white/25 flex items-center justify-center text-white transition-all z-10"
                 >
                   <ChevronLeft size={22} />
                 </button>
                 <button
                   onClick={(e) => { e.stopPropagation(); goNext(); }}
+                  aria-label={t('Next', 'अगला')}
                   className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/10 hover:bg-white/25 flex items-center justify-center text-white transition-all z-10"
                 >
                   <ChevronRight size={22} />
@@ -158,7 +163,7 @@ export default function GalleryClient({ initialImages }) {
               ) : (
                 <img
                   src={currentImage.image_url}
-                  alt={currentImage.title || 'Photo'}
+                  alt={currentImage.title || t('Photo', 'फ़ोटो')}
                   className="max-h-[80vh] w-full object-contain rounded-2xl shadow-2xl"
                 />
               )}

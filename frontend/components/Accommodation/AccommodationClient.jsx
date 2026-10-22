@@ -10,6 +10,7 @@ import Pagination from "../Pagination/Pagination";
 import { useAuth } from "../../context/AuthContext";
 import { fetchApi } from "../../lib/api";
 import { Search, History, Calendar, Clock, MapPin, Loader2 } from "lucide-react";
+import { useLanguage } from '../../context/LanguageContext';
 
 const serviceTypes = ["Hostel", "Community Hall", "Guest Rooms"];
 const ALL_LOCATIONS = "All Locations";
@@ -27,6 +28,7 @@ export default function AccommodationClient() {
   const [myEnquiries, setMyEnquiries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [enquiriesLoading, setEnquiriesLoading] = useState(false);
+  const { t, tv } = useLanguage();
 
   useEffect(() => {
     fetchApi('/accommodations/')
@@ -100,7 +102,7 @@ export default function AccommodationClient() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
             <div>
               <p className="text-sm text-gray-400 font-medium">
-                {filtered.length} accommodations found
+                {t(`${filtered.length} accommodations found`, `${filtered.length} आवास मिले`)}
               </p>
             </div>
             {user && (
@@ -110,14 +112,14 @@ export default function AccommodationClient() {
                   className={`cursor-pointer flex items-center gap-2 btn-outline rounded-lg px-5 py-2.5 text-sm font-bold ${activeTab === 'explore' ? 'bg-primary/10 border-primary text-primary' : 'bg-white'}`}
                 >
                   <Search size={16} />
-                  Explore
+                  {t('Explore', 'खोजें')}
                 </button>
                 <button
                   onClick={() => setActiveTab('enquiries')}
                   className={`cursor-pointer flex items-center gap-2 btn-outline rounded-lg px-5 py-2.5 text-sm font-bold ${activeTab === 'enquiries' ? 'bg-primary/10 border-primary text-primary' : 'bg-white'}`}
                 >
                   <History size={16} />
-                  My Enquiries
+                  {t('My Enquiries', 'मेरी पूछताछ')}
                 </button>
               </div>
             )}
@@ -144,8 +146,8 @@ export default function AccommodationClient() {
                   </div>
                 ) : filtered.length === 0 ? (
                   <div className="text-center py-20 bg-white rounded-3xl border border-dashed border-gray-300">
-                    <p className="text-xl font-bold text-gray-400">No results found</p>
-                    <p className="text-gray-400 mt-2">Try adjusting your filters to find what you're looking for.</p>
+                    <p className="text-xl font-bold text-gray-400">{t('No results found', 'कोई परिणाम नहीं मिला')}</p>
+                    <p className="text-gray-400 mt-2">{t("Try adjusting your filters to find what you're looking for.", 'जो आप खोज रहे हैं उसे पाने के लिए फ़िल्टर बदलकर देखें।')}</p>
                   </div>
                 ) : (
                   <>
@@ -174,8 +176,8 @@ export default function AccommodationClient() {
             <div className="space-y-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="text-2xl font-black text-gray-900">Your Recent Enquiries</h2>
-                  <p className="text-gray-500 font-medium text-sm">Track the status of your accommodation requests.</p>
+                  <h2 className="text-2xl font-black text-gray-900">{t('Your Recent Enquiries', 'आपकी हाल की पूछताछ')}</h2>
+                  <p className="text-gray-500 font-medium text-sm">{t('Track the status of your accommodation requests.', 'अपने आवास अनुरोधों की स्थिति देखें।')}</p>
                 </div>
               </div>
 
@@ -186,13 +188,13 @@ export default function AccommodationClient() {
               ) : myEnquiries.length === 0 ? (
                 <div className="text-center py-20 bg-white rounded-3xl border border-dashed border-gray-300">
                   <History className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                  <p className="text-xl font-bold text-gray-400">No enquiries yet</p>
-                  <p className="text-gray-400 mt-2">Any accommodation requests you make will appear here.</p>
+                  <p className="text-xl font-bold text-gray-400">{t('No enquiries yet', 'अभी तक कोई पूछताछ नहीं')}</p>
+                  <p className="text-gray-400 mt-2">{t('Any accommodation requests you make will appear here.', 'आपके द्वारा किए गए सभी आवास अनुरोध यहाँ दिखेंगे।')}</p>
                   <button 
                     onClick={() => setActiveTab('explore')}
                     className="mt-6 text-primary font-bold hover:underline"
                   >
-                    Start Exploring
+                    {t('Start Exploring', 'खोज शुरू करें')}
                   </button>
                 </div>
               ) : (
@@ -215,13 +217,13 @@ export default function AccommodationClient() {
                         
                         <div className="flex items-center justify-between md:justify-end gap-10 pt-4 md:pt-0 border-t md:border-t-0 border-gray-50">
                           <div className="text-right">
-                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Status</p>
+                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">{t('Status', 'स्थिति')}</p>
                             <span className={`text-[10px] font-black uppercase px-3 py-1.5 rounded-full ${
                               enq.status === 'Confirmed' ? 'bg-green-100 text-green-600' : 
                               enq.status === 'Pending' ? 'bg-yellow-100 text-yellow-600' : 
                               enq.status === 'Cancelled' ? 'bg-red-100 text-red-600' : 'bg-gray-100 text-gray-400'
                             }`}>
-                              {enq.status}
+                              {tv(enq.status)}
                             </span>
                           </div>
                         </div>

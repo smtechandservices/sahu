@@ -7,17 +7,19 @@ import GalleryClient from './GalleryClient';
 import { fetchApi } from '../../lib/api';
 import { useMarquee } from '../../lib/useMarquee';
 import { Images, Film, Image } from 'lucide-react';
+import { useLanguage } from '../../context/LanguageContext';
 
 const TABS = [
-  { key: 'all',     label: 'All',     icon: Images },
-  { key: 'gallery', label: 'Gallery', icon: Image  },
-  { key: 'media',   label: 'Media',   icon: Film   },
+  { key: 'all',     label: ['All', 'सभी'],         icon: Images },
+  { key: 'gallery', label: ['Gallery', 'गैलरी'],   icon: Image  },
+  { key: 'media',   label: ['Media', 'मीडिया'],     icon: Film   },
 ];
 
 export default function GalleryPage() {
   const [allItems, setAllItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('all');
+  const { t } = useLanguage();
 
   useEffect(() => {
     fetchApi('/media/')
@@ -58,13 +60,13 @@ export default function GalleryPage() {
           <div className="px-4 sm:px-8 md:px-12">
             <div className="inline-flex items-center gap-2 bg-primary/10 text-primary text-xs font-bold px-4 py-1.5 rounded-full mb-5 uppercase tracking-widest">
               <Images size={13} />
-              Community Media
+              {t('Community Media', 'सामुदायिक मीडिया')}
             </div>
             <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black text-gray-900 mb-4">
-              Our Cherished Moments
+              {t('Our Cherished Moments', 'हमारे यादगार पल')}
             </h1>
             <p className="text-gray-500 text-lg max-w-2xl mx-auto font-medium">
-              Celebrations, milestones, and community highlights all in one place.
+              {t('Celebrations, milestones, and community highlights all in one place.', 'उत्सव, उपलब्धियाँ और समाज की खास झलकियाँ — सब एक ही जगह।')}
             </p>
           </div>
 
@@ -109,7 +111,7 @@ export default function GalleryPage() {
                     }`}
                   >
                     <Icon size={13} className="shrink-0 hidden xs:block sm:block" />
-                    <span className="truncate">{label}</span>
+                    <span className="truncate">{t(...label)}</span>
                     <span className={`text-[10px] sm:text-xs px-1 sm:px-1.5 py-0.5 rounded-full font-bold shrink-0 ${
                       activeTab === key ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-400'
                     }`}>
@@ -122,12 +124,12 @@ export default function GalleryPage() {
 
             {!loading && activeTab !== 'all' && (
               <p className="text-gray-400 text-sm mt-4 font-medium">
-                {counts[activeTab]} {counts[activeTab] === 1 ? 'photo' : 'photos'}
+                {counts[activeTab]} {t(counts[activeTab] === 1 ? 'photo' : 'photos', 'फ़ोटो')}
               </p>
             )}
             {!loading && activeTab === 'all' && (
               <p className="text-gray-400 text-sm mt-4 font-medium">
-                {counts.gallery} gallery · {counts.media} media
+                {counts.gallery} {t('gallery', 'गैलरी')} · {counts.media} {t('media', 'मीडिया')}
               </p>
             )}
           </div>
@@ -156,11 +158,11 @@ export default function GalleryPage() {
                     <Image size={18} className="text-emerald-600" />
                   </div>
                   <div>
-                    <h2 className="text-xl font-black text-gray-900">Gallery</h2>
-                    <p className="text-sm text-gray-400 font-medium">Community events & celebrations</p>
+                    <h2 className="text-xl font-black text-gray-900">{t('Gallery', 'गैलरी')}</h2>
+                    <p className="text-sm text-gray-400 font-medium">{t('Community events & celebrations', 'सामुदायिक कार्यक्रम एवं उत्सव')}</p>
                   </div>
                   <span className="ml-auto text-xs font-bold bg-emerald-50 text-emerald-600 px-3 py-1 rounded-full">
-                    {galleryItems.length} photos
+                    {galleryItems.length} {t('photos', 'फ़ोटो')}
                   </span>
                 </div>
                 <GalleryClient initialImages={galleryItems} />
@@ -174,11 +176,11 @@ export default function GalleryPage() {
                     <Film size={18} className="text-blue-600" />
                   </div>
                   <div>
-                    <h2 className="text-xl font-black text-gray-900">Media</h2>
-                    <p className="text-sm text-gray-400 font-medium">Official media & press</p>
+                    <h2 className="text-xl font-black text-gray-900">{t('Media', 'मीडिया')}</h2>
+                    <p className="text-sm text-gray-400 font-medium">{t('Official media & press', 'आधिकारिक मीडिया एवं प्रेस')}</p>
                   </div>
                   <span className="ml-auto text-xs font-bold bg-blue-50 text-blue-600 px-3 py-1 rounded-full">
-                    {mediaItems.length} photos
+                    {mediaItems.length} {t('photos', 'फ़ोटो')}
                   </span>
                 </div>
                 <GalleryClient initialImages={mediaItems} />
@@ -200,11 +202,12 @@ export default function GalleryPage() {
 }
 
 function EmptyState() {
+  const { t } = useLanguage();
   return (
     <div className="py-24 text-center">
       <Images size={56} className="mx-auto text-gray-200 mb-5" />
-      <p className="text-gray-400 font-bold text-lg">No photos yet.</p>
-      <p className="text-gray-300 text-sm mt-2">Check back soon for community highlights!</p>
+      <p className="text-gray-400 font-bold text-lg">{t('No photos yet.', 'अभी कोई फ़ोटो नहीं है।')}</p>
+      <p className="text-gray-300 text-sm mt-2">{t('Check back soon for community highlights!', 'समाज की झलकियों के लिए जल्द ही फिर देखें!')}</p>
     </div>
   );
 }

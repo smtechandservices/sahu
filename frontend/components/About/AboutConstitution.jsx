@@ -1,8 +1,10 @@
 "use client";
 
 import { motion } from 'framer-motion';
+import { useLanguage } from '../../context/LanguageContext';
 
 const AboutConstitution = () => {
+  const { t } = useLanguage();
   return (
     <section className="section-padding bg-[#FFFBF7]" id="constitution">
       <div className="px-8">
@@ -23,9 +25,9 @@ const AboutConstitution = () => {
               </svg>
             </div>
             
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Our Constitution</h2>
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">{t('Our Constitution', 'हमारा संविधान')}</h2>
             <p className="text-lg text-[#564337] mb-8 max-w-2xl mx-auto">
-              The Sahu Sabha Constitution outlines our fundamental principles, organizational structure, and the rules that govern our community's operations. We believe in complete transparency and shared understanding of our foundational values.
+              {t("The Sahu Sabha Constitution outlines our fundamental principles, organizational structure, and the rules that govern our community's operations. We believe in complete transparency and shared understanding of our foundational values.", 'साहू सभा का संविधान हमारे मूल सिद्धांतों, संगठनात्मक ढाँचे और समाज के संचालन से जुड़े नियमों को स्पष्ट करता है। हम पूर्ण पारदर्शिता और अपने मूल मूल्यों की साझा समझ में विश्वास रखते हैं।')}
             </p>
             
             <a 
@@ -37,7 +39,7 @@ const AboutConstitution = () => {
               <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
               </svg>
-              Download Constitution PDF
+              {t('Download Constitution PDF', 'संविधान PDF डाउनलोड करें')}
             </a>
           </motion.div>
         </div>

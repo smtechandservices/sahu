@@ -3,11 +3,13 @@ import Image from 'next/image';
 import { useAuth } from '../../context/AuthContext';
 import { useRouter } from 'next/navigation';
 import EnquiryModal from './EnquiryModal';
+import { useLanguage } from '../../context/LanguageContext';
 
 const AccommodationCard = ({ item }) => {
   const { user } = useAuth();
   const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const { t } = useLanguage();
 
   const handleEnquiry = () => {
     if (!user) {
@@ -25,7 +27,7 @@ const AccommodationCard = ({ item }) => {
           <Image
             unoptimized
             src={item.image || '/placeholder.png'}
-            alt={item.title || 'Accommodation'}
+            alt={item.title || t('Accommodation', 'आवास')}
             fill
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             className="object-cover transition-transform duration-500 group-hover:scale-105"
@@ -61,7 +63,7 @@ const AccommodationCard = ({ item }) => {
             onClick={handleEnquiry}
             className="cursor-pointer w-full btn-primary py-3 rounded-lg text-sm tracking-wide font-bold"
           >
-            Send Enquiry
+            {t('Send Enquiry', 'पूछताछ भेजें')}
           </button>
         </div>
       </div>

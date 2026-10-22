@@ -1,6 +1,8 @@
 "use client";
+import { useLanguage } from '../../context/LanguageContext';
 
 export default function Pagination({ currentPage, totalPages, total, perPage, onChange }) {
+  const { lang, t } = useLanguage();
   const from = (currentPage - 1) * perPage + 1;
   const to = Math.min(currentPage * perPage, total);
 
@@ -20,11 +22,16 @@ export default function Pagination({ currentPage, totalPages, total, perPage, on
   return (
     <div className="flex flex-col items-center gap-3 pt-8">
       <p className="text-sm text-gray-400">
-        Showing <span className="font-bold text-gray-700">{from}–{to}</span> of <span className="font-bold text-gray-700">{total}</span> results
+        {lang === 'hi' ? (
+          <>कुल <span className="font-bold text-gray-700">{total}</span> में से <span className="font-bold text-gray-700">{from}–{to}</span> परिणाम</>
+        ) : (
+          <>Showing <span className="font-bold text-gray-700">{from}–{to}</span> of <span className="font-bold text-gray-700">{total}</span> results</>
+        )}
       </p>
       <div className="flex items-center gap-1.5">
         <button
           onClick={() => onChange(currentPage - 1)}
+          aria-label={t('Previous page', 'पिछला पृष्ठ')}
           disabled={currentPage === 1}
           className="w-9 h-9 flex items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-400 hover:border-primary hover:text-primary disabled:opacity-30 disabled:cursor-not-allowed transition-all"
         >
@@ -51,6 +58,7 @@ export default function Pagination({ currentPage, totalPages, total, perPage, on
 
         <button
           onClick={() => onChange(currentPage + 1)}
+          aria-label={t('Next page', 'अगला पृष्ठ')}
           disabled={currentPage === totalPages}
           className="w-9 h-9 flex items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-400 hover:border-primary hover:text-primary disabled:opacity-30 disabled:cursor-not-allowed transition-all"
         >

@@ -13,8 +13,10 @@ import { useMarquee } from "../../lib/useMarquee";
 import { useRouter } from "next/navigation";
 
 import Swal from "sweetalert2";
+import { useLanguage } from '../../context/LanguageContext';
 
 const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const daysOfWeekHi = ["रवि", "सोम", "मंगल", "बुध", "गुरु", "शुक्र", "शनि"];
 
 const isPublicEvent = (event) =>
   event.is_active !== false && new Date(event.event_date) >= new Date();
@@ -39,6 +41,7 @@ export default function EventsClient() {
   
   const { user } = useAuth();
   const router = useRouter();
+  const { lang, t, locale } = useLanguage();
 
   const [filterStart, setFilterStart] = useState("");
   const [filterEnd, setFilterEnd] = useState("");
@@ -83,15 +86,15 @@ export default function EventsClient() {
         setUserRegistrations([...userRegistrations, eventId]);
         Swal.fire({
             icon: "success",
-            title: "Registered!",
-            text: "You have successfully registered for the event.",
+            title: t('Registered!', 'पंजीकरण हो गया!'),
+            text: t('You have successfully registered for the event.', 'आपने इस कार्यक्रम के लिए सफलतापूर्वक पंजीकरण कर लिया है।'),
             confirmButtonColor: "#EAB308",
         });
     } catch (err) {
         Swal.fire({
             icon: "error",
-            title: "Registration Failed",
-            text: err.message || "Failed to register for event",
+            title: t('Registration Failed', 'पंजीकरण विफल'),
+            text: err.message || t('Failed to register for event', 'कार्यक्रम के लिए पंजीकरण नहीं हो सका'),
             confirmButtonColor: "#EAB308",
         });
     } finally {
@@ -142,7 +145,7 @@ export default function EventsClient() {
 
   const minFilterDate = todayInputValue();
 
-  const monthName = currentDate.toLocaleString('default', { month: 'long' });
+  const monthName = currentDate.toLocaleString(locale, { month: 'long' });
 
   // Get events for a specific date (within filtered set)
   const getEventsForDate = (day) => {
@@ -161,9 +164,9 @@ export default function EventsClient() {
         {/* Hero Section */}
         <div className="bg-primary-dark text-white py-16">
           <div className="px-4 sm:px-6 md:px-8">
-            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4">Community Events Calendar</h1>
-            <p className="text-primary-light max-w-2xl">
-              Discover and participate in cultural festivals, professional mixers, and community gatherings.
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4">{t('Events Calendar', 'सामुदायिक कार्यक्रम कैलेंडर')}</h1>
+            <p className="text-primary-light max-w-5xl">
+              {t('Discover and participate in cultural festivals, professional mixers, and community gatherings.', 'सांस्कृतिक उत्सवों, पेशेवर मिलन समारोहों और सामुदायिक आयोजनों के बारे में जानें और उनमें भाग लें।')}
             </p>
           </div>
         </div>
@@ -178,13 +181,13 @@ export default function EventsClient() {
                 <div key={idx} className="flex items-center gap-6 px-12 border-r border-gray-100 group/item">
                   <div className="flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                    <span className="text-xs font-black text-primary uppercase tracking-[0.2em]">Latest News</span>
+                    <span className="text-xs font-black text-primary uppercase tracking-[0.2em]">{t('Latest News', 'ताज़ा समाचार')}</span>
                   </div>
                   <Link href="/news" className="text-sm font-bold text-gray-700 hover:text-primary transition-all">
                     {item.title}
                   </Link>
                   <span className="text-[10px] text-gray-300 font-medium">
-                    {new Date(item.published_at).toLocaleDateString('default', { month: 'short', day: 'numeric' })}
+                    {new Date(item.published_at).toLocaleDateString(locale, { month: 'short', day: 'numeric' })}
                   </span>
                 </div>
               ))}
@@ -201,21 +204,22 @@ export default function EventsClient() {
                 <div className="flex gap-2">
                   <button
                     onClick={prevMonth}
+                    aria-label={t('Previous month', 'पिछला महीना')}
                     disabled={year === now.getFullYear() && month === now.getMonth()}
                     className="p-2 hover:bg-gray-100 rounded-full transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                   >
                     <ChevronLeft size={24} />
                   </button>
-                  <button onClick={nextMonth} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+                  <button onClick={nextMonth} aria-label={t('Next month', 'अगला महीना')} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
                     <ChevronRight size={24} />
                   </button>
                 </div>
               </div>
 
               <div className="grid grid-cols-7 gap-px bg-gray-200 border border-gray-200 rounded-xl overflow-hidden">
-                {daysOfWeek.map(day => (
+                {daysOfWeek.map((day, i) => (
                   <div key={day} className="bg-gray-50 py-3 text-center text-xs font-bold text-gray-500 uppercase tracking-widest">
-                    {day}
+                    {lang === 'hi' ? daysOfWeekHi[i] : day}
                   </div>
                 ))}
 
@@ -266,11 +270,11 @@ export default function EventsClient() {
               <div className="bg-white rounded-2xl shadow-md p-6 border border-gray-100">
                 <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
                   <CalendarIcon size={20} className="text-primary" />
-                  Filter by Date
+                  {t('Filter by Date', 'तारीख से फ़िल्टर करें')}
                 </h3>
                 <div className="space-y-4">
                   <div>
-                    <label className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 block">From</label>
+                    <label className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 block">{t('From', 'से')}</label>
                     <input 
                       type="date" 
                       value={filterStart}
@@ -280,7 +284,7 @@ export default function EventsClient() {
                     />
                   </div>
                   <div>
-                    <label className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 block">To</label>
+                    <label className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 block">{t('To', 'तक')}</label>
                     <input 
                       type="date" 
                       value={filterEnd}
@@ -294,7 +298,7 @@ export default function EventsClient() {
                       onClick={() => { setFilterStart(""); setFilterEnd(""); }}
                       className="text-xs font-bold text-primary hover:underline"
                     >
-                      Clear Filters
+                      {t('Clear Filters', 'फ़िल्टर हटाएँ')}
                     </button>
                   )}
                 </div>
@@ -304,7 +308,9 @@ export default function EventsClient() {
               <div className="bg-white rounded-2xl shadow-md p-6 border border-gray-100 sticky top-28">
                 <h3 className="text-lg font-bold text-gray-900 mb-6 flex items-center gap-2">
                   <Clock size={20} className="text-primary" />
-                  {selectedDate ? `Events on ${monthName} ${selectedDate}` : "Filtered Events"}
+                  {selectedDate
+                    ? t(`Events on ${monthName} ${selectedDate}`, `${selectedDate} ${monthName} के कार्यक्रम`)
+                    : t('Filtered Events', 'फ़िल्टर किए गए कार्यक्रम')}
                 </h3>
 
                 <div className="max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
@@ -333,7 +339,7 @@ export default function EventsClient() {
                             <div className="space-y-2 text-xs text-gray-500">
                               <div className="flex items-center gap-2">
                                 <CalendarIcon size={14} />
-                                {new Date(event.event_date).toLocaleString('default', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                                {new Date(event.event_date).toLocaleString(locale, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                               </div>
                               <div className="flex items-center gap-2">
                                 <MapPin size={14} />
@@ -344,7 +350,7 @@ export default function EventsClient() {
                                 {isRegistered(event.id) ? (
                                     <div className="flex items-center justify-center gap-2 w-full py-3 bg-green-50 text-green-600 text-xs font-bold rounded-xl border border-green-100">
                                         <CheckCircle size={16} />
-                                        Already Registered
+                                        {t('Already Registered', 'पहले से पंजीकृत')}
                                     </div>
                                 ) : user ? (
                                     <button 
@@ -352,7 +358,7 @@ export default function EventsClient() {
                                         disabled={registeringId === event.id}
                                         className="flex items-center justify-center gap-2 w-full py-3 bg-primary text-white text-xs font-bold rounded-xl hover:bg-primary-dark transition-all shadow-md shadow-primary/10 disabled:opacity-50"
                                     >
-                                        {registeringId === event.id ? "Processing..." : "Register Now"}
+                                        {registeringId === event.id ? t('Processing...', 'प्रक्रिया जारी है...') : t('Register Now', 'अभी पंजीकरण करें')}
                                     </button>
                                 ) : (
                                     <button 
@@ -360,7 +366,7 @@ export default function EventsClient() {
                                         className="flex items-center justify-center gap-2 w-full py-3 bg-gray-100 text-gray-600 text-xs font-bold rounded-xl hover:bg-gray-200 transition-all"
                                     >
                                         <LogIn size={16} />
-                                        Login to Register
+                                        {t('Login to Register', 'पंजीकरण के लिए लॉग इन करें')}
                                     </button>
                                 )}
 
@@ -372,7 +378,7 @@ export default function EventsClient() {
                           <div className="bg-gray-100 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-400">
                             <CalendarIcon size={20} />
                           </div>
-                          <p className="text-gray-500 text-sm italic">No events found for this selection.</p>
+                          <p className="text-gray-500 text-sm italic">{t('No events found for this selection.', 'इस चयन के लिए कोई कार्यक्रम नहीं मिला।')}</p>
                         </div>
                       )}
                     </motion.div>
@@ -384,7 +390,7 @@ export default function EventsClient() {
                     onClick={() => { setSelectedDate(null); setFilterStart(""); setFilterEnd(""); }}
                     className="mt-6 w-full py-3 text-gray-500 hover:text-primary font-bold text-sm border-t border-gray-100"
                   >
-                    Reset All Filters
+                    {t('Reset All Filters', 'सभी फ़िल्टर रीसेट करें')}
                   </button>
                 )}
               </div>
@@ -398,13 +404,13 @@ export default function EventsClient() {
           <div>
             <div className="px-8 flex items-center gap-3 mb-6">
               <div className="w-3 h-3 rounded-full bg-green-500 animate-pulse" />
-              <h2 className="text-2xl font-bold text-gray-900">Upcoming</h2>
+              <h2 className="text-2xl font-bold text-gray-900">{t('Upcoming', 'आगामी')}</h2>
               <span className="bg-green-100 text-green-700 text-sm font-bold px-3 py-1 rounded-full">{events.length}</span>
             </div>
             {loading ? (
-              <div className="px-8 text-sm text-gray-400">Loading...</div>
+              <div className="px-8 text-sm text-gray-400">{t('Loading...', 'लोड हो रहा है...')}</div>
             ) : events.length === 0 ? (
-              <div className="px-8 text-sm text-gray-400 italic">No upcoming events at the moment.</div>
+              <div className="px-8 text-sm text-gray-400 italic">{t('No upcoming events at the moment.', 'फ़िलहाल कोई आगामी कार्यक्रम नहीं है।')}</div>
             ) : (
               <div className="flex gap-6 overflow-x-auto px-4 sm:px-6 md:px-8 pb-4 scrollbar-hide">
                 {events.map((event) => (
@@ -423,7 +429,7 @@ export default function EventsClient() {
                       />
                       {isRegistered(event.id) && (
                         <div className="absolute top-3 right-3 bg-green-500 text-white px-2.5 py-1 rounded-full text-xs font-bold flex items-center gap-1">
-                          <CheckCircle size={12} /> Registered
+                          <CheckCircle size={12} /> {t('Registered', 'पंजीकृत')}
                         </div>
                       )}
                     </div>
@@ -432,7 +438,7 @@ export default function EventsClient() {
                       <div className="space-y-2 text-sm text-gray-500 mb-5">
                         <div className="flex items-center gap-2">
                           <CalendarIcon size={14} className="text-primary shrink-0" />
-                          <span>{new Date(event.event_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                          <span>{new Date(event.event_date).toLocaleDateString(locale, { day: 'numeric', month: 'short', year: 'numeric' })}</span>
                         </div>
                         <div className="flex items-center gap-2">
                           <MapPin size={14} className="text-primary shrink-0" />
@@ -441,21 +447,21 @@ export default function EventsClient() {
                       </div>
                       {isRegistered(event.id) ? (
                         <div className="flex items-center justify-center gap-2 w-full py-2.5 bg-green-50 text-green-600 text-sm font-bold rounded-xl border border-green-100">
-                          <CheckCircle size={15} /> Already Registered
+                          <CheckCircle size={15} /> {t('Already Registered', 'पहले से पंजीकृत')}
                         </div>
                       ) : user ? (
                         <button
                           onClick={() => setConfirmingEvent(event)}
                           className="cursor-pointer w-full py-2.5 bg-primary text-white text-sm font-bold rounded-xl hover:bg-primary-dark transition-all"
                         >
-                          Register Now
+                          {t('Register Now', 'अभी पंजीकरण करें')}
                         </button>
                       ) : (
                         <button
                           onClick={() => router.push('/login')}
                           className="w-full py-2.5 bg-gray-100 text-gray-600 text-sm font-bold rounded-xl hover:bg-gray-200 transition-all flex items-center justify-center gap-2"
                         >
-                          <LogIn size={15} /> Login to Register
+                          <LogIn size={15} /> {t('Login to Register', 'पंजीकरण के लिए लॉग इन करें')}
                         </button>
                       )}
                     </div>
@@ -470,7 +476,7 @@ export default function EventsClient() {
             <div>
               <div className="px-8 flex items-center gap-3 mb-6">
                 <div className="w-3 h-3 rounded-full bg-gray-400" />
-                <h2 className="text-2xl font-bold text-gray-500">Archived</h2>
+                <h2 className="text-2xl font-bold text-gray-500">{t('Archived', 'पिछले कार्यक्रम')}</h2>
                 <span className="bg-gray-100 text-gray-500 text-sm font-bold px-3 py-1 rounded-full">{pastEvents.length}</span>
               </div>
               <div className="flex gap-6 overflow-x-auto px-4 sm:px-6 md:px-8 pb-4 scrollbar-hide">
@@ -495,7 +501,7 @@ export default function EventsClient() {
                       <div className="space-y-2 text-sm text-gray-400">
                         <div className="flex items-center gap-2">
                           <CalendarIcon size={14} className="shrink-0" />
-                          <span>{new Date(event.event_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                          <span>{new Date(event.event_date).toLocaleDateString(locale, { day: 'numeric', month: 'short', year: 'numeric' })}</span>
                         </div>
                         <div className="flex items-center gap-2">
                           <MapPin size={14} className="shrink-0" />
@@ -530,23 +536,32 @@ export default function EventsClient() {
                     <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-6 text-primary">
                         <CalendarIcon size={32} />
                     </div>
-                    <h3 className="text-2xl font-black text-gray-900 mb-2">Confirm Registration</h3>
+                    <h3 className="text-2xl font-black text-gray-900 mb-2">{t('Confirm Registration', 'पंजीकरण की पुष्टि करें')}</h3>
                     <p className="text-gray-500 mb-8 font-medium">
-                        Are you sure you want to register for <br />
-                        <span className="text-gray-900 font-bold">"{confirmingEvent.title}"</span>?
+                        {lang === 'hi' ? (
+                          <>
+                            क्या आप वाकई <br />
+                            <span className="text-gray-900 font-bold">“{confirmingEvent.title}”</span> के लिए पंजीकरण करना चाहते हैं?
+                          </>
+                        ) : (
+                          <>
+                            Are you sure you want to register for <br />
+                            <span className="text-gray-900 font-bold">“{confirmingEvent.title}”</span>?
+                          </>
+                        )}
                     </p>
                     <div className="grid grid-cols-2 gap-4">
                         <button 
                             onClick={() => setConfirmingEvent(null)}
                             className="py-4 rounded-xl font-bold text-gray-400 hover:bg-gray-50 transition-all border border-gray-100"
                         >
-                            Cancel
+                            {t('Cancel', 'रद्द करें')}
                         </button>
                         <button 
                             onClick={handleRegister}
                             className="py-4 bg-primary text-white rounded-xl font-bold hover:bg-primary-dark transition-all shadow-lg shadow-primary/20"
                         >
-                            Yes, Confirm
+                            {t('Yes, Confirm', 'हाँ, पुष्टि करें')}
                         </button>
                     </div>
                 </motion.div>

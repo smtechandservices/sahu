@@ -1,9 +1,12 @@
 import Header from '../../components/Header/Header';
 import Footer from '../../components/Footer/Footer';
+import AboutHistory from '../../components/About/AboutHistory';
 import AboutLeadership from '../../components/About/AboutLeadership';
 import ExecutiveCommittee from '../../components/About/ExecutiveCommittee';
+import AboutDigitalCommittee from '../../components/About/AboutDigitalCommittee';
 import AboutConstitution from '../../components/About/AboutConstitution';
 import AboutStats from '../../components/About/AboutStats';
+import { T } from '../../context/LanguageContext';
 
 export const metadata = {
   title: 'About Us',
@@ -19,26 +22,39 @@ export default function AboutPage() {
         <section id="about-hero" className="relative min-h-[50vh] sm:min-h-[55vh] md:h-[60vh] flex items-center overflow-hidden bg-gray-900">
           <div className="absolute inset-0">
             <img
-              src="/assets/rally-slide.png"
-              alt="About Sahu Sabha"
-              className="w-full h-full object-cover opacity-40"
+              src="/assets/sabha.jpeg"
+              alt="Sahu Sabha"
+              className="w-full h-full object-fill opacity-40"
             />
             <div className="absolute inset-0 bg-gradient-to-r from-gray-900 to-transparent"></div>
           </div>
+          {/* Sits above the photo's timestamp in the bottom-right corner */}
+          <h1 className="absolute bottom-14 right-4 sm:right-8 md:right-12 z-10 text-3xl sm:text-4xl md:text-5xl font-bold text-white drop-shadow-lg">
+            <T en="Sahu Sabha" hi="साहू सभा" />
+          </h1>
           <div className="px-4 sm:px-6 md:px-8 lg:px-16 relative z-10 py-12 md:py-0">
             <div className="max-w-2xl">
-              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-bold text-white mb-4 sm:mb-6">
-                Uniting Hearts, <br />
-                <span className="text-primary">Building Legacy.</span>
-              </h1>
+              {/* <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-bold text-white mb-4 sm:mb-6">
+                <T en="Uniting Hearts," hi="दिलों को जोड़ते हुए," /> <br />
+                <span className="text-primary"><T en="Building Legacy." hi="विरासत का निर्माण।" /></span>
+              </h1> */}
               <p className="text-base sm:text-lg md:text-xl text-gray-300 leading-relaxed max-w-xl">
-                Sahu Sabha is more than an organization, it's a family of millions connected by heritage and driven by a shared vision of progress.
+                {/* <T
+                  en="Sahu Sabha is more than an organization, it's a family of millions connected by heritage and driven by a shared vision of progress."
+                  hi="साहू सभा केवल एक संगठन नहीं, बल्कि लाखों लोगों का परिवार है, जो साझा विरासत से जुड़ा है और प्रगति के साझा सपने से प्रेरित है।"
+                /> */}
+                {/* <T
+                  en="Sahu Sabha is more than an organization, it's a family of millions connected by heritage and driven by a shared vision of progress."
+                  hi="साहू सभा केवल एक संगठन नहीं, बल्कि लाखों लोगों का परिवार है, जो साझा विरासत से जुड़ा है और प्रगति के साझा सपने से प्रेरित है।"
+                /> */}
               </p>
             </div>
           </div>
         </section>
+        <AboutHistory />
         <AboutLeadership />
         <ExecutiveCommittee />
+        <AboutDigitalCommittee />
         <AboutConstitution />
         <AboutStats />
       </main>

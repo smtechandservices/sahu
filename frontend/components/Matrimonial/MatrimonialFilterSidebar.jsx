@@ -1,5 +1,8 @@
+'use client';
+
 import React, { useState } from 'react';
 import { ChevronDown, SlidersHorizontal } from 'lucide-react';
+import { useLanguage } from '../../context/LanguageContext';
 
 const MatrimonialFilterSidebar = ({
   ageMin, setAgeMin, ageMax, setAgeMax,
@@ -16,6 +19,7 @@ const MatrimonialFilterSidebar = ({
   onReset,
 }) => {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { t, tv } = useLanguage();
 
   const {
     gotra: gotraOptions = [],
@@ -46,7 +50,7 @@ const MatrimonialFilterSidebar = ({
       >
         <span className="flex items-center gap-2 text-sm">
           <SlidersHorizontal size={16} className="text-primary" />
-          Filter Matches
+          {t('Filter Matches', 'रिश्ते फ़िल्टर करें')}
         </span>
         <ChevronDown size={16} className={`text-gray-400 transition-transform ${mobileOpen ? 'rotate-180' : ''}`} />
       </button>
@@ -54,17 +58,17 @@ const MatrimonialFilterSidebar = ({
       {/* Filter panel */}
       <div className={`${mobileOpen ? 'block' : 'hidden'} lg:block bg-white border border-gray-200 rounded-xl p-6 h-fit lg:sticky top-24 shadow-sm`}>
         <div className="flex items-center justify-between mb-5">
-          <h2 className="text-lg font-bold text-gray-900">Filter Matches</h2>
+          <h2 className="text-lg font-bold text-gray-900">{t('Filter Matches', 'रिश्ते फ़िल्टर करें')}</h2>
           <button
             onClick={onReset}
             className="text-xs text-primary font-bold hover:underline"
           >
-            Reset All
+            {t('Reset All', 'सभी रीसेट करें')}
           </button>
         </div>
 
         {/* Gender */}
-        <Label>Gender</Label>
+        <Label>{t('Gender', 'लिंग')}</Label>
         <div className="flex gap-2">
           {['Any', 'Male', 'Female'].map(g => (
             <button
@@ -76,20 +80,20 @@ const MatrimonialFilterSidebar = ({
                   : 'bg-white text-gray-500 border-gray-200 hover:border-primary hover:text-primary'
               }`}
             >
-              {g}
+              {tv(g)}
             </button>
           ))}
         </div>
 
         {/* Age */}
-        <Label>Age (Yrs)</Label>
+        <Label>{t('Age (Yrs)', 'आयु (वर्ष)')}</Label>
         <div className="flex items-center gap-2">
           <input
             type="number"
             value={ageMin}
             onChange={e => setAgeMin(e.target.value)}
             className={inputClasses}
-            placeholder="Min"
+            placeholder={t('Min', 'न्यूनतम')}
             min={18}
             max={80}
           />
@@ -99,7 +103,7 @@ const MatrimonialFilterSidebar = ({
             value={ageMax}
             onChange={e => setAgeMax(e.target.value)}
             className={inputClasses}
-            placeholder="Max"
+            placeholder={t('Max', 'अधिकतम')}
             min={18}
             max={80}
           />
@@ -108,7 +112,7 @@ const MatrimonialFilterSidebar = ({
         {/* Marital Status */}
         {maritalOptions.length > 0 && (
           <>
-            <Label>Marital Status</Label>
+            <Label>{t('Marital Status', 'वैवाहिक स्थिति')}</Label>
             <div className="space-y-2">
               {maritalOptions.map(k => (
                 <label key={k} className="flex items-center gap-3 cursor-pointer group">
@@ -131,7 +135,7 @@ const MatrimonialFilterSidebar = ({
                     )}
                   </div>
                   <span className={`text-sm ${maritalStatus.includes(k) ? 'text-gray-900 font-semibold' : 'text-gray-600'}`}>
-                    {k}
+                    {tv(k)}
                   </span>
                 </label>
               ))}
@@ -142,9 +146,9 @@ const MatrimonialFilterSidebar = ({
         {/* Gotra */}
         {gotraOptions.length > 0 && (
           <>
-            <Label>Gotra</Label>
+            <Label>{t('Gotra', 'गोत्र')}</Label>
             <select value={gotra} onChange={e => setGotra(e.target.value)} className={inputClasses}>
-              <option value="Any">Any</option>
+              <option value="Any">{tv('Any')}</option>
               {gotraOptions.map(g => (
                 <option key={g} value={g}>{g}</option>
               ))}
@@ -155,7 +159,7 @@ const MatrimonialFilterSidebar = ({
         {/* Manglik */}
         {manglikOptions.length > 0 && (
           <>
-            <Label>Manglik</Label>
+            <Label>{t('Manglik', 'मांगलिक')}</Label>
             <div className="flex flex-wrap gap-2">
               {['Any', ...manglikOptions].map(m => (
                 <button
@@ -167,7 +171,7 @@ const MatrimonialFilterSidebar = ({
                       : 'bg-white text-gray-500 border-gray-200 hover:border-primary hover:text-primary'
                   }`}
                 >
-                  {m}
+                  {tv(m)}
                 </button>
               ))}
             </div>
@@ -177,7 +181,7 @@ const MatrimonialFilterSidebar = ({
         {/* Complexion */}
         {complexionOptions.length > 0 && (
           <>
-            <Label>Complexion</Label>
+            <Label>{t('Complexion', 'रंग')}</Label>
             <div className="flex flex-wrap gap-2">
               {['Any', ...complexionOptions].map(c => (
                 <button
@@ -189,7 +193,7 @@ const MatrimonialFilterSidebar = ({
                       : 'bg-white text-gray-500 border-gray-200 hover:border-primary hover:text-primary'
                   }`}
                 >
-                  {c}
+                  {tv(c)}
                 </button>
               ))}
             </div>
@@ -199,9 +203,9 @@ const MatrimonialFilterSidebar = ({
         {/* Education */}
         {educationOptions.length > 0 && (
           <>
-            <Label>Education</Label>
+            <Label>{t('Education', 'शिक्षा')}</Label>
             <select value={education} onChange={e => setEducation(e.target.value)} className={inputClasses}>
-              <option value="Any">Any</option>
+              <option value="Any">{tv('Any')}</option>
               {educationOptions.map(e => (
                 <option key={e} value={e}>{e}</option>
               ))}
@@ -212,9 +216,9 @@ const MatrimonialFilterSidebar = ({
         {/* Occupation */}
         {occupationOptions.length > 0 && (
           <>
-            <Label>Occupation</Label>
+            <Label>{t('Occupation', 'व्यवसाय')}</Label>
             <select value={occupation} onChange={e => setOccupation(e.target.value)} className={inputClasses}>
-              <option value="Any">Any</option>
+              <option value="Any">{tv('Any')}</option>
               {occupationOptions.map(o => (
                 <option key={o} value={o}>{o}</option>
               ))}
@@ -225,9 +229,9 @@ const MatrimonialFilterSidebar = ({
         {/* Annual Income */}
         {incomeOptions.length > 0 && (
           <>
-            <Label>Annual Income</Label>
+            <Label>{t('Annual Income', 'वार्षिक आय')}</Label>
             <select value={income} onChange={e => setIncome(e.target.value)} className={inputClasses}>
-              <option value="Any">Any</option>
+              <option value="Any">{tv('Any')}</option>
               {incomeOptions.map(i => (
                 <option key={i} value={i}>{i}</option>
               ))}
@@ -236,10 +240,10 @@ const MatrimonialFilterSidebar = ({
         )}
 
         {/* Location */}
-        <Label>City / Location</Label>
+        <Label>{t('City / Location', 'शहर / स्थान')}</Label>
         {cityOptions.length > 0 ? (
           <select value={location} onChange={e => setLocation(e.target.value)} className={inputClasses}>
-            <option value="">Any</option>
+            <option value="">{tv('Any')}</option>
             {cityOptions.map(c => (
               <option key={c} value={c}>{c}</option>
             ))}
@@ -248,7 +252,7 @@ const MatrimonialFilterSidebar = ({
           <input
             value={location}
             onChange={e => setLocation(e.target.value)}
-            placeholder="e.g. Mumbai, Raipur..."
+            placeholder={t('e.g. Mumbai, Raipur...', 'जैसे: मुंबई, रायपुर...')}
             className={inputClasses}
           />
         )}

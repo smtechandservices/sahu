@@ -39,8 +39,9 @@ class Base64FileField(serializers.Field):
             return None
         if isinstance(data, UploadedFile):
             return data
-        if isinstance(data, str) and data.startswith(('http://', 'https://', '/')):
-            # Edit forms echo back the existing file's URL: leave it unchanged.
+        # Edit forms echo back the existing file's URL: leave it unchanged.
+        # Not a bare '/' check: base64 of every JPEG starts with '/9j/'.
+        if isinstance(data, str) and data.startswith(('http://', 'https://', settings.MEDIA_URL)):
             raise serializers.SkipField()
         mimetype = None
         try:

@@ -4,11 +4,13 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FileText, Download, BookOpen } from 'lucide-react';
 import { downloadFile } from '../../lib/download';
+import { useLanguage } from '../../context/LanguageContext';
 
 const MagazineArchives = () => {
   const [articles, setArticles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeYear, setActiveYear] = useState('All');
+  const { t, locale } = useLanguage();
 
   useEffect(() => {
     const loadData = async () => {
@@ -42,7 +44,7 @@ const MagazineArchives = () => {
     return (
       <section className="section-padding bg-gray-50">
         <div className="container-custom text-center py-20 text-gray-400 font-bold">
-          Loading archives...
+          {t('Loading archives...', 'संग्रह लोड हो रहा है...')}
         </div>
       </section>
     );
@@ -52,16 +54,16 @@ const MagazineArchives = () => {
     <section className="section-padding bg-gray-50">
       <div className="container-custom">
         <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold text-gray-900 mb-4">Magazine Archives</h2>
+          <h2 className="text-4xl font-bold text-gray-900 mb-4">{t('Magazine Archives', 'पत्रिका संग्रह')}</h2>
           <p className="text-gray-600 max-w-2xl mx-auto">
-            Browse through our collection of past magazine issues. Relive the milestones and stories that shaped our community.
+            {t('Browse through our collection of past magazine issues. Relive the milestones and stories that shaped our community.', 'पत्रिका के पिछले अंकों का संग्रह देखें। उन उपलब्धियों और कहानियों को फिर से जीएँ जिन्होंने हमारे समाज को आकार दिया।')}
           </p>
         </div>
 
         {articles.length === 0 ? (
           <div className="text-center py-20">
             <BookOpen size={48} className="mx-auto text-gray-200 mb-4" />
-            <p className="text-gray-400 font-bold">No magazine issues published yet.</p>
+            <p className="text-gray-400 font-bold">{t('No magazine issues published yet.', 'अभी तक पत्रिका का कोई अंक प्रकाशित नहीं हुआ है।')}</p>
           </div>
         ) : (
           <>
@@ -77,7 +79,7 @@ const MagazineArchives = () => {
                       : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
                   }`}
                 >
-                  {year}
+                  {year === 'All' ? t('All', 'सभी') : year}
                 </button>
               ))}
             </div>
@@ -119,7 +121,7 @@ const MagazineArchives = () => {
                       {article.title}
                     </h4>
                     <p className="text-center text-xs text-gray-400 mt-1">
-                      {new Date(article.published_at).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' })}
+                      {new Date(article.published_at).toLocaleDateString(locale, { month: 'short', year: 'numeric' })}
                     </p>
 
                     {/* PDF actions — always visible */}
@@ -129,13 +131,13 @@ const MagazineArchives = () => {
                           onClick={() => handleRead(article)}
                           className="cursor-pointer flex-1 flex items-center justify-center gap-1 py-2 rounded-lg bg-primary text-white text-xs font-bold hover:bg-primary/90 transition-colors"
                         >
-                          <FileText size={12} /> Read
+                          <FileText size={12} /> {t('Read', 'पढ़ें')}
                         </button>
                         <button
                           onClick={() => handleDownload(article)}
                           className="cursor-pointer flex-1 flex items-center justify-center gap-1 py-2 rounded-lg border border-gray-200 text-gray-600 text-xs font-bold hover:bg-gray-50 transition-colors"
                         >
-                          <Download size={12} /> Download
+                          <Download size={12} /> {t('Download', 'डाउनलोड')}
                         </button>
                       </div>
                     )}

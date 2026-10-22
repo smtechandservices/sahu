@@ -5,11 +5,13 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "../../context/AuthContext";
 
 import Swal from "sweetalert2";
+import { useLanguage } from '../../context/LanguageContext';
 
 export default function CreateProfileModal({ isOpen, onClose, onCreated }) {
   const router = useRouter();
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
+  const { t, tv } = useLanguage();
   const [formData, setFormData] = useState({
     age: "",
     gender: "Male",
@@ -74,8 +76,8 @@ export default function CreateProfileModal({ isOpen, onClose, onCreated }) {
       });
       Swal.fire({
         icon: "success",
-        title: "Profile Created",
-        text: "Matrimonial profile created successfully! It will be visible after admin approval.",
+        title: t('Profile Created', 'प्रोफ़ाइल बन गई'),
+        text: t('Matrimonial profile created successfully! It will be visible after admin approval.', 'वैवाहिक प्रोफ़ाइल सफलतापूर्वक बन गई! एडमिन की स्वीकृति के बाद यह दिखाई देगी।'),
         confirmButtonColor: "#EAB308",
       });
       if (onCreated) {
@@ -88,8 +90,8 @@ export default function CreateProfileModal({ isOpen, onClose, onCreated }) {
       console.error(err);
       Swal.fire({
         icon: "error",
-        title: "Creation Failed",
-        text: "Failed to create profile. You may already have one.",
+        title: t('Creation Failed', 'प्रोफ़ाइल नहीं बन सकी'),
+        text: t('Failed to create profile. You may already have one.', 'प्रोफ़ाइल नहीं बन सकी। हो सकता है आपकी प्रोफ़ाइल पहले से मौजूद हो।'),
         confirmButtonColor: "#EAB308",
       });
     } finally {
@@ -109,11 +111,12 @@ export default function CreateProfileModal({ isOpen, onClose, onCreated }) {
         {/* Header */}
         <div className="sticky top-0 bg-white border-b border-gray-100 px-8 py-5 flex items-center justify-between rounded-t-3xl z-10">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900">Create Matrimonial Profile</h2>
-            <p className="text-sm text-gray-500 mt-0.5">Fill in your details to join the community matrimony.</p>
+            <h2 className="text-2xl font-bold text-gray-900">{t('Create Matrimonial Profile', 'वैवाहिक प्रोफ़ाइल बनाएँ')}</h2>
+            <p className="text-sm text-gray-500 mt-0.5">{t('Fill in your details to join the community matrimony.', 'सामुदायिक वैवाहिक सेवा से जुड़ने के लिए अपना विवरण भरें।')}</p>
           </div>
           <button
             onClick={onClose}
+            aria-label={t('Close', 'बंद करें')}
             className="w-9 h-9 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-colors text-gray-500"
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -125,11 +128,11 @@ export default function CreateProfileModal({ isOpen, onClose, onCreated }) {
         {/* Body */}
         <form onSubmit={handleSubmit} className="px-8 py-6 space-y-6">
           <div>
-            <label className="block text-sm font-bold text-gray-700 mb-2">Profile Photo</label>
+            <label className="block text-sm font-bold text-gray-700 mb-2">{t('Profile Photo', 'प्रोफ़ाइल फ़ोटो')}</label>
             <div className="flex items-center gap-4">
               <div className="w-20 h-20 rounded-xl overflow-hidden flex-shrink-0 bg-gray-100 border border-gray-200 flex items-center justify-center">
                 {photo ? (
-                  <img src={photo} alt="Preview" className="w-full h-full object-cover" />
+                  <img src={photo} alt={t('Preview', 'पूर्वावलोकन')} className="w-full h-full object-cover" />
                 ) : (
                   <svg className="w-8 h-8 text-gray-300" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
@@ -142,86 +145,86 @@ export default function CreateProfileModal({ isOpen, onClose, onCreated }) {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2">Age</label>
+              <label className="block text-sm font-bold text-gray-700 mb-2">{t('Age', 'आयु')}</label>
               <input type="number" name="age" required value={formData.age} onChange={handleChange} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 outline-none focus:border-primary transition-colors" />
             </div>
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2">Gender</label>
+              <label className="block text-sm font-bold text-gray-700 mb-2">{t('Gender', 'लिंग')}</label>
               <select name="gender" value={formData.gender} onChange={handleChange} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 outline-none focus:border-primary transition-colors">
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
+                <option value="Male">{tv('Male')}</option>
+                <option value="Female">{tv('Female')}</option>
               </select>
             </div>
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2">Height (cm)</label>
+              <label className="block text-sm font-bold text-gray-700 mb-2">{t('Height (cm)', 'ऊँचाई (सेमी)')}</label>
               <input type="number" name="height_cm" required value={formData.height_cm} onChange={handleChange} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 outline-none focus:border-primary transition-colors" />
             </div>
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2">City</label>
+              <label className="block text-sm font-bold text-gray-700 mb-2">{t('City', 'शहर')}</label>
               <input type="text" name="city" required value={formData.city} onChange={handleChange} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 outline-none focus:border-primary transition-colors" />
             </div>
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2">Gotra</label>
+              <label className="block text-sm font-bold text-gray-700 mb-2">{t('Gotra', 'गोत्र')}</label>
               <input type="text" name="gotra" required value={formData.gotra} onChange={handleChange} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 outline-none focus:border-primary transition-colors" />
             </div>
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2">Marital Status</label>
+              <label className="block text-sm font-bold text-gray-700 mb-2">{t('Marital Status', 'वैवाहिक स्थिति')}</label>
               <select name="marital_status" value={formData.marital_status} onChange={handleChange} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 outline-none focus:border-primary transition-colors">
-                <option value="Never Married">Never Married</option>
-                <option value="Divorced">Divorced</option>
-                <option value="Widowed">Widowed</option>
-                <option value="Awaiting Divorce">Awaiting Divorce</option>
+                <option value="Never Married">{tv('Never Married')}</option>
+                <option value="Divorced">{tv('Divorced')}</option>
+                <option value="Widowed">{tv('Widowed')}</option>
+                <option value="Awaiting Divorce">{tv('Awaiting Divorce')}</option>
               </select>
             </div>
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2">Manglik</label>
+              <label className="block text-sm font-bold text-gray-700 mb-2">{t('Manglik', 'मांगलिक')}</label>
               <select name="manglik" value={formData.manglik} onChange={handleChange} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 outline-none focus:border-primary transition-colors">
-                <option value="No">No</option>
-                <option value="Yes">Yes</option>
-                <option value="Partial">Partial</option>
+                <option value="No">{tv('No')}</option>
+                <option value="Yes">{tv('Yes')}</option>
+                <option value="Partial">{tv('Partial')}</option>
               </select>
             </div>
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2">Complexion</label>
+              <label className="block text-sm font-bold text-gray-700 mb-2">{t('Complexion', 'रंग')}</label>
               <select name="complexion" value={formData.complexion} onChange={handleChange} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 outline-none focus:border-primary transition-colors">
-                <option value="Fair">Fair</option>
-                <option value="Wheatish">Wheatish</option>
-                <option value="Dark">Dark</option>
+                <option value="Fair">{tv('Fair')}</option>
+                <option value="Wheatish">{tv('Wheatish')}</option>
+                <option value="Dark">{tv('Dark')}</option>
               </select>
             </div>
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2">Education</label>
+              <label className="block text-sm font-bold text-gray-700 mb-2">{t('Education', 'शिक्षा')}</label>
               <input type="text" name="education" required value={formData.education} onChange={handleChange} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 outline-none focus:border-primary transition-colors" />
             </div>
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2">Occupation</label>
+              <label className="block text-sm font-bold text-gray-700 mb-2">{t('Occupation', 'व्यवसाय')}</label>
               <input type="text" name="occupation" required value={formData.occupation} onChange={handleChange} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 outline-none focus:border-primary transition-colors" />
             </div>
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2">Annual Income</label>
-              <input type="text" name="annual_income" placeholder="e.g. 5-10 LPA" required value={formData.annual_income} onChange={handleChange} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 outline-none focus:border-primary transition-colors" />
+              <label className="block text-sm font-bold text-gray-700 mb-2">{t('Annual Income', 'वार्षिक आय')}</label>
+              <input type="text" name="annual_income" placeholder={t('e.g. 5-10 LPA', 'जैसे: 5-10 लाख प्रति वर्ष')} required value={formData.annual_income} onChange={handleChange} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 outline-none focus:border-primary transition-colors" />
             </div>
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2">Family Type</label>
+              <label className="block text-sm font-bold text-gray-700 mb-2">{t('Family Type', 'परिवार का प्रकार')}</label>
               <input type="text" name="family_type" required value={formData.family_type} onChange={handleChange} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 outline-none focus:border-primary transition-colors" />
             </div>
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2">Mother Tongue</label>
+              <label className="block text-sm font-bold text-gray-700 mb-2">{t('Mother Tongue', 'मातृभाषा')}</label>
               <input type="text" name="mother_tongue" required value={formData.mother_tongue} onChange={handleChange} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 outline-none focus:border-primary transition-colors" />
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-bold text-gray-700 mb-2">About You (Bio)</label>
+            <label className="block text-sm font-bold text-gray-700 mb-2">{t('About You (Bio)', 'आपके बारे में (परिचय)')}</label>
             <textarea name="bio" required rows="4" value={formData.bio} onChange={handleChange} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 outline-none focus:border-primary transition-colors" />
           </div>
 
           <div className="pt-2 pb-2 flex justify-end gap-4">
             <button type="button" onClick={onClose} className="px-6 py-3 rounded-xl font-bold text-gray-500 hover:bg-gray-100 transition-colors">
-              Cancel
+              {t('Cancel', 'रद्द करें')}
             </button>
             <button type="submit" disabled={loading} className="btn-primary px-8 rounded-xl shadow-lg shadow-primary/20">
-              {loading ? "Creating..." : "Create Profile"}
+              {loading ? t('Creating...', 'बनाई जा रही है...') : t('Create Profile', 'प्रोफ़ाइल बनाएँ')}
             </button>
           </div>
         </form>

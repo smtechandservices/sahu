@@ -4,11 +4,13 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { fetchApi } from '../../lib/api';
+import { useLanguage } from '../../context/LanguageContext';
 
 const Hero = () => {
   const [current, setCurrent] = useState(0);
   const [slides, setSlides] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { t } = useLanguage();
 
   useEffect(() => {
     fetchApi('/carousel-images/')
@@ -51,7 +53,7 @@ const Hero = () => {
               <div className="relative w-full h-full">
                 <img 
                   src={slides[current].image} 
-                  alt="Hero Slide" 
+                  alt={t('Hero Slide', 'मुख्य स्लाइड')} 
                   className="w-full h-full object-cover"
                 />
               </div>
@@ -63,7 +65,7 @@ const Hero = () => {
           <>
             <button
               onClick={() => setCurrent((current - 1 + slides.length) % slides.length)}
-              aria-label="Previous slide"
+              aria-label={t('Previous slide', 'पिछली स्लाइड')}
               className="absolute left-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-black/10 hover:bg-black/55 text-white flex items-center justify-center transition-colors backdrop-blur-sm"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
@@ -72,7 +74,7 @@ const Hero = () => {
             </button>
             <button
               onClick={() => setCurrent((current + 1) % slides.length)}
-              aria-label="Next slide"
+              aria-label={t('Next slide', 'अगली स्लाइड')}
               className="absolute right-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-black/10 hover:bg-black/55 text-white flex items-center justify-center transition-colors backdrop-blur-sm"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>

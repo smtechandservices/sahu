@@ -11,6 +11,7 @@ import CreateProfileModal from "./CreateProfileModal";
 import EditProfileModal from "./EditProfileModal";
 import { useAuth } from "../../context/AuthContext";
 import Swal from "sweetalert2";
+import { useLanguage } from '../../context/LanguageContext';
 
 // Helper: height_cm → display string e.g. "5' 7\""
 function cmToFeet(cm) {
@@ -33,6 +34,7 @@ export default function MatrimonialClient() {
   const [liked, setLiked] = useState([]); // profile IDs we sent interest to (server-synced)
   const [matches, setMatches] = useState([]); // mutual interest profile IDs
   const [receivedProfiles, setReceivedProfiles] = useState([]); // profiles that sent interest to us
+  const { t, tv } = useLanguage();
 
   // --- Filter States ---
   const [gender, setGender] = useState("Any");
@@ -142,14 +144,14 @@ export default function MatrimonialClient() {
   const handleToggleInterest = async (profileId) => {
     if (!myProfile) {
       Swal.fire({
-        title: "Profile Required",
-        text: "You need a matrimonial profile to send interest. Create your profile now?",
+        title: t('Profile Required', 'प्रोफ़ाइल आवश्यक है'),
+        text: t('You need a matrimonial profile to send interest. Create your profile now?', 'रुचि भेजने के लिए आपकी वैवाहिक प्रोफ़ाइल होनी चाहिए। क्या अभी प्रोफ़ाइल बनाएँ?'),
         icon: "warning",
         showCancelButton: true,
         confirmButtonColor: "#EAB308",
         cancelButtonColor: "#d33",
-        confirmButtonText: "Yes, create it!",
-        cancelButtonText: "Cancel"
+        confirmButtonText: t('Yes, create it!', 'हाँ, बनाएँ!'),
+        cancelButtonText: t('Cancel', 'रद्द करें')
       }).then((result) => {
         if (result.isConfirmed) {
           setShowCreateModal(true);
@@ -175,10 +177,10 @@ export default function MatrimonialClient() {
       const msg =
         err?.data?.error ||
         (typeof err?.data === "string" ? err.data : null) ||
-        "Could not update interest. Please try again.";
+        t('Could not update interest. Please try again.', 'रुचि अपडेट नहीं हो सकी। कृपया फिर से प्रयास करें।');
       Swal.fire({
         icon: "error",
-        title: "Interest Failed",
+        title: t('Interest Failed', 'रुचि भेजना विफल'),
         text: msg,
         confirmButtonColor: "#EAB308",
       });
@@ -279,7 +281,7 @@ export default function MatrimonialClient() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-gray-500 font-medium">Loading profiles…</p>
+          <p className="text-gray-500 font-medium">{t('Loading profiles…', 'प्रोफ़ाइल लोड हो रही हैं…')}</p>
         </div>
       </div>
     );
@@ -295,7 +297,7 @@ export default function MatrimonialClient() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
             <div>
               <p className="text-sm text-gray-400 font-medium">
-                {filteredProfiles.length} profiles found
+                {t(`${filteredProfiles.length} profiles found`, `${filteredProfiles.length} प्रोफ़ाइल मिलीं`)}
               </p>
             </div>
             <div className="flex items-center gap-3">
@@ -303,7 +305,7 @@ export default function MatrimonialClient() {
                 onClick={() => setShowMyInterest(!showMyInterest)}
                 className={`cursor-pointer btn-outline rounded-lg px-5 py-2.5 text-sm font-bold ${showMyInterest ? 'bg-primary/10 border-primary text-primary' : 'bg-white'}`}
               >
-                {showMyInterest ? 'Show All' : 'My Interest'}
+                {showMyInterest ? t('Show All', 'सभी दिखाएँ') : t('My Interest', 'मेरी रुचि')}
               </button>
               {myProfile ? (
                 <button
@@ -314,14 +316,14 @@ export default function MatrimonialClient() {
                     <circle cx="12" cy="8" r="4" />
                     <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
                   </svg>
-                  My Profile
+                  {t('My Profile', 'मेरी प्रोफ़ाइल')}
                 </button>
               ) : (
                 <button
                   onClick={() => setShowCreateModal(true)}
                   className="cursor-pointer btn-primary rounded-lg px-5 py-2.5 text-sm font-bold shadow-md shadow-primary/20"
                 >
-                  Create Profile
+                  {t('Create Profile', 'प्रोफ़ाइल बनाएँ')}
                 </button>
               )}
             </div>
@@ -359,18 +361,18 @@ export default function MatrimonialClient() {
                   <input
                     value={searchQuery}
                     onChange={e => setSearchQuery(e.target.value)}
-                    placeholder="Search by name, ID, or city…"
+                    placeholder={t('Search by name, ID, or city…', 'नाम, आईडी या शहर से खोजें…')}
                     className="w-full bg-gray-50 border-none rounded-lg py-3 pl-12 pr-4 text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all"
                   />
                 </div>
                 <div className="flex items-center gap-4 w-full sm:w-auto">
                   <span className="text-sm text-gray-400 whitespace-nowrap hidden sm:inline">
-                    Sort by: <span className="text-gray-900 font-bold">Newest</span>
+                    {t('Sort by:', 'क्रम:')} <span className="text-gray-900 font-bold">{t('Newest', 'नवीनतम')}</span>
                   </span>
                   <div className="h-8 w-px bg-gray-100 hidden sm:block" />
                   <p className="text-sm text-gray-900 font-bold whitespace-nowrap">
                     {filteredProfiles.length}{" "}
-                    <span className="text-gray-400 font-normal">Results</span>
+                    <span className="text-gray-400 font-normal">{t('Results', 'परिणाम')}</span>
                   </p>
                 </div>
               </div>
@@ -378,19 +380,19 @@ export default function MatrimonialClient() {
               {/* Active Filter Pills */}
               <div className="flex flex-wrap gap-2">
                 {gender !== "Any" && (
-                  <FilterPill label={`Gender: ${gender}`} onRemove={() => setGender("Any")} />
+                  <FilterPill label={`${t('Gender', 'लिंग')}: ${tv(gender)}`} onRemove={() => setGender("Any")} />
                 )}
                 {gotra !== "Any" && (
-                  <FilterPill label={`Gotra: ${gotra}`} onRemove={() => setGotra("Any")} />
+                  <FilterPill label={`${t('Gotra', 'गोत्र')}: ${gotra}`} onRemove={() => setGotra("Any")} />
                 )}
                 {manglik !== "Any" && (
-                  <FilterPill label={`Manglik: ${manglik}`} onRemove={() => setManglik("Any")} />
+                  <FilterPill label={`${t('Manglik', 'मांगलिक')}: ${tv(manglik)}`} onRemove={() => setManglik("Any")} />
                 )}
                 {complexion !== "Any" && (
-                  <FilterPill label={`Complexion: ${complexion}`} onRemove={() => setComplexion("Any")} />
+                  <FilterPill label={`${t('Complexion', 'रंग')}: ${tv(complexion)}`} onRemove={() => setComplexion("Any")} />
                 )}
                 {maritalStatus.length > 0 && maritalStatus[0] !== "Never Married" && (
-                  <FilterPill label={`Status: ${maritalStatus.join(", ")}`} onRemove={() => setMaritalStatus(["Never Married"])} />
+                  <FilterPill label={`${t('Status', 'स्थिति')}: ${maritalStatus.map(tv).join(", ")}`} onRemove={() => setMaritalStatus(["Never Married"])} />
                 )}
               </div>
 
@@ -415,10 +417,10 @@ export default function MatrimonialClient() {
                     <svg className="mx-auto mb-4 text-gray-200" width="48" height="48" viewBox="0 0 24 24" fill="currentColor">
                       <path d="M12 21.593c-5.63-5.539-11-10.297-11-14.402 0-3.791 3.068-5.191 5.281-5.191 1.312 0 4.151.501 5.719 4.457 1.59-3.968 4.464-4.447 5.726-4.447 2.54 0 5.274 1.621 5.274 5.181 0 4.069-5.136 8.625-11 14.402z" />
                     </svg>
-                    <p className="text-gray-400 font-bold text-lg">No profiles match your filters</p>
-                    <p className="text-gray-300 text-sm mt-1">Try adjusting your filter criteria</p>
+                    <p className="text-gray-400 font-bold text-lg">{t('No profiles match your filters', 'आपके फ़िल्टर से कोई प्रोफ़ाइल मेल नहीं खाती')}</p>
+                    <p className="text-gray-300 text-sm mt-1">{t('Try adjusting your filter criteria', 'फ़िल्टर बदलकर देखें')}</p>
                     <button onClick={handleReset} className="mt-4 text-primary font-bold text-sm hover:underline">
-                      Reset Filters
+                      {t('Reset Filters', 'फ़िल्टर रीसेट करें')}
                     </button>
                   </div>
                 )}
@@ -482,6 +484,7 @@ export default function MatrimonialClient() {
 }
 
 function Pagination({ currentPage, totalPages, total, perPage, onChange }) {
+  const { lang, t } = useLanguage();
   const from = (currentPage - 1) * perPage + 1;
   const to = Math.min(currentPage * perPage, total);
 
@@ -502,12 +505,17 @@ function Pagination({ currentPage, totalPages, total, perPage, onChange }) {
   return (
     <div className="flex flex-col items-center gap-3 pt-8">
       <p className="text-sm text-gray-400">
-        Showing <span className="font-bold text-gray-700">{from}–{to}</span> of <span className="font-bold text-gray-700">{total}</span> profiles
+        {lang === 'hi' ? (
+          <>कुल <span className="font-bold text-gray-700">{total}</span> में से <span className="font-bold text-gray-700">{from}–{to}</span> प्रोफ़ाइल</>
+        ) : (
+          <>Showing <span className="font-bold text-gray-700">{from}–{to}</span> of <span className="font-bold text-gray-700">{total}</span> profiles</>
+        )}
       </p>
       <div className="flex items-center gap-1.5">
         {/* Prev */}
         <button
           onClick={() => onChange(currentPage - 1)}
+          aria-label={t('Previous page', 'पिछला पृष्ठ')}
           disabled={currentPage === 1}
           className="w-9 h-9 flex items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-400 hover:border-primary hover:text-primary disabled:opacity-30 disabled:cursor-not-allowed transition-all"
         >
@@ -535,6 +543,7 @@ function Pagination({ currentPage, totalPages, total, perPage, onChange }) {
         {/* Next */}
         <button
           onClick={() => onChange(currentPage + 1)}
+          aria-label={t('Next page', 'अगला पृष्ठ')}
           disabled={currentPage === totalPages}
           className="w-9 h-9 flex items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-400 hover:border-primary hover:text-primary disabled:opacity-30 disabled:cursor-not-allowed transition-all"
         >

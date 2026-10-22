@@ -1,8 +1,12 @@
+'use client';
+
 import Link from 'next/link';
 import Image from 'next/image';
 import { Heart, Briefcase, Building2, ArrowRight, Mars, Venus } from 'lucide-react';
+import { useLanguage } from '../../context/LanguageContext';
 
 const Services = () => {
+  const { t } = useLanguage();
   return (
     <section className="pb-16 bg-white">
       <div className="px-4 sm:px-6 md:px-8">
@@ -10,12 +14,12 @@ const Services = () => {
         <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-4">
           <div>
             <span className="text-yellow-600 font-bold tracking-widest text-sm uppercase mb-2 block">
-              ESSENTIAL RESOURCES
+              {t('ESSENTIAL RESOURCES', 'आवश्यक संसाधन')}
             </span>
-            <h2 className="text-3xl md:text-5xl font-bold text-slate-900">Quick Access</h2>
+            <h2 className="text-3xl md:text-5xl font-bold text-slate-900">{t('Quick Access', 'त्वरित पहुँच')}</h2>
           </div>
           <Link href="/services" className="text-yellow-700 font-bold flex items-center gap-2 hover:gap-3 transition-all group">
-            View All Services <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
+            {t('View All Services', 'सभी सेवाएँ देखें')} <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
           </Link>
         </div>
 
@@ -27,7 +31,7 @@ const Services = () => {
             <div className="absolute inset-0 z-0 opacity-40">
               <Image
                 src="/assets/event3.jpg"
-                alt="Matrimonial Background"
+                alt={t('Matrimonial Background', 'वैवाहिक पृष्ठभूमि')}
                 fill
                 className="object-cover transition-transform duration-700 group-hover:scale-105"
               />
@@ -38,13 +42,12 @@ const Services = () => {
               <div className="bg-yellow-50/80 p-4 rounded-lg w-fit mb-8">
                 <Heart className="text-yellow-600 fill-yellow-600" size={28} />
               </div>
-              <h3 className="text-3xl font-bold mb-4 text-slate-900">Matrimonial Services</h3>
+              <h3 className="text-3xl font-bold mb-4 text-slate-900">{t('Matrimonial Services', 'वैवाहिक सेवाएँ')}</h3>
               <p className="text-slate-600 text-base leading-relaxed mb-12">
-                Find the Perfect Life Partner
-                Within Your Community
+                {t('Find the Perfect Life Partner Within Your Community', 'अपने समाज में ही पाएँ उपयुक्त जीवनसाथी')}
               </p>
               <Link href="/matrimonial" className="mt-auto w-fit bg-white border border-gray-300 px-8 py-3 rounded-md font-bold text-slate-900 hover:bg-slate-50 transition-colors shadow-sm flex items-center gap-2 group/link">
-                Explore Profiles <ArrowRight size={18} className="group-hover/link:translate-x-1 transition-transform" />
+                {t('Explore Profiles', 'प्रोफ़ाइल देखें')} <ArrowRight size={18} className="group-hover/link:translate-x-1 transition-transform" />
               </Link>
             </div>
           </div>
@@ -54,12 +57,12 @@ const Services = () => {
             <div className="bg-blue-50 p-4 rounded-lg w-fit mb-6 md:mb-8">
               <Briefcase className="text-blue-900 fill-blue-900" size={28} />
             </div>
-            <h3 className="text-2xl font-bold mb-4 text-slate-900">Opportunities</h3>
+            <h3 className="text-2xl font-bold mb-4 text-slate-900">{t('Opportunities', 'अवसर')}</h3>
             <p className="text-slate-600 text-base leading-relaxed mb-8">
-              Empowering the Community Through Opportunities
+              {t('Empowering the Community Through Opportunities', 'अवसरों के माध्यम से समाज का सशक्तिकरण')}
             </p>
             <Link href="/career" className="mt-auto text-yellow-700 font-bold flex items-center gap-2 group/link">
-              Find Opportunities <ArrowRight size={18} className="group-hover/link:translate-x-1 transition-transform" />
+              {t('Find Opportunities', 'अवसर खोजें')} <ArrowRight size={18} className="group-hover/link:translate-x-1 transition-transform" />
             </Link>
           </div>
 
@@ -70,12 +73,12 @@ const Services = () => {
               <Building2 className="text-amber-700" size={36} strokeWidth={1.5} />
 
             </div>
-            <h3 className="text-2xl font-bold mb-4 text-slate-900">Student Hostels</h3>
+            <h3 className="text-2xl font-bold mb-4 text-slate-900">{t('Student Hostels', 'छात्रावास')}</h3>
             <p className="text-slate-600 text-base leading-relaxed mb-8">
-              Safe, affordable accommodation for community students pursuing higher education.
+              {t('Safe, affordable accommodation for community students pursuing higher education.', 'उच्च शिक्षा प्राप्त कर रहे समाज के छात्रों के लिए सुरक्षित और किफ़ायती आवास।')}
             </p>
             <Link href="/accommodation" className="mt-auto text-yellow-700 font-bold flex items-center gap-2 group/link">
-              View Facilities <ArrowRight size={18} className="group-hover/link:translate-x-1 transition-transform" />
+              {t('View Facilities', 'सुविधाएँ देखें')} <ArrowRight size={18} className="group-hover/link:translate-x-1 transition-transform" />
             </Link>
           </div>
 
@@ -85,7 +88,7 @@ const Services = () => {
             <div className="absolute inset-0 z-0 opacity-40">
               <Image
                 src="/assets/magazine-mockup.png"
-                alt="Magazine Background"
+                alt={t('Magazine Background', 'पत्रिका पृष्ठभूमि')}
                 fill
                 className="object-cover transition-transform duration-700 group-hover:scale-105"
                 priority
@@ -95,14 +98,14 @@ const Services = () => {
 
             <div className="relative z-10 h-full flex flex-col max-w-lg">
               <span className="text-slate-500 font-bold tracking-widest text-xs uppercase mb-4 block">
-                LATEST EDITION
+                {t('LATEST EDITION', 'नवीनतम अंक')}
               </span>
-              <h3 className="text-2xl font-bold mb-4 text-slate-900">Community Magazine</h3>
+              <h3 className="text-2xl font-bold mb-4 text-slate-900">{t('Community Magazine', 'सामाजिक पत्रिका')}</h3>
               <p className="text-slate-600 text-base leading-relaxed mb-8">
-                Read inspiring stories, historical insights, and updates from Sabha members globally.
+                {t('Read inspiring stories, historical insights, and updates from Sabha members globally.', 'दुनिया भर के सभा सदस्यों की प्रेरक कहानियाँ, ऐतिहासिक जानकारियाँ और समाचार पढ़ें।')}
               </p>
               <Link href="/magazine" className="mt-auto w-fit bg-white border border-gray-300 px-8 py-3 rounded-md font-bold text-slate-900 hover:bg-slate-50 transition-colors shadow-sm">
-                Read Now
+                {t('Read Now', 'अभी पढ़ें')}
               </Link>
             </div>
           </div>

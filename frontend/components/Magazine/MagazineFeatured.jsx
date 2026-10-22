@@ -5,10 +5,12 @@ import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { FileText, Download, Sparkles } from 'lucide-react';
 import { downloadFile } from '../../lib/download';
+import { useLanguage } from '../../context/LanguageContext';
 
 const MagazineFeatured = () => {
   const [featured, setFeatured] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { t, locale } = useLanguage();
 
   useEffect(() => {
     const loadData = async () => {
@@ -29,7 +31,7 @@ const MagazineFeatured = () => {
   }, []);
 
   const formatDate = (dateStr) =>
-    new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
+    new Date(dateStr).toLocaleDateString(locale, { month: 'short', day: '2-digit', year: 'numeric' });
 
   const handleRead = (article) => window.open(article.pdf, '_blank');
 
@@ -43,9 +45,9 @@ const MagazineFeatured = () => {
       <div className="container-custom">
         <div className="flex justify-between items-end mb-12">
           <div>
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">Featured Issues</h2>
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">{t('Featured Issues', 'विशेष अंक')}</h2>
             <p className="text-gray-600 max-w-xl">
-              Our latest release and handpicked issues from the Sahu Sabha editorial team.
+              {t('Our latest release and handpicked issues from the Sahu Sabha editorial team.', 'साहू सभा संपादकीय टीम द्वारा चुना गया नवीनतम अंक और विशेष अंक।')}
             </p>
           </div>
         </div>
@@ -75,7 +77,7 @@ const MagazineFeatured = () => {
                   <div className="absolute top-4 left-4 flex gap-2">
                     {isLatest && (
                       <span className="px-3 py-1 bg-primary text-white text-xs font-black rounded-full flex items-center gap-1 shadow-lg">
-                        <Sparkles size={10} /> Latest
+                        <Sparkles size={10} /> {t('Latest', 'नवीनतम')}
                       </span>
                     )}
                     {article.pdf && (
@@ -88,7 +90,7 @@ const MagazineFeatured = () => {
 
                 {/* Meta */}
                 <div className="flex items-center gap-2 text-sm text-gray-500 mb-2">
-                  <span className="font-semibold text-gray-900">Sahu Sabha Editorial</span>
+                  <span className="font-semibold text-gray-900">{t('Sahu Sabha Editorial', 'साहू सभा संपादकीय')}</span>
                   <span>•</span>
                   <span>{formatDate(article.published_at)}</span>
                 </div>
@@ -106,13 +108,13 @@ const MagazineFeatured = () => {
                       onClick={() => handleRead(article)}
                       className="cursor-pointer flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary text-white text-xs font-bold hover:bg-primary/90 transition-colors"
                     >
-                      <FileText size={13} /> Read
+                      <FileText size={13} /> {t('Read', 'पढ़ें')}
                     </button>
                     <button
                       onClick={() => handleDownload(article)}
                       className="cursor-pointer flex items-center gap-1.5 px-4 py-2 rounded-lg border border-gray-200 text-gray-600 text-xs font-bold hover:bg-gray-50 transition-colors"
                     >
-                      <Download size={13} /> Download
+                      <Download size={13} /> {t('Download', 'डाउनलोड')}
                     </button>
                   </div>
                 )}

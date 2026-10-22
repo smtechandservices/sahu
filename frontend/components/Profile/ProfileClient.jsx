@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import Swal from "sweetalert2";
+import { useLanguage } from '../../context/LanguageContext';
 
 export default function ProfileClient() {
   const { user, login, loading: authLoading } = useAuth();
@@ -25,6 +26,7 @@ export default function ProfileClient() {
     email: "",
   });
   const [profilePhoto, setProfilePhoto] = useState(null);
+  const { t, tv, locale } = useLanguage();
 
   useEffect(() => {
     if (user) {
@@ -58,7 +60,7 @@ export default function ProfileClient() {
     return score;
   };
 
-  if (authLoading) return <div className="min-h-screen bg-gray-50 flex items-center justify-center">Loading...</div>;
+  if (authLoading) return <div className="min-h-screen bg-gray-50 flex items-center justify-center">{t('Loading...', 'लोड हो रहा है...')}</div>;
   if (!user) {
     if (typeof window !== 'undefined') window.location.href = '/login';
     return null;
@@ -100,16 +102,16 @@ export default function ProfileClient() {
       setProfilePhoto(null);
       Swal.fire({
         icon: "success",
-        title: "Profile Updated",
-        text: "Profile updated successfully!",
+        title: t('Profile Updated', 'प्रोफ़ाइल अपडेट हो गई'),
+        text: t('Profile updated successfully!', 'प्रोफ़ाइल सफलतापूर्वक अपडेट हो गई!'),
         confirmButtonColor: "#EAB308",
       });
     } catch (err) {
       console.error(err);
       Swal.fire({
         icon: "error",
-        title: "Update Failed",
-        text: "Failed to update profile.",
+        title: t('Update Failed', 'अपडेट विफल'),
+        text: t('Failed to update profile.', 'प्रोफ़ाइल अपडेट नहीं हो सकी।'),
         confirmButtonColor: "#EAB308",
       });
     } finally {
@@ -155,7 +157,7 @@ export default function ProfileClient() {
               <div className="mb-2">
                 <div className="flex items-center gap-3 mb-1">
                   <h1 className="text-3xl font-bold text-[#4a4a4a]">{user.name}</h1>
-                  <span className="bg-green-500 text-white text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full">Verified</span>
+                  <span className="bg-green-500 text-white text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full">{t('Verified', 'सत्यापित')}</span>
                 </div>
                 <p className="text-gray-600 flex items-center gap-2 font-medium">
                   <Phone size={14} className="text-primary" /> {user.phone}
@@ -169,7 +171,7 @@ export default function ProfileClient() {
                   className="bg-white/10 backdrop-blur-md text-white hover:bg-white/20 transition-all px-6 py-2.5 rounded-xl font-bold flex items-center gap-2 border border-white/20"
                 >
                   <Edit3 size={18} />
-                  Edit Profile
+                  {t('Edit Profile', 'प्रोफ़ाइल संपादित करें')}
                 </button>
               ) : (
                 <div className="flex gap-3">
@@ -178,14 +180,14 @@ export default function ProfileClient() {
                     className="bg-white/10 backdrop-blur-md text-white hover:bg-white/20 transition-all px-6 py-2.5 rounded-xl font-bold flex items-center gap-2 border border-white/20"
                   >
                     <X size={18} />
-                    Cancel
+                    {t('Cancel', 'रद्द करें')}
                   </button>
                   <button 
                     onClick={handleUpdateProfile}
                     disabled={loading}
                     className="bg-primary text-white hover:bg-primary-dark transition-all px-6 py-2.5 rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-primary/20"
                   >
-                    {loading ? "Saving..." : <><Save size={18} /> Save Changes</>}
+                    {loading ? t('Saving...', 'सहेजा जा रहा है...') : <><Save size={18} /> {t('Save Changes', 'बदलाव सहेजें')}</>}
                   </button>
                 </div>
               )}
@@ -199,7 +201,7 @@ export default function ProfileClient() {
             {/* Left Column - Stats / Info */}
             <div className="space-y-6">
               <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-8">
-                <h3 className="text-lg font-bold text-gray-900 mb-6">Profile Completeness</h3>
+                <h3 className="text-lg font-bold text-gray-900 mb-6">{t('Profile Completeness', 'प्रोफ़ाइल पूर्णता')}</h3>
                 <div className="w-full bg-gray-100 h-2.5 rounded-full mb-4">
                   <motion.div 
                     initial={{ width: 0 }}
@@ -207,14 +209,19 @@ export default function ProfileClient() {
                     className="bg-primary h-full rounded-full transition-all duration-1000" 
                   />
                 </div>
-                <p className="text-sm text-gray-500">Your profile is {completeness}% complete. {completeness < 100 ? "Complete all fields to unlock full community benefits." : "Your profile is fully optimized!"}</p>
+                <p className="text-sm text-gray-500">
+                  {t(`Your profile is ${completeness}% complete.`, `आपकी प्रोफ़ाइल ${completeness}% पूर्ण है।`)}{' '}
+                  {completeness < 100
+                    ? t('Complete all fields to unlock full community benefits.', 'समाज की सभी सुविधाओं का लाभ पाने के लिए सभी जानकारी भरें।')
+                    : t('Your profile is fully optimized!', 'आपकी प्रोफ़ाइल पूरी तरह तैयार है!')}
+                </p>
               </div>
 
               <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-8">
-                <h3 className="text-lg font-bold text-gray-900 mb-6">Quick Links</h3>
+                <h3 className="text-lg font-bold text-gray-900 mb-6">{t('Quick Links', 'त्वरित लिंक')}</h3>
                 <div className="space-y-4">
-                  <QuickLink icon={<Heart />} label="My Matrimonial Profile" count={matrimonialProfile ? "1" : "0"} />
-                  <QuickLink icon={<Briefcase />} label="My Bookings" count={bookings.length.toString()} />
+                  <QuickLink icon={<Heart />} label={t('My Matrimonial Profile', 'मेरी वैवाहिक प्रोफ़ाइल')} count={matrimonialProfile ? "1" : "0"} />
+                  <QuickLink icon={<Briefcase />} label={t('My Bookings', 'मेरी बुकिंग')} count={bookings.length.toString()} />
                 </div>
               </div>
             </div>
@@ -224,12 +231,12 @@ export default function ProfileClient() {
               <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-8">
                 <div className="flex items-center gap-2 mb-8 pb-4 border-b border-gray-50">
                   <ShieldCheck className="text-primary" size={24} />
-                  <h2 className="text-xl font-bold text-gray-900">Personal Information</h2>
+                  <h2 className="text-xl font-bold text-gray-900">{t('Personal Information', 'व्यक्तिगत जानकारी')}</h2>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div className="space-y-2">
-                    <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">Full Name</label>
+                    <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">{t('Full Name', 'पूरा नाम')}</label>
                     {isEditing ? (
                       <input 
                         type="text" 
@@ -242,30 +249,30 @@ export default function ProfileClient() {
                     )}
                   </div>
                   <div className="space-y-2">
-                    <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">Phone Number</label>
+                    <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">{t('Phone Number', 'फ़ोन नंबर')}</label>
                     <div className="p-4 bg-gray-50/50 rounded-xl text-gray-400 font-medium cursor-not-allowed">
                       {user.phone}
-                      <span className="float-right text-[10px] bg-gray-100 px-2 py-0.5 rounded text-gray-400">Locked</span>
+                      <span className="float-right text-[10px] bg-gray-100 px-2 py-0.5 rounded text-gray-400">{t('Locked', 'लॉक')}</span>
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">Email Address</label>
+                    <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">{t('Email Address', 'ईमेल पता')}</label>
                     {isEditing ? (
                       <input 
                         type="email" 
                         value={formData.email}
-                        placeholder="e.g. name@example.com"
+                        placeholder={t('e.g. name@example.com', 'जैसे: name@example.com')}
                         onChange={(e) => setFormData({...formData, email: e.target.value})}
                         className="w-full bg-gray-50 border border-gray-100 rounded-xl p-4 text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all"
                       />
                     ) : (
-                      <div className="p-4 bg-gray-50 rounded-xl text-gray-900 font-medium">{user.email || "Not set"}</div>
+                      <div className="p-4 bg-gray-50 rounded-xl text-gray-900 font-medium">{user.email || t('Not set', 'सेट नहीं है')}</div>
                     )}
                   </div>
                   <div className="space-y-2">
-                    <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">Member Since</label>
+                    <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">{t('Member Since', 'सदस्यता तिथि')}</label>
                     <div className="p-4 bg-gray-50/50 rounded-xl text-gray-900 font-medium">
-                      {new Date(user.date_joined).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+                      {new Date(user.date_joined).toLocaleDateString(locale, { year: 'numeric', month: 'long', day: 'numeric' })}
                     </div>
                   </div>
                 </div>
@@ -275,7 +282,7 @@ export default function ProfileClient() {
               <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-8">
                 <div className="flex items-center gap-2 mb-8 pb-4 border-b border-gray-50">
                   <Calendar className="text-primary" size={24} />
-                  <h2 className="text-xl font-bold text-gray-900">Recent Activity</h2>
+                  <h2 className="text-xl font-bold text-gray-900">{t('Recent Activity', 'हाल की गतिविधि')}</h2>
                 </div>
                 {bookings.length > 0 ? (
                   <div className="space-y-4">
@@ -286,21 +293,21 @@ export default function ProfileClient() {
                             <BookOpen size={20} />
                           </div>
                           <div>
-                            <p className="text-sm font-bold text-gray-900">Booking: {booking.accommodation_title || "Accommodation"}</p>
-                            <p className="text-xs text-gray-400">{booking.check_in} to {booking.check_out}</p>
+                            <p className="text-sm font-bold text-gray-900">{t('Booking:', 'बुकिंग:')} {booking.accommodation_title || t('Accommodation', 'आवास')}</p>
+                            <p className="text-xs text-gray-400">{booking.check_in} {t('to', 'से')} {booking.check_out}{t('', ' तक')}</p>
                           </div>
                         </div>
                         <span className={`text-[10px] font-bold uppercase px-2 py-1 rounded-full ${
                           booking.status === 'Confirmed' ? 'bg-green-100 text-green-600' : 'bg-yellow-100 text-yellow-600'
                         }`}>
-                          {booking.status}
+                          {tv(booking.status)}
                         </span>
                       </div>
                     ))}
                   </div>
                 ) : (
                   <div className="text-center py-12 text-gray-400 text-sm italic">
-                    No recent bookings or activity found.
+                    {t('No recent bookings or activity found.', 'हाल की कोई बुकिंग या गतिविधि नहीं मिली।')}
                   </div>
                 )}
               </div>

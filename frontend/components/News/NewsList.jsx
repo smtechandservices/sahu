@@ -4,11 +4,13 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Calendar, ArrowRight } from "lucide-react";
+import { useLanguage } from '../../context/LanguageContext';
 
 const NewsList = ({ searchQuery }) => {
   const [articles, setArticles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedArticle, setSelectedArticle] = useState(null);
+  const { t, locale } = useLanguage();
 
   useEffect(() => {
     const load = async () => {
@@ -26,7 +28,7 @@ const NewsList = ({ searchQuery }) => {
   }, []);
 
   const formatDate = (dateStr) =>
-    new Date(dateStr).toLocaleDateString("en-IN", {
+    new Date(dateStr).toLocaleDateString(locale, {
       day: "numeric",
       month: "long",
       year: "numeric",
@@ -45,12 +47,12 @@ const NewsList = ({ searchQuery }) => {
       <div className="px-4 sm:px-6 md:px-8 space-y-12">
 
         {loading ? (
-          <div className="py-32 text-center text-gray-400 font-semibold">Loading news...</div>
+          <div className="py-32 text-center text-gray-400 font-semibold">{t('Loading news...', 'समाचार लोड हो रहे हैं...')}</div>
         ) : filtered.length === 0 ? (
           <div className="py-32 text-center">
-            <p className="text-gray-400 font-semibold text-lg">No news articles found.</p>
+            <p className="text-gray-400 font-semibold text-lg">{t('No news articles found.', 'कोई समाचार नहीं मिला।')}</p>
             {searchQuery && (
-              <p className="mt-2 text-sm text-gray-400">Try a different search term.</p>
+              <p className="mt-2 text-sm text-gray-400">{t('Try a different search term.', 'कोई दूसरा खोज शब्द आज़माएँ।')}</p>
             )}
           </div>
         ) : (
@@ -75,7 +77,7 @@ const NewsList = ({ searchQuery }) => {
                 </div>
                 <div className="flex flex-col justify-center p-8 md:p-10">
                   <span className="inline-block px-3 py-1 bg-yellow-200 text-yellow-800 text-[10px] font-black uppercase tracking-widest rounded-full mb-4 w-fit">
-                    Featured
+                    {t('Featured', 'विशेष')}
                   </span>
                   <div className="flex items-center gap-2 text-xs text-gray-400 mb-3">
                     <Calendar size={13} />
@@ -88,7 +90,7 @@ const NewsList = ({ searchQuery }) => {
                     {featured.content}
                   </p>
                   <span className="flex items-center gap-2 text-primary font-bold text-sm">
-                    Read Full Story <ArrowRight size={16} />
+                    {t('Read Full Story', 'पूरी खबर पढ़ें')} <ArrowRight size={16} />
                   </span>
                 </div>
               </motion.div>
@@ -128,7 +130,7 @@ const NewsList = ({ searchQuery }) => {
                       {article.content}
                     </p>
                     <span className="mt-4 flex items-center gap-1 text-primary text-xs font-bold">
-                      Read more <ArrowRight size={12} />
+                      {t('Read more', 'और पढ़ें')} <ArrowRight size={12} />
                     </span>
                   </div>
                 </motion.div>
@@ -157,6 +159,7 @@ const NewsList = ({ searchQuery }) => {
             >
               <button
                 onClick={() => setSelectedArticle(null)}
+                aria-label={t('Close', 'बंद करें')}
                 className="absolute top-4 right-4 z-10 w-10 h-10 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center text-gray-500 hover:bg-white hover:text-gray-900 shadow-md transition-all"
               >
                 <X size={18} />
@@ -178,7 +181,7 @@ const NewsList = ({ searchQuery }) => {
               <div className="flex-1 overflow-y-auto p-8">
                 <div className="flex items-center gap-3 mb-4">
                   <span className="px-3 py-1 rounded-full text-[10px] font-black uppercase bg-yellow-100 text-yellow-700">
-                    News
+                    {t('News', 'समाचार')}
                   </span>
                   <span className="flex items-center gap-1.5 text-xs text-gray-400">
                     <Calendar size={12} />

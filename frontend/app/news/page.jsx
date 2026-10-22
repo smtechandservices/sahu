@@ -1,7 +1,7 @@
 import NewsClient from '../../components/News/NewsClient';
 
 export const metadata = {
-  title: 'Community News',
+  title: 'News',
   description: 'Stay informed with the latest news, announcements, and updates from the Sahu Sabha community across India.',
   keywords: ['Sahu Sabha News', 'Community Updates', 'Sabha Announcements', 'Sahu Heritage', 'India Community'],
   openGraph: {

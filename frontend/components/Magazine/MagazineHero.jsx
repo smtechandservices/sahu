@@ -5,10 +5,12 @@ import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { FileText, Download } from 'lucide-react';
 import { downloadFile } from '../../lib/download';
+import { useLanguage } from '../../context/LanguageContext';
 
 const MagazineHero = () => {
   const [stats, setStats] = useState({ subscriber_count: null, magazine_count: null });
   const [latest, setLatest] = useState(null);
+  const { t, locale } = useLanguage();
 
   useEffect(() => {
     const load = async () => {
@@ -39,7 +41,7 @@ const MagazineHero = () => {
   const fmt = (n) => (n === null ? '...' : n >= 1000 ? `${(n / 1000).toFixed(1)}k+` : `${n}+`);
 
   const latestLabel = latest
-    ? new Date(latest.published_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+    ? new Date(latest.published_at).toLocaleDateString(locale, { month: 'long', year: 'numeric' })
     : null;
 
   return (
@@ -55,25 +57,25 @@ const MagazineHero = () => {
           >
             {latestLabel && (
               <span className="inline-block px-4 py-1.5 bg-primary text-white text-sm font-bold tracking-wider uppercase rounded-full mb-6">
-                Latest Issue: {latestLabel}
+                {t('Latest Issue:', 'नवीनतम अंक:')} {latestLabel}
               </span>
             )}
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-bold text-gray-900 leading-tight mb-6">
-              Celebrating Our <span className="text-primary italic">Roots</span>, Building Our Future.
+              {t('Celebrating Our', 'अपनी')} <span className="text-primary italic">{t('Roots', 'जड़ों')}</span>{t(', Building Our Future.', ' का उत्सव, अपने भविष्य का निर्माण।')}
             </h1>
             <p className="text-base sm:text-lg md:text-xl text-gray-600 mb-8 max-w-lg leading-relaxed">
-              Explore the latest stories of heritage, achievement, and culture within the Sahu community. Dive into our community's monthly journey.
+              {t("Explore the latest stories of heritage, achievement, and culture within the Sahu community. Dive into our community's monthly journey.", 'साहू समाज की विरासत, उपलब्धियों और संस्कृति से जुड़ी ताज़ा कहानियाँ पढ़ें। हमारे समाज की मासिक यात्रा का हिस्सा बनें।')}
             </p>
 
             <div className="flex items-center gap-8 text-sm font-medium text-gray-500">
               <div className="flex items-center gap-2">
                 <span className="text-2xl font-bold text-primary">{fmt(stats.subscriber_count)}</span>
-                <span>Subscribers</span>
+                <span>{t('Subscribers', 'सदस्य पाठक')}</span>
               </div>
               <div className="h-8 w-px bg-gray-200" />
               <div className="flex items-center gap-2">
                 <span className="text-2xl font-bold text-primary">{fmt(stats.magazine_count)}</span>
-                <span>Issues</span>
+                <span>{t('Issues', 'अंक')}</span>
               </div>
             </div>
           </motion.div>
@@ -87,7 +89,7 @@ const MagazineHero = () => {
             <div className="relative z-10 drop-shadow-2xl">
               <Image 
                 src="/assets/magazine-mockup.png" 
-                alt="Sahu Sabha Magazine Latest Issue" 
+                alt={t('Sahu Sabha Magazine Latest Issue', 'साहू सभा पत्रिका का नवीनतम अंक')} 
                 width={600} 
                 height={800} 
                 className="rounded-lg"

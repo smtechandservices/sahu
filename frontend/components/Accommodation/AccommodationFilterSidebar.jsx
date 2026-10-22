@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { ChevronDown, SlidersHorizontal } from 'lucide-react';
+import { useLanguage } from '../../context/LanguageContext';
+import AccommodationTerms from './AccommodationTerms';
 
 const AccommodationFilterSidebar = ({
   serviceTypes,
@@ -11,6 +13,7 @@ const AccommodationFilterSidebar = ({
   clearFilters
 }) => {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { t, tv } = useLanguage();
 
   return (
     <aside className="w-full lg:w-64 flex-shrink-0">
@@ -21,26 +24,27 @@ const AccommodationFilterSidebar = ({
       >
         <span className="flex items-center gap-2 text-sm">
           <SlidersHorizontal size={16} className="text-primary" />
-          Filters
+          {t('Filters', 'फ़िल्टर')}
         </span>
         <ChevronDown size={16} className={`text-gray-400 transition-transform ${mobileOpen ? 'rotate-180' : ''}`} />
       </button>
 
+      <div className="lg:sticky top-24">
       {/* Filter panel */}
-      <div className={`${mobileOpen ? 'block' : 'hidden'} lg:block bg-white border border-gray-200 rounded-lg p-6 h-fit lg:sticky top-24`}>
+      <div className={`${mobileOpen ? 'block' : 'hidden'} lg:block bg-white border border-gray-200 rounded-lg p-6 h-fit`}>
         <div className="flex justify-between items-center mb-6">
-          <span className="font-bold text-gray-900">Filters</span>
+          <span className="font-bold text-gray-900">{t('Filters', 'फ़िल्टर')}</span>
           <button
             onClick={clearFilters}
             className="text-xs text-primary font-semibold hover:underline bg-none border-none cursor-pointer p-0"
           >
-            Clear All
+            {t('Clear All', 'सभी हटाएँ')}
           </button>
         </div>
 
         <div className="mb-8">
           <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4">
-            Service Type
+            {t('Service Type', 'सेवा का प्रकार')}
           </p>
           <div className="flex flex-col gap-3">
             {serviceTypes.map((type) => (
@@ -62,7 +66,7 @@ const AccommodationFilterSidebar = ({
                   )}
                 </div>
                 <span className={`text-sm transition-colors ${selectedTypes[type] ? 'text-gray-900 font-medium' : 'text-gray-600'}`}>
-                  {type}
+                  {tv(type)}
                 </span>
               </label>
             ))}
@@ -71,7 +75,7 @@ const AccommodationFilterSidebar = ({
 
         <div>
           <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4">
-            Location
+            {t('Location', 'स्थान')}
           </p>
           <div className="relative">
             <select
@@ -80,7 +84,7 @@ const AccommodationFilterSidebar = ({
               className="w-full text-sm border border-gray-300 rounded-md py-2 px-3 bg-white text-gray-700 appearance-none cursor-pointer outline-none focus:border-primary transition-colors"
             >
               {locations.map((loc) => (
-                <option key={loc} value={loc}>{loc}</option>
+                <option key={loc} value={loc}>{loc === 'All Locations' ? t('All Locations', 'सभी स्थान') : loc}</option>
               ))}
             </select>
             <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
@@ -90,6 +94,9 @@ const AccommodationFilterSidebar = ({
             </div>
           </div>
         </div>
+      </div>
+
+      <AccommodationTerms />
       </div>
     </aside>
   );

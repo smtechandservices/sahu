@@ -4,11 +4,13 @@ import { useState, useEffect } from "react";
 import Link from 'next/link';
 import Image from 'next/image';
 import { Calendar, ArrowRight } from 'lucide-react';
+import { useLanguage } from '../../context/LanguageContext';
 
 const NewsEvents = () => {
   const [events, setEvents] = useState([]);
   const [news, setNews] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { t, locale } = useLanguage();
 
   useEffect(() => {
     const loadData = async () => {
@@ -39,7 +41,7 @@ const NewsEvents = () => {
 
   const formatDate = (dateStr) => {
     const date = new Date(dateStr);
-    return date.toLocaleDateString('en-US', {
+    return date.toLocaleDateString(locale, {
       month: 'short',
       day: '2-digit',
       year: 'numeric'
@@ -51,10 +53,10 @@ const NewsEvents = () => {
     const now = new Date();
     const diffInDays = Math.floor((now - date) / (1000 * 60 * 60 * 24));
     
-    if (diffInDays === 0) return "Today";
-    if (diffInDays === 1) return "Yesterday";
-    if (diffInDays < 7) return `${diffInDays} days ago`;
-    return `${Math.floor(diffInDays / 7)} weeks ago`;
+    if (diffInDays === 0) return t('Today', 'आज');
+    if (diffInDays === 1) return t('Yesterday', 'कल');
+    if (diffInDays < 7) return t(`${diffInDays} days ago`, `${diffInDays} दिन पहले`);
+    return t(`${Math.floor(diffInDays / 7)} weeks ago`, `${Math.floor(diffInDays / 7)} सप्ताह पहले`);
   };
 
   if (loading) return null;
@@ -67,16 +69,16 @@ const NewsEvents = () => {
           {/* Upcoming Events Column - Spans 2/3 on desktop */}
           <div className="lg:col-span-2">
             <div className="flex justify-between items-end mb-12">
-              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-900">Upcoming Events</h2>
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-900">{t('Upcoming Events', 'आगामी कार्यक्रम')}</h2>
               <Link href="/events" className="text-yellow-700 font-bold text-sm hover:underline transition-all">
-                View Calendar
+                {t('View Calendar', 'कैलेंडर देखें')}
               </Link>
             </div>
             
             {/* Scrollable Container - Can scroll across full width on desktop */}
             <div className="flex overflow-x-auto flex-nowrap scrollbar-thin-x gap-6 pb-6 mb-2 snap-x snap-mandatory relative z-0">
               {events.length === 0 ? (
-                <p className="text-slate-500 text-sm font-medium py-8">No upcoming events right now.</p>
+                <p className="text-slate-500 text-sm font-medium py-8">{t('No upcoming events right now.', 'अभी कोई आगामी कार्यक्रम नहीं है।')}</p>
               ) : events.map((event, index) => (
                 <div key={index} className="min-w-[280px] sm:min-w-[360px] md:min-w-[450px] bg-[#FFFBF7] rounded-md border border-yellow-200 shadow-sm overflow-hidden group hover:shadow-md transition-all duration-300 flex flex-col snap-start">
                   <div className="relative h-56 w-full overflow-hidden">
@@ -104,7 +106,7 @@ const NewsEvents = () => {
                       href='/events'
                       className="mt-auto text-yellow-700 font-bold flex items-center gap-2 group/link"
                     >
-                      View Details <ArrowRight size={18} className="group-hover/link:translate-x-1 transition-transform" />
+                      {t('View Details', 'विवरण देखें')} <ArrowRight size={18} className="group-hover/link:translate-x-1 transition-transform" />
                     </Link>
                   </div>
                 </div>
@@ -114,7 +116,7 @@ const NewsEvents = () => {
           
           {/* Latest News Column - Positioned to the right */}
           <div className="flex flex-col bg-white z-10">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-900 mb-8 md:mb-12">Latest News</h2>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-900 mb-8 md:mb-12">{t('Latest News', 'ताज़ा समाचार')}</h2>
             
             <div className="space-y-6 flex-1 bg-white">
               {news.map((item, index) => (
@@ -132,7 +134,7 @@ const NewsEvents = () => {
             </div>
             
             <Link href="/news" className="w-full mt-10 bg-slate-50 border border-slate-200 py-4 rounded-md font-bold text-slate-700 hover:bg-slate-100 transition-all flex items-center justify-center gap-2 text-center">
-              View All News
+              {t('View All News', 'सभी समाचार देखें')}
             </Link>
           </div>
           

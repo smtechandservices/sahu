@@ -6,14 +6,7 @@ import { usePathname } from 'next/navigation';
 import { useAuth } from '../../context/AuthContext';
 import { User as UserIcon, LogOut, Settings, ChevronDown, Menu, X } from 'lucide-react';
 import { useState } from 'react';
-
-const aboutSections = [
-  { href: '/about/', label: 'Sabha Overview' },
-  { href: '/about#about-leadership', label: 'Leadership Team' },
-  { href: '/about#about-executive', label: 'Executive Committee' },
-  { href: '/about#about-stats', label: 'Our Impact' },
-  { href: '/about#constitution', label: 'Constitution' },
-];
+import { useLanguage, LanguageToggle } from '../../context/LanguageContext';
 
 const Header = () => {
   const pathname = usePathname();
@@ -22,17 +15,26 @@ const Header = () => {
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [showAboutDropdown, setShowAboutDropdown] = useState(false); // desktop About Us hover
   const [showMobileAbout, setShowMobileAbout] = useState(false);
+  const { t } = useLanguage();
+
+  const aboutSections = [
+    { href: '/about#about-history', label: t('Sahu History', 'साहू इतिहास') },
+    { href: '/about#about-leadership', label: t('Leadership Team', 'नेतृत्व दल') },
+    { href: '/about#about-executive', label: t('Executive Committee', 'कार्यकारिणी समिति') },
+    { href: '/about#about-stats', label: t('Our Impact', 'हमारा प्रभाव') },
+    { href: '/about#constitution', label: t('Constitution', 'संविधान') },
+  ];
 
   const navLinks = [
-    { href: '/', label: 'Home' },
-    { href: '/about', label: 'About Sabha', hasDropdown: true },
-    { href: '/accommodation', label: 'Accommodation' },
-    { href: '/events', label: 'Events' },
-    { href: '/news', label: 'News' },
-    { href: '/career', label: 'Opportunities' },
-    { href: '/gallery', label: 'Gallery' },
-    { href: '/matrimonial', label: 'Matrimonial' },
-    { href: '/magazine', label: 'Magazine' },
+    { href: '/', label: t('Home', 'होम') },
+    { href: '/about', label: t('About Sabha', 'सभा के बारे में'), hasDropdown: true },
+    { href: '/accommodation', label: t('Accommodation', 'आवास') },
+    { href: '/events', label: t('Events', 'कार्यक्रम') },
+    { href: '/news', label: t('News', 'समाचार') },
+    { href: '/career', label: t('Opportunities', 'अवसर') },
+    { href: '/gallery', label: t('Gallery', 'गैलरी') },
+    { href: '/matrimonial', label: t('Matrimonial', 'वैवाहिक') },
+    { href: '/magazine', label: t('Magazine', 'पत्रिका') },
   ];
 
   const closeMobileMenu = () => { setShowMobileMenu(false); setShowMobileAbout(false); };
@@ -44,27 +46,28 @@ const Header = () => {
         <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
         </svg>
-        <span className="font-semibold whitespace-nowrap">Contact us:</span>
+        <span className="font-semibold whitespace-nowrap hidden sm:inline">{t('Contact us:', 'संपर्क करें:')}</span>
         <span className="font-medium whitespace-nowrap">+91 6122303994</span>
         <span className="mx-1 opacity-40 hidden sm:inline">|</span>
         <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5 shrink-0 hidden sm:block" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
-        <span className="font-medium whitespace-nowrap hidden sm:inline">Mon – Sun &nbsp;·&nbsp; 8:00 AM – 8:00 PM</span>
+        <span className="font-medium whitespace-nowrap hidden sm:inline">{t('Mon – Sun', 'सोम – रवि')} &nbsp;·&nbsp; {t('8:00 AM – 8:00 PM', 'सुबह 8:00 – रात 8:00')}</span>
+        <LanguageToggle className="ml-auto" />
       </div>
 
       {/* Row 1: Logo + Actions */}
       <div className="pe-2 md:pe-4 flex justify-between items-center w-full h-22">
         {/* Logo */}
         <Link href="/" className="shrink-0">
-          <Image src="/assets/logo-sahu.png" alt="Sahu Sabha Logo" width={220} height={66} style={{ height: 'auto' }} priority />
+          <Image src="/assets/logo-sahu.png" alt={t('Sahu Sabha Logo', 'साहू सभा लोगो')} width={220} height={66} style={{ height: 'auto' }} priority />
         </Link>
 
         {/* Desktop Actions */}
         <div className="hidden lg:flex items-center gap-3 xl:gap-4 shrink-0">
           <div className="flex gap-2">
-            <Link href="/donate" className="btn-outline !py-2.5 !px-6 !text-base">Donate</Link>
-            {!user && <Link href="/join" className="btn-primary !py-2.5 !px-6 !text-base whitespace-nowrap">Join Community</Link>}
+            <Link href="/donate" className="btn-outline !py-2.5 !px-6 !text-base">{t('Donate', 'दान करें')}</Link>
+            {!user && <Link href="/join" className="btn-primary !py-2.5 !px-6 !text-base whitespace-nowrap">{t('Join Community', 'समाज से जुड़ें')}</Link>}
           </div>
           {user ? (
             <div className="relative">
@@ -88,7 +91,7 @@ const Header = () => {
                 </div>
                 <div className="hidden xl:block text-left cursor-pointer">
                   <p className="text-xs font-bold text-gray-900 leading-none mb-1">{user.name}</p>
-                  <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wider leading-none">Member</p>
+                  <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wider leading-none">{t('Member', 'सदस्य')}</p>
                 </div>
                 <ChevronDown size={14} className={`text-gray-400 transition-transform ${showDropdown ? 'rotate-180' : ''}`} />
               </button>
@@ -107,21 +110,21 @@ const Header = () => {
                       className="cursor-pointer flex items-center gap-3 px-4 py-2 text-sm text-gray-600 hover:bg-gray-50 hover:text-primary transition-all"
                     >
                       <Settings size={16} />
-                      My Profile
+                      {t('My Profile', 'मेरी प्रोफ़ाइल')}
                     </Link>
                     <button
                       onClick={() => { logout(); setShowDropdown(false); }}
                       className="cursor-pointer w-full flex items-center gap-3 px-4 py-2 text-sm text-red-500 hover:bg-red-50 transition-all border-t border-gray-50"
                     >
                       <LogOut size={16} />
-                      Logout
+                      {t('Logout', 'लॉग आउट')}
                     </button>
                   </div>
                 </>
               )}
             </div>
           ) : (
-            <Link href="/login" className="text-gray-600 hover:text-primary font-bold transition-colors text-base whitespace-nowrap">Login</Link>
+            <Link href="/login" className="text-gray-600 hover:text-primary font-bold transition-colors text-base whitespace-nowrap">{t('Login', 'लॉग इन')}</Link>
           )}
         </div>
 
@@ -160,26 +163,26 @@ const Header = () => {
                       className="cursor-pointer flex items-center gap-3 px-4 py-2 text-sm text-gray-600 hover:bg-gray-50 hover:text-primary transition-all"
                     >
                       <Settings size={16} />
-                      My Profile
+                      {t('My Profile', 'मेरी प्रोफ़ाइल')}
                     </Link>
                     <button
                       onClick={() => { logout(); setShowDropdown(false); }}
                       className="cursor-pointer w-full flex items-center gap-3 px-4 py-2 text-sm text-red-500 hover:bg-red-50 transition-all border-t border-gray-50"
                     >
                       <LogOut size={16} />
-                      Logout
+                      {t('Logout', 'लॉग आउट')}
                     </button>
                   </div>
                 </>
               )}
             </div>
           ) : (
-            <Link href="/login" className="text-sm font-bold text-gray-600 hover:text-primary transition-colors px-2">Login</Link>
+            <Link href="/login" className="text-sm font-bold text-gray-600 hover:text-primary transition-colors px-2">{t('Login', 'लॉग इन')}</Link>
           )}
           <button
             onClick={() => setShowMobileMenu(!showMobileMenu)}
             className="p-2 text-gray-600 hover:text-primary transition-colors"
-            aria-label="Toggle mobile menu"
+            aria-label={t('Toggle mobile menu', 'मोबाइल मेनू खोलें/बंद करें')}
           >
             {showMobileMenu ? <X size={24} /> : <Menu size={24} />}
           </button>
@@ -302,8 +305,8 @@ const Header = () => {
             </ul>
           </nav>
           <div className="px-4 py-4 border-t border-gray-100 flex flex-col gap-3">
-            <Link href="/donate" onClick={closeMobileMenu} className="btn-outline text-center">Donate</Link>
-            {!user && <Link href="/join" onClick={closeMobileMenu} className="btn-primary text-center">Join Community</Link>}
+            <Link href="/donate" onClick={closeMobileMenu} className="btn-outline text-center">{t('Donate', 'दान करें')}</Link>
+            {!user && <Link href="/join" onClick={closeMobileMenu} className="btn-primary text-center">{t('Join Community', 'समाज से जुड़ें')}</Link>}
           </div>
         </div>
       )}

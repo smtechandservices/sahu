@@ -1,8 +1,12 @@
+'use client';
+
 import React from 'react';
 import Image from 'next/image';
+import { useLanguage } from '../../context/LanguageContext';
 
 const MatrimonialCard = ({ profile, liked, isMatch, onLike, onView, receivedInterest }) => {
   const isLiked = liked.includes(profile.id);
+  const { t } = useLanguage();
 
   return (
     <div 
@@ -20,17 +24,17 @@ const MatrimonialCard = ({ profile, liked, isMatch, onLike, onView, receivedInte
         )}
         <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-md px-2 py-1 rounded-full flex items-center gap-1 shadow-sm">
           <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-          <span className="text-[9px] font-bold text-green-700 uppercase tracking-wider">Verified</span>
+          <span className="text-[9px] font-bold text-green-700 uppercase tracking-wider">{t('Verified', 'सत्यापित')}</span>
         </div>
         {isMatch ? (
           <div className="absolute top-3 right-3 bg-gradient-to-r from-pink-500 to-primary text-white px-2.5 py-1 rounded-full flex items-center gap-1 shadow-md">
             <svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor"><path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="8.5" cy="7" r="4"/><path d="M20 8v6M23 11h-6"/></svg>
-            <span className="text-[9px] font-bold uppercase tracking-wider">Match</span>
+            <span className="text-[9px] font-bold uppercase tracking-wider">{t('Match', 'मैच')}</span>
           </div>
         ) : receivedInterest ? (
           <div className="absolute top-3 right-3 bg-primary text-white px-2 py-1 rounded-full flex items-center gap-1 shadow-sm">
             <svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
-            <span className="text-[9px] font-bold uppercase tracking-wider">Interested in you</span>
+            <span className="text-[9px] font-bold uppercase tracking-wider">{t('Interested in you', 'आपमें रुचि')}</span>
           </div>
         ) : null}
       </div>
@@ -39,6 +43,7 @@ const MatrimonialCard = ({ profile, liked, isMatch, onLike, onView, receivedInte
       <div className="flex-1 p-6 flex flex-col relative">
         <button 
           onClick={(e) => { e.stopPropagation(); onLike(); }} 
+          aria-label={t('Express Interest', 'रुचि दिखाएँ')}
           className="absolute top-6 right-6 transition-transform active:scale-125"
         >
           <svg 
@@ -62,7 +67,7 @@ const MatrimonialCard = ({ profile, liked, isMatch, onLike, onView, receivedInte
         </div>
 
         <div className="grid grid-cols-2 gap-y-3 gap-x-4 mb-6">
-          <DetailItem icon={<UserIcon />} text={`${profile.age} Yrs, ${profile.height}`} />
+          <DetailItem icon={<UserIcon />} text={`${profile.age} ${t('Yrs', 'वर्ष')}, ${profile.height}`} />
           <DetailItem icon={<BookIcon />} text={profile.education} />
           <DetailItem icon={<BriefcaseIcon />} text={profile.profession} />
           <DetailItem icon={<MapPinIcon />} text={profile.location} />
@@ -96,7 +101,11 @@ const MatrimonialCard = ({ profile, liked, isMatch, onLike, onView, receivedInte
           >
             <HeartIcon />
             <span>
-              {isMatch ? "It's a Match!" : isLiked ? 'Interest Sent ✓' : 'Express Interest'}
+              {isMatch
+                ? t("It's a Match!", 'रिश्ता मेल खा गया!')
+                : isLiked
+                ? t('Interest Sent ✓', 'रुचि भेजी गई ✓')
+                : t('Express Interest', 'रुचि दिखाएँ')}
             </span>
           </button>
         </div>

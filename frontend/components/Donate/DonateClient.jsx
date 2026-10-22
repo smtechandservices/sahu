@@ -14,6 +14,7 @@ import { Lock } from 'lucide-react';
 
 import Swal from 'sweetalert2';
 import { fetchApi } from '../../lib/api';
+import { useLanguage } from '../../context/LanguageContext';
 
 const DonateClient = () => {
   const { user, loading } = useAuth();
@@ -26,8 +27,9 @@ const DonateClient = () => {
 
   const [selectedTier, setSelectedTier] = useState(null);
   const [submitting, setSubmitting] = useState(false);
+  const { t } = useLanguage();
 
-  if (loading) return <div className="min-h-screen bg-gray-50 flex items-center justify-center">Loading...</div>;
+  if (loading) return <div className="min-h-screen bg-gray-50 flex items-center justify-center">{t('Loading...', 'लोड हो रहा है...')}</div>;
 
   const handleSelectTier = (amount) => {
     if (amount === 'Custom') {
@@ -43,8 +45,8 @@ const DonateClient = () => {
     if (!formData.amount || formData.amount <= 0) {
       Swal.fire({
         icon: 'warning',
-        title: 'Invalid Amount',
-        text: 'Please enter a valid donation amount.',
+        title: t('Invalid Amount', 'अमान्य राशि'),
+        text: t('Please enter a valid donation amount.', 'कृपया सही दान राशि दर्ज करें।'),
         confirmButtonColor: '#EAB308',
       });
       return;
@@ -52,8 +54,8 @@ const DonateClient = () => {
     if (!formData.name.trim() || !formData.phone.trim()) {
       Swal.fire({
         icon: 'warning',
-        title: 'Missing Details',
-        text: 'Please enter your name and phone number.',
+        title: t('Missing Details', 'जानकारी अधूरी है'),
+        text: t('Please enter your name and phone number.', 'कृपया अपना नाम और फ़ोन नंबर दर्ज करें।'),
         confirmButtonColor: '#EAB308',
       });
       return;
@@ -74,8 +76,11 @@ const DonateClient = () => {
       });
       Swal.fire({
         icon: 'success',
-        title: 'Thank You!',
-        text: `Your contribution of ₹${Number(formData.amount).toLocaleString('en-IN')} has been recorded. Our team will contact you to complete the payment.`,
+        title: t('Thank You!', 'धन्यवाद!'),
+        text: t(
+          `Your contribution of ₹${Number(formData.amount).toLocaleString('en-IN')} has been recorded. Our team will contact you to complete the payment.`,
+          `आपका ₹${Number(formData.amount).toLocaleString('en-IN')} का योगदान दर्ज कर लिया गया है। भुगतान पूरा करने के लिए हमारी टीम आपसे संपर्क करेगी।`
+        ),
         confirmButtonColor: '#EAB308',
       });
       setSelectedTier(null);
@@ -83,8 +88,8 @@ const DonateClient = () => {
     } catch (err) {
       Swal.fire({
         icon: 'error',
-        title: 'Something went wrong',
-        text: err.message || 'Could not record your donation. Please try again.',
+        title: t('Something went wrong', 'कुछ गलत हो गया'),
+        text: err.message || t('Could not record your donation. Please try again.', 'आपका दान दर्ज नहीं हो सका। कृपया फिर से प्रयास करें।'),
         confirmButtonColor: '#EAB308',
       });
     } finally {

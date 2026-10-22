@@ -1,8 +1,12 @@
+'use client';
+
 import React from 'react';
 import Image from 'next/image';
+import { useLanguage } from '../../context/LanguageContext';
 
 const MatrimonialModal = ({ profile, liked, isMatch, onLike, onClose, isOwn, onEdit }) => {
   const isLiked = liked?.includes(profile.id);
+  const { t, tv } = useLanguage();
 
   const InfoRow = ({ label, value }) =>
     value && value !== '—' ? (
@@ -25,6 +29,7 @@ const MatrimonialModal = ({ profile, liked, isMatch, onLike, onClose, isOwn, onE
         <div className="bg-primary-light p-8 relative">
           <button
             onClick={onClose}
+            aria-label={t('Close', 'बंद करें')}
             className="absolute top-5 right-5 w-8 h-8 bg-white border border-gray-100 rounded-full flex items-center justify-center text-gray-500 hover:text-primary transition-colors shadow-sm text-lg"
           >
             ×
@@ -43,17 +48,17 @@ const MatrimonialModal = ({ profile, liked, isMatch, onLike, onClose, isOwn, onE
             <div className="flex-1 min-w-0">
               <h2 className="text-2xl font-bold text-gray-900 mb-0.5 truncate">{profile.name}</h2>
               <p className="text-sm text-gray-600 mb-2">
-                {profile.age} yrs • {profile.height} • {profile.religion}
+                {profile.age} {t('yrs', 'वर्ष')} • {profile.height} • {profile.religion}
               </p>
               <div className="flex flex-wrap gap-2">
-                <Badge color="primary">{profile.gender === 'male' ? '♂ Male' : '♀ Female'}</Badge>
-                {profile.marital && <Badge color="green">{profile.marital}</Badge>}
+                <Badge color="primary">{profile.gender === 'male' ? `♂ ${tv('Male')}` : `♀ ${tv('Female')}`}</Badge>
+                {profile.marital && <Badge color="green">{tv(profile.marital)}</Badge>}
                 {profile.manglik && profile.manglik !== '—' && (
                   <Badge color={profile.manglik === 'Yes' ? 'red' : 'gray'}>
-                    Manglik: {profile.manglik}
+                    {t('Manglik:', 'मांगलिक:')} {tv(profile.manglik)}
                   </Badge>
                 )}
-                {isMatch && <Badge color="match">Match</Badge>}
+                {isMatch && <Badge color="match">{t('Match', 'मैच')}</Badge>}
               </div>
             </div>
           </div>
@@ -64,7 +69,7 @@ const MatrimonialModal = ({ profile, liked, isMatch, onLike, onClose, isOwn, onE
 
           {/* About */}
           <section>
-            <SectionTitle icon={<UserIcon />}>About</SectionTitle>
+            <SectionTitle icon={<UserIcon />}>{t('About', 'परिचय')}</SectionTitle>
             <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
               <p className="text-sm text-gray-600 leading-relaxed italic">"{profile.about}"</p>
             </div>
@@ -74,31 +79,31 @@ const MatrimonialModal = ({ profile, liked, isMatch, onLike, onClose, isOwn, onE
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Background */}
             <section>
-              <SectionTitle icon={<BriefcaseIcon />}>Background</SectionTitle>
+              <SectionTitle icon={<BriefcaseIcon />}>{t('Background', 'पृष्ठभूमि')}</SectionTitle>
               <ul>
-                <InfoRow label="Education" value={profile.education} />
-                <InfoRow label="Occupation" value={profile.profession} />
-                <InfoRow label="Annual Income" value={profile.annual_income} />
-                <InfoRow label="Mother Tongue" value={profile.mother_tongue} />
+                <InfoRow label={t('Education', 'शिक्षा')} value={profile.education} />
+                <InfoRow label={t('Occupation', 'व्यवसाय')} value={profile.profession} />
+                <InfoRow label={t('Annual Income', 'वार्षिक आय')} value={profile.annual_income} />
+                <InfoRow label={t('Mother Tongue', 'मातृभाषा')} value={profile.mother_tongue} />
               </ul>
             </section>
 
             {/* Personal */}
             <section>
-              <SectionTitle icon={<HeartIcon />}>Personal</SectionTitle>
+              <SectionTitle icon={<HeartIcon />}>{t('Personal', 'व्यक्तिगत')}</SectionTitle>
               <ul>
-                <InfoRow label="Marital Status" value={profile.marital} />
-                <InfoRow label="Gotra" value={profile.gothra} />
-                <InfoRow label="Manglik" value={profile.manglik} />
-                <InfoRow label="Complexion" value={profile.complexion} />
-                <InfoRow label="Family Type" value={profile.family_type} />
+                <InfoRow label={t('Marital Status', 'वैवाहिक स्थिति')} value={profile.marital && tv(profile.marital)} />
+                <InfoRow label={t('Gotra', 'गोत्र')} value={profile.gothra} />
+                <InfoRow label={t('Manglik', 'मांगलिक')} value={profile.manglik && tv(profile.manglik)} />
+                <InfoRow label={t('Complexion', 'रंग')} value={profile.complexion && tv(profile.complexion)} />
+                <InfoRow label={t('Family Type', 'परिवार का प्रकार')} value={profile.family_type && tv(profile.family_type)} />
               </ul>
             </section>
           </div>
 
           {/* Location */}
           <section>
-            <SectionTitle icon={<MapPinIcon />}>Location</SectionTitle>
+            <SectionTitle icon={<MapPinIcon />}>{t('Location', 'स्थान')}</SectionTitle>
             <div className="flex items-center gap-2 bg-gray-50 rounded-xl px-4 py-3 border border-gray-100">
               <span className="text-sm font-semibold text-gray-800">{profile.location}</span>
             </div>
@@ -107,10 +112,10 @@ const MatrimonialModal = ({ profile, liked, isMatch, onLike, onClose, isOwn, onE
           {/* Contact — only for mutual matches */}
           {isMatch && profile.contactPhone && !isOwn && (
             <section>
-              <SectionTitle icon={<PhoneIcon />}>Contact</SectionTitle>
+              <SectionTitle icon={<PhoneIcon />}>{t('Contact', 'संपर्क')}</SectionTitle>
               <div className="bg-primary/5 rounded-xl px-4 py-4 border border-primary/20">
                 <p className="text-[10px] font-bold text-primary uppercase tracking-widest mb-1">
-                  Phone number
+                  {t('Phone number', 'फ़ोन नंबर')}
                 </p>
                 <a
                   href={`tel:${profile.contactPhone}`}
@@ -134,7 +139,7 @@ const MatrimonialModal = ({ profile, liked, isMatch, onLike, onClose, isOwn, onE
                 <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
                 <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
               </svg>
-              Edit Profile
+              {t('Edit Profile', 'प्रोफ़ाइल संपादित करें')}
             </button>
           ) : (
             <button
@@ -147,7 +152,11 @@ const MatrimonialModal = ({ profile, liked, isMatch, onLike, onClose, isOwn, onE
                   : 'btn-primary shadow-lg shadow-primary/20'
               }`}
             >
-              {isMatch ? "It's a Match!" : isLiked ? 'Interest Sent ✓' : 'Send Interest'}
+              {isMatch
+                ? t("It's a Match!", 'रिश्ता मेल खा गया!')
+                : isLiked
+                ? t('Interest Sent ✓', 'रुचि भेजी गई ✓')
+                : t('Send Interest', 'रुचि भेजें')}
             </button>
           )}
         </div>

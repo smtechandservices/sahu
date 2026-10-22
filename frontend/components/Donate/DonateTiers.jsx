@@ -1,17 +1,21 @@
+'use client';
+
 import React from 'react';
+import { useLanguage } from '../../context/LanguageContext';
 
 const tiers = [
-  { id: 1, amount: 500, label: "Supports a student's books for a month" },
-  { id: 2, amount: 2000, label: "Contributes to hostel maintenance", popular: true },
-  { id: 3, amount: 5000, label: "Funds a partial scholarship" },
-  { id: 4, amount: "Custom", label: "Custom Amount", isCustom: true },
+  { id: 1, amount: 500, label: ["Supports a student's books for a month", 'एक छात्र की एक महीने की किताबों का खर्च'] },
+  { id: 2, amount: 2000, label: ['Contributes to hostel maintenance', 'छात्रावास के रख-रखाव में योगदान'], popular: true },
+  { id: 3, amount: 5000, label: ['Funds a partial scholarship', 'आंशिक छात्रवृत्ति का खर्च'] },
+  { id: 4, amount: "Custom", label: ['Custom Amount', 'अपनी राशि'], isCustom: true },
 ];
 
 const DonateTiers = ({ selectedAmount, onSelect }) => {
+  const { t } = useLanguage();
   return (
     <div className="bg-white border border-gray-100 rounded-2xl p-8 shadow-sm mb-10">
       <h2 className="text-2xl font-bold text-primary mb-8">
-        Swayam-Seva (Contribution Tiers)
+        {t('Swayam-Seva (Contribution Tiers)', 'स्वयं-सेवा (योगदान श्रेणियाँ)')}
       </h2>
       
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -34,7 +38,7 @@ const DonateTiers = ({ selectedAmount, onSelect }) => {
                   absolute top-2 right-2 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-widest
                   ${isSelected ? 'bg-white/20 text-white' : 'bg-primary text-white shadow-sm'}
                 `}>
-                  Popular
+                  {t('Popular', 'लोकप्रिय')}
                 </div>
               )}
 
@@ -46,7 +50,7 @@ const DonateTiers = ({ selectedAmount, onSelect }) => {
                       <path d="M18.5 2.5a2.121 2.121 0 113 3L12 15l-4 1 1-4 9.5-9.5z" />
                     </svg>
                   </div>
-                  <p className="text-sm font-bold">Custom Amount</p>
+                  <p className="text-sm font-bold">{t(...tier.label)}</p>
                 </>
               ) : (
                 <>
@@ -54,7 +58,7 @@ const DonateTiers = ({ selectedAmount, onSelect }) => {
                     ₹{tier.amount.toLocaleString()}
                   </h3>
                   <p className={`text-[11px] leading-snug px-2 ${isSelected ? 'text-white/80' : 'text-gray-500'}`}>
-                    {tier.label}
+                    {t(...tier.label)}
                   </p>
                 </>
               )}

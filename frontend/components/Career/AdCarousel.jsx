@@ -3,6 +3,7 @@
 import { useEffect, useState, useSyncExternalStore } from "react";
 import Image from "next/image";
 import { ArrowUpRight, X } from "lucide-react";
+import { useLanguage } from '../../context/LanguageContext';
 
 const ADS = [
   {
@@ -10,8 +11,8 @@ const ADS = [
     url: "https://kaamlee.in",
     domain: "kaamlee.in",
     logo: "/assets/kaamlee-logo.png",
-    headline: "Job applying is a job.",
-    tagline: "Let kaamlee make that easy.",
+    headline: ["Job applying is a job.", "नौकरी के लिए आवेदन करना भी एक काम है।"],
+    tagline: ["Let kaamlee make that easy.", "kaamlee इसे आसान बनाता है।"],
   },
   // {
   //   name: "befin",
@@ -21,14 +22,14 @@ const ADS = [
   //   headline: "Learn better. Pay smarter. Grow faster.",
   //   tagline: "Learn, save, pay & invest with befin.",
   // },
-  {
-    name: "Commhawk",
-    url: "https://commhawk.in",
-    domain: "commhawk.in",
-    logo: "/assets/commhawk-logo.png",
-    headline: "Engineering digital excellence.",
-    tagline: "Scalable, secure, high-performance digital products and AI solutions.",
-  },
+  // {
+  //   name: "Commhawk",
+  //   url: "https://commhawk.in",
+  //   domain: "commhawk.in",
+  //   logo: "/assets/commhawk-logo.png",
+  //   headline: ["Engineering digital excellence.", "डिजिटल उत्कृष्टता का निर्माण।"],
+  //   tagline: ["Scalable, secure, high-performance digital products and AI solutions.", "स्केलेबल, सुरक्षित और उच्च-प्रदर्शन वाले डिजिटल उत्पाद एवं AI समाधान।"],
+  // },
 ];
 
 const ROTATE_MS = 6000;
@@ -82,6 +83,7 @@ const AdCarousel = ({ className = "" }) => {
   const ads = ADS.filter((ad) => visibleNames.split(",").includes(ad.name));
   const [active, setActive] = useState(0);
   const [paused, setPaused] = useState(false);
+  const { t } = useLanguage();
   const current = ads.length ? active % ads.length : 0;
 
   useEffect(() => {
@@ -94,7 +96,7 @@ const AdCarousel = ({ className = "" }) => {
 
   return (
     <aside
-      aria-label="Sponsored"
+      aria-label={t('Sponsored', 'प्रायोजित')}
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       onFocus={() => setPaused(true)}
@@ -104,11 +106,15 @@ const AdCarousel = ({ className = "" }) => {
       <button
         type="button"
         onClick={() => dismiss(ads[current].name)}
-        aria-label={`Hide ${ads[current].name} ad`}
-        className="absolute top-3 right-3 z-10 p-1.5 rounded-md text-gray-300 hover:text-gray-600 hover:bg-white/70 transition-colors cursor-pointer"
+        aria-label={t(`Hide ${ads[current].name} ad`, `${ads[current].name} विज्ञापन छिपाएँ`)}
+        className="absolute top-2 right-3 z-10 p-1.5 rounded-md text-white/80 hover:text-white hover:bg-white/20 transition-colors cursor-pointer"
       >
         <X className="w-4 h-4" />
       </button>
+
+      <h3 className="bg-primary text-white px-6 py-3 pr-12 text-sm font-bold uppercase tracking-wider">
+        {t('For more jobs', 'अधिक नौकरियों के लिए')}
+      </h3>
 
       {/* All slides share one grid cell so the card keeps the tallest slide's height */}
       <div className="grid">
@@ -120,7 +126,7 @@ const AdCarousel = ({ className = "" }) => {
             rel="noopener noreferrer"
             aria-hidden={i !== current}
             inert={i !== current}
-            className={`group [grid-area:1/1] flex flex-col p-6 pb-10 transition-opacity duration-500 motion-reduce:transition-none ${
+            className={`group [grid-area:1/1] flex flex-col px-6 pt-5 ${ads.length > 1 ? 'pb-10' : 'pb-6'} transition-opacity duration-500 motion-reduce:transition-none ${
               i === current ? "opacity-100" : "opacity-0 pointer-events-none"
             }`}
           >
@@ -135,11 +141,11 @@ const AdCarousel = ({ className = "" }) => {
               <span className="text-base font-semibold text-gray-700">{ad.name}</span>
             </div>
 
-            <p className="text-lg font-semibold text-gray-800 leading-snug mb-1">{ad.headline}</p>
-            <p className="text-sm text-gray-500 leading-relaxed mb-5">{ad.tagline}</p>
+            <p className="text-lg font-semibold text-gray-800 leading-snug mb-1">{t(...ad.headline)}</p>
+            <p className="text-sm text-gray-500 leading-relaxed mb-5">{t(...ad.tagline)}</p>
 
             <span className="mt-auto inline-flex items-center justify-center gap-1.5 w-full bg-white border border-gray-200 text-gray-700 font-medium text-sm px-5 py-2.5 rounded-lg group-hover:border-gray-300 group-hover:text-gray-900 transition-colors">
-              Visit {ad.domain}
+              {t('Visit', 'देखें:')} {ad.domain}
               <ArrowUpRight className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
             </span>
           </a>
@@ -154,7 +160,7 @@ const AdCarousel = ({ className = "" }) => {
               key={ad.name}
               type="button"
               onClick={() => setActive(i)}
-              aria-label={`Show ${ad.name}`}
+              aria-label={t(`Show ${ad.name}`, `${ad.name} दिखाएँ`)}
               aria-current={i === current}
               className={`h-1.5 rounded-full transition-all cursor-pointer ${
                 i === current ? "w-5 bg-gray-500" : "w-1.5 bg-gray-300 hover:bg-gray-400"
