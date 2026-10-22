@@ -6,7 +6,7 @@ import { ArrowUpRight, X } from "lucide-react";
 
 const ADS = [
   {
-    name: "kaamlee",
+    name: "Kaamlee",
     url: "https://kaamlee.in",
     domain: "kaamlee.in",
     logo: "/assets/kaamlee-logo.png",
@@ -21,6 +21,14 @@ const ADS = [
   //   headline: "Learn better. Pay smarter. Grow faster.",
   //   tagline: "Learn, save, pay & invest with befin.",
   // },
+  {
+    name: "Commhawk",
+    url: "https://commhawk.in",
+    domain: "commhawk.in",
+    logo: "/assets/commhawk-logo.png",
+    headline: "Engineering digital excellence.",
+    tagline: "Scalable, secure, high-performance digital products and AI solutions.",
+  },
 ];
 
 const ROTATE_MS = 6000;
