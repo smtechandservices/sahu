@@ -10,7 +10,7 @@ const About = () => {
       <div className="px-4 sm:px-6 md:px-8 flex flex-col lg:flex-row items-center gap-8 lg:gap-20">
         <div className="relative">
           <div className="overflow-hidden">
-            <Image src="/assets/president.png" alt={t('President Ranvijay Sahu', 'अध्यक्ष Ranvijay Sahu')} width={150} height={200} className='w-200' />
+            <Image src="/assets/president.jpg" alt={t('President Ranvijay Sahu', 'अध्यक्ष Ranvijay Sahu')} width={150} height={200} className='w-200' />
           </div>
           <div className='mt-4'>
             <h3 className="text-xl font-bold mb-1">Ranvijay Sahu</h3>

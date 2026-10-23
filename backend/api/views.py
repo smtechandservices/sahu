@@ -620,6 +620,10 @@ class MatrimonialProfileViewSet(viewsets.ModelViewSet):
         if from_profile == to_profile:
             return Response({'error': 'Cannot send interest to yourself.'}, status=status.HTTP_400_BAD_REQUEST)
         if request.method == 'POST':
+            if not from_profile.is_approved:
+                return Response({'error': 'Your profile is pending admin approval. You can express interest once it is approved.'}, status=status.HTTP_403_FORBIDDEN)
+            if not to_profile.is_approved:
+                return Response({'error': 'This profile is not approved yet.'}, status=status.HTTP_400_BAD_REQUEST)
             MatrimonialInterest.objects.get_or_create(from_profile=from_profile, to_profile=to_profile)
             is_match = MatrimonialInterest.objects.filter(
                 from_profile=to_profile, to_profile=from_profile

@@ -8,11 +8,21 @@ const facilities = [
   {
     icon: BedDouble,
     value: '108',
-    title: ['Bed Hostel', 'बिस्तरों वाला छात्रावास'],
+    title: ['Bed Boys Hostel', 'बिस्तरों वाला छात्रावास (छात्र)'],
     description: [
-      'For the accommodation and academic needs of students.',
-      'विद्यार्थियों के आवास एवं शैक्षणिक आवश्यकताओं के लिए।',
+      'For the accommodation and academic needs of male students.',
+      'छात्रों के आवास एवं शैक्षणिक आवश्यकताओं के लिए।',
     ],
+  },
+  {
+    icon: BedDouble,
+    value: '125',
+    title: ['Bed Girls Hostel', 'बिस्तरों वाला छात्रावास (छात्रा)'],
+    description: [
+      'For the accommodation and academic needs of female students.',
+      'छात्राओं के आवास एवं शैक्षणिक आवश्यकताओं के लिए।',
+    ],
+    comingSoon: true,
   },
   {
     icon: DoorOpen,
@@ -78,16 +88,21 @@ const AboutHistory = () => {
             'आज साहू समाज अपने सदस्यों एवं विद्यार्थियों के लिए निम्नलिखित सुविधाएँ उपलब्ध करा रहा है:'
           )}
         </p>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-          {facilities.map(({ icon: Icon, value, title, description }, index) => (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+          {facilities.map(({ icon: Icon, value, title, description, comingSoon }, index) => (
             <motion.div
               key={value}
               initial={{ opacity: 0, y: 16 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
               viewport={{ once: true }}
-              className="bg-white border border-yellow-200 rounded-xl p-6 shadow-sm"
+              className="relative bg-white border border-yellow-200 rounded-xl p-6 shadow-sm"
             >
+              {comingSoon && (
+                <span className="absolute top-4 right-4 rounded-full bg-primary/10 text-primary text-xs font-bold uppercase tracking-wider px-3 py-1">
+                  {t('Coming Soon', 'जल्द आ रहा है')}
+                </span>
+              )}
               <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary mb-4">
                 <Icon size={24} />
               </div>

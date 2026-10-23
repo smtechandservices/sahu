@@ -161,6 +161,17 @@ export default function MatrimonialClient() {
     }
 
     const alreadyLiked = liked.includes(profileId);
+    // Pending profiles can withdraw existing interest but not send new ones
+    if (!myProfile.isApproved && !alreadyLiked) {
+      Swal.fire({
+        icon: "info",
+        title: t('Approval Pending', 'स्वीकृति लंबित'),
+        text: t('Your profile is pending admin approval. You can express interest once it is approved.', 'आपकी प्रोफ़ाइल व्यवस्थापक की स्वीकृति के लिए लंबित है। स्वीकृत होने के बाद आप रुचि दिखा सकते हैं।'),
+        confirmButtonColor: "#EAB308",
+      });
+      return;
+    }
+
     setLiked((prev) =>
       alreadyLiked ? prev.filter((x) => x !== profileId) : [...prev, profileId]
     );

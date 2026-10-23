@@ -8,7 +8,7 @@ import { useLanguage } from '../../context/LanguageContext';
 const president = {
   name: "Ranvijay Sahu",
   role: ['President', 'अध्यक्ष'],
-  image: "/assets/president.png",
+  image: "/assets/president.jpg",
   bio: ['Dedicated to community welfare, leading with vision and integrity.', 'दूरदृष्टि और ईमानदारी के साथ नेतृत्व करते हुए समाज कल्याण के लिए समर्पित।']
 };
 
