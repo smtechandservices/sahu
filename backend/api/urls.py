@@ -48,6 +48,9 @@ urlpatterns = [
 
     # Admin dashboard
     path('admin/dashboard-stats/', views.admin_dashboard_stats, name='admin_dashboard_stats'),
+    path('admin/transactions/', views.admin_transactions, name='admin_transactions'),
+    path('admin/transactions/sync/', views.admin_transactions_sync, name='admin_transactions_sync'),
+    path('admin/finance-summary/', views.admin_finance_summary, name='admin_finance_summary'),
 
     # Site Settings
     path('core/settings/', views.SiteSettingsView.as_view(), name='site_settings'),

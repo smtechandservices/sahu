@@ -1,5 +1,5 @@
 """
-Minimal Razorpay client for donations: create an order, then verify the checkout signature. Talks to the REST API directly so we don't need the razorpay SDK.
+Minimal Razorpay client: create an order, look up its payments, and verify the checkout signature. Talks to the REST API directly so we don't need the razorpay SDK.
 """
 import hashlib
 import hmac
@@ -18,18 +18,12 @@ def is_configured():
     return bool(settings.RAZORPAY_KEY_ID and settings.RAZORPAY_KEY_SECRET)
 
 
-def create_order(amount_paise, receipt, notes=None):
+def _request(method, path, **kwargs):
     try:
-        res = requests.post(
-            f'{API_BASE}/orders',
+        res = requests.request(
+            method, f'{API_BASE}{path}',
             auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET),
-            json={
-                'amount': amount_paise,
-                'currency': 'INR',
-                'receipt': receipt,
-                'notes': notes or {},
-            },
-            timeout=15,
+            timeout=15, **kwargs,
         )
     except requests.RequestException as exc:
         raise RazorpayError(f'Could not reach Razorpay: {exc}') from exc
@@ -40,6 +34,20 @@ def create_order(amount_paise, receipt, notes=None):
             detail = None
         raise RazorpayError(detail or f'Razorpay returned HTTP {res.status_code}')
     return res.json()
+
+
+def create_order(amount_paise, receipt, notes=None):
+    return _request('POST', '/orders', json={
+        'amount': amount_paise,
+        'currency': 'INR',
+        'receipt': receipt,
+        'notes': notes or {},
+    })
+
+
+def order_payments(order_id):
+    """Every payment attempt made against an order (captured, failed, ...)."""
+    return _request('GET', f'/orders/{order_id}/payments').get('items', [])
 
 
 def verify_payment_signature(order_id, payment_id, signature):

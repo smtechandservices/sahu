@@ -5,7 +5,6 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.throttling import AnonRateThrottle
 from rest_framework_simplejwt.tokens import RefreshToken
-from django.db import transaction
 from django.utils import timezone
 from datetime import timedelta
 from django.conf import settings
@@ -31,7 +30,7 @@ from .serializers import (
     matrimonial_receipt,
 )
 from .permissions import IsAdminOrReadOnly
-from . import razorpay
+from . import payments, razorpay
 
 def create_user_session(user, refresh, request):
     user_agent = request.META.get('HTTP_USER_AGENT', '')
@@ -262,26 +261,15 @@ def verify_membership_payment(request):
     if not razorpay.verify_payment_signature(order_id, payment_id, signature):
         return Response({'error': 'Payment could not be verified.'}, status=status.HTTP_400_BAD_REQUEST)
 
-    with transaction.atomic():
-        application = MembershipApplication.objects.select_for_update().filter(razorpay_order_id=order_id).first()
-        if not application:
-            return Response({'error': 'Membership application not found.'}, status=status.HTTP_404_NOT_FOUND)
-
-        if application.status != 'Paid':
-            application.status = 'Paid'
-            application.razorpay_payment_id = payment_id
-            application.paid_at = timezone.now()
-            application.save(update_fields=['status', 'razorpay_payment_id', 'paid_at'])
-
-        user = application.user
-        if not user:
-            if User.objects.filter(phone=application.phone).exists():
-                # Someone registered this number while the payment was in progress
-                return Response({'error': f'This phone number is already registered. Please contact the Sabha with payment ID {payment_id}.'},
-                                status=status.HTTP_409_CONFLICT)
-            user = User.objects.create_user(phone=application.phone, name=application.name, is_member=True)
-            application.user = user
-            application.save(update_fields=['user'])
+    application = MembershipApplication.objects.filter(razorpay_order_id=order_id).first()
+    if not application:
+        return Response({'error': 'Membership application not found.'}, status=status.HTTP_404_NOT_FOUND)
+    try:
+        application, user = payments.complete_membership(application, payment_id)
+    except payments.PaymentConflict:
+        # Someone registered this number while the payment was in progress
+        return Response({'error': f'This phone number is already registered. Please contact the Sabha with payment ID {payment_id}.'},
+                        status=status.HTTP_409_CONFLICT)
 
     refresh = RefreshToken.for_user(user)
     refresh.access_token['refresh_jti'] = refresh.payload.get('jti')
@@ -519,14 +507,6 @@ class DonationViewSet(viewsets.ModelViewSet):
             },
         }, status=status.HTTP_201_CREATED)
 
-    def _mark_paid(self, donation, payment_id):
-        if donation.status == 'Completed':
-            return
-        donation.status = 'Completed'
-        donation.razorpay_payment_id = payment_id
-        donation.transaction_ref = payment_id
-        donation.save(update_fields=['status', 'razorpay_payment_id', 'transaction_ref', 'updated_at'])
-
     @action(detail=False, methods=['post'])
     def verify(self, request):
         """Checkout's success handler posts the signed payment here to confirm the donation."""
@@ -538,7 +518,7 @@ class DonationViewSet(viewsets.ModelViewSet):
         donation = Donation.objects.filter(razorpay_order_id=order_id).first()
         if not donation:
             return Response({'error': 'Donation not found.'}, status=status.HTTP_404_NOT_FOUND)
-        self._mark_paid(donation, payment_id)
+        payments.complete_donation(donation, payment_id)
         return Response(DonationSerializer(donation).data)
 
     @action(detail=False, methods=['post'])
@@ -798,12 +778,7 @@ class MatrimonialProfileViewSet(viewsets.ModelViewSet):
         profile = MatrimonialProfile.objects.filter(razorpay_order_id=order_id, user=request.user).first()
         if not profile:
             return Response({'error': 'Profile not found.'}, status=status.HTTP_404_NOT_FOUND)
-        if not profile.is_active:
-            profile.is_active = True
-            profile.amount_paid = MatrimonialProfile.FEES[profile.gender]
-            profile.razorpay_payment_id = payment_id
-            profile.paid_at = timezone.now()
-            profile.save(update_fields=['is_active', 'amount_paid', 'razorpay_payment_id', 'paid_at'])
+        payments.complete_matrimonial(profile, payment_id)
         return Response({
             'profile': self.get_serializer(profile).data,
             'receipt': matrimonial_receipt(profile),
@@ -937,6 +912,140 @@ def public_stats(request):
     return Response({
         'subscriber_count': User.objects.filter(is_active=True).count(),
         'magazine_count': Article.objects.filter(category='Magazine', is_published=True).count(),
+    })
+
+
+# --- Admin Finance ---
+def _parse_date(value):
+    try:
+        return timezone.datetime.strptime(value, '%Y-%m-%d').date() if value else None
+    except ValueError:
+        return None
+
+
+def _filter_transactions(rows, params, skip_status=False):
+    tx_type = params.get('type')
+    tx_status = params.get('status')
+    search = (params.get('search') or '').strip().lower()
+    date_from = _parse_date(params.get('from'))
+    date_to = _parse_date(params.get('to'))
+    out = []
+    for r in rows:
+        if tx_type and r['type'] != tx_type:
+            continue
+        if tx_status and not skip_status and r['status'] != tx_status:
+            continue
+        day = timezone.localtime(r['created_at']).date()
+        if (date_from and day < date_from) or (date_to and day > date_to):
+            continue
+        if search and not any(search in str(v).lower() for v in (
+                r['id'], r['name'], r['phone'], r['email'], r['razorpay_order_id'],
+                r['razorpay_payment_id'], r['reference'])):
+            continue
+        out.append(r)
+    return out
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def admin_transactions(request):
+    """
+    Every payment across donations, membership and matrimonial fees.
+    Filters: type, status, search, from/to (YYYY-MM-DD); paginated with page/page_size.
+    """
+    if not getattr(request.user, 'is_admin', False):
+        return Response(status=status.HTTP_403_FORBIDDEN)
+
+    rows = payments.all_transactions()
+    # Status totals ignore the status filter so every status chip keeps its count
+    status_summary = {}
+    for r in _filter_transactions(rows, request.query_params, skip_status=True):
+        entry = status_summary.setdefault(r['status'], {'count': 0, 'amount': 0})
+        entry['count'] += 1
+        entry['amount'] += r['amount']
+    filtered = _filter_transactions(rows, request.query_params)
+
+    try:
+        page = max(1, int(request.query_params.get('page', 1)))
+        page_size = min(10000, max(1, int(request.query_params.get('page_size', 25))))
+    except ValueError:
+        page, page_size = 1, 25
+    start = (page - 1) * page_size
+    return Response({
+        'count': len(filtered),
+        'results': filtered[start:start + page_size],
+        'status_summary': status_summary,
+    })
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def admin_transactions_sync(request):
+    """Checks recent Initiated payments with Razorpay and records whether they were paid or failed."""
+    if not getattr(request.user, 'is_admin', False):
+        return Response(status=status.HTTP_403_FORBIDDEN)
+    if not razorpay.is_configured():
+        return Response({'error': 'Razorpay is not configured.'}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+    return Response(payments.sync_initiated())
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def admin_finance_summary(request):
+    """Money collected across every payment type, for the dashboard."""
+    if not getattr(request.user, 'is_admin', False):
+        return Response(status=status.HTTP_403_FORBIDDEN)
+
+    rows = payments.all_transactions()
+    success = [r for r in rows if r['status'] == payments.SUCCESS]
+    now = timezone.localtime()
+    month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    last_month_start = (month_start - timezone.timedelta(days=1)).replace(day=1)
+
+    def paid_on(r):
+        return timezone.localtime(r['completed_at'] or r['created_at'])
+
+    def total(items):
+        return sum((r['amount'] for r in items), 0)
+
+    def bucket(status_name):
+        items = [r for r in rows if r['status'] == status_name]
+        return {'count': len(items), 'amount': total(items)}
+
+    # Last 12 calendar months, oldest first, split by payment type
+    months = []
+    y, m = now.year, now.month
+    for _ in range(12):
+        months.append((y, m))
+        y, m = (y - 1, 12) if m == 1 else (y, m - 1)
+    months.reverse()
+    monthly = {key: {t: 0 for t in payments.TYPES} for key in months}
+    for r in success:
+        d = paid_on(r)
+        if (d.year, d.month) in monthly:
+            monthly[(d.year, d.month)][r['type']] += r['amount']
+
+    return Response({
+        'total_collected': total(success),
+        'success_count': len(success),
+        'this_month': total(r for r in success if paid_on(r) >= month_start),
+        'last_month': total(r for r in success if last_month_start <= paid_on(r) < month_start),
+        'by_type': [
+            {'type': t, 'amount': total(r for r in success if r['type'] == t),
+             'count': sum(1 for r in success if r['type'] == t)}
+            for t in payments.TYPES
+        ],
+        'online_amount': total(r for r in success if r['method'] == 'Online'),
+        'offline_amount': total(r for r in success if r['method'] != 'Online'),
+        'initiated': bucket(payments.INITIATED),
+        'pending': bucket(payments.PENDING),
+        'failed': bucket(payments.FAILED),
+        'refunded': bucket(payments.REFUNDED),
+        'monthly': [
+            {'name': timezone.datetime(y, m, 1).strftime('%b %y'), **{t: monthly[(y, m)][t] for t in payments.TYPES}}
+            for y, m in months
+        ],
+        'recent': rows[:8],
     })
 
 
