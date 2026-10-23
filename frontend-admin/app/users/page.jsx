@@ -5,7 +5,8 @@ import { fetchApi } from '../../lib/api';
 import { useAuth } from '../../context/AuthContext';
 import Pagination from '../../components/Pagination/Pagination';
 import {
-  Users, Search, Edit, Trash2, X, Shield, CheckCircle, XCircle, Phone, Mail, Loader2
+  Users, Search, Edit, Trash2, X, Shield, CheckCircle, XCircle, Phone, Mail, Loader2,
+  ShieldCheck, ExternalLink
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Swal from 'sweetalert2';
@@ -34,6 +35,8 @@ export default function UsersManager() {
   const [form, setForm] = useState(EMPTY_FORM);
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
+
+  const [kycUser, setKycUser] = useState(null);
 
   const [sessions, setSessions] = useState([]);
   const [loadingSessions, setLoadingSessions] = useState(false);
@@ -270,7 +273,8 @@ export default function UsersManager() {
                 <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">User</th>
                 <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Phone</th>
                 <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Member</th>
-                <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Membership Fee</th>
+                <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Membership</th>
+                <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">KYC</th>
                 <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Admin</th>
                 <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Status</th>
                 <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Joined</th>
@@ -318,6 +322,18 @@ export default function UsersManager() {
                       <span className="text-xs font-medium text-gray-400">No online payment</span>
                     ) : (
                       <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold bg-gray-100 text-gray-400">Not paid</span>
+                    )}
+                  </td>
+                  <td className="px-6 py-4">
+                    {user.membership?.aadhaar_number ? (
+                      <button
+                        onClick={() => setKycUser(user)}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-primary/30 text-xs font-bold text-primary hover:bg-primary/5 transition-colors"
+                      >
+                        <ShieldCheck size={14} /> View
+                      </button>
+                    ) : (
+                      <span className="text-xs font-medium text-gray-300">—</span>
                     )}
                   </td>
                   <td className="px-6 py-4">
@@ -531,6 +547,73 @@ export default function UsersManager() {
           </div>
         )}
       </AnimatePresence>
+      <AnimatePresence>
+        {kycUser && <KycModal user={kycUser} onClose={() => setKycUser(null)} />}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+// KYC submitted on the Join page: full Aadhaar number and the uploaded document
+function KycModal({ user, onClose }) {
+  const { membership } = user;
+  const aadhaar = membership.aadhaar_number.replace(/(\d{4})(?=\d)/g, '$1 ');
+  const isImage = membership.kyc_document_mimetype?.startsWith('image/');
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+        onClick={onClose} className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
+      <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95 }}
+        className="relative bg-white w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
+        <div className="flex items-center justify-between px-8 py-5 border-b border-gray-100">
+          <div>
+            <h2 className="text-xl font-black text-gray-900">KYC Details</h2>
+            <p className="text-sm text-gray-500">{user.name} · {user.phone}</p>
+          </div>
+          <button onClick={onClose}
+            className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-200 transition-colors">
+            <X size={18} />
+          </button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto p-8 space-y-6">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {[
+              { label: 'Aadhaar Number', value: aadhaar },
+              { label: 'City', value: membership.city || '—' },
+              { label: 'Membership', value: `₹${Number(membership.amount).toLocaleString('en-IN')}` },
+            ].map(({ label, value }) => (
+              <div key={label} className="bg-gray-50 rounded-xl p-3">
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">{label}</p>
+                <p className="text-sm font-bold text-gray-800 tracking-wide">{value}</p>
+              </div>
+            ))}
+          </div>
+
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">KYC Document</p>
+              {membership.kyc_document && (
+                <a href={membership.kyc_document} target="_blank" rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-xs font-bold text-primary hover:underline">
+                  Open in new tab <ExternalLink size={12} />
+                </a>
+              )}
+            </div>
+            {!membership.kyc_document ? (
+              <p className="text-sm text-gray-400">No document uploaded.</p>
+            ) : isImage ? (
+              <img src={membership.kyc_document} alt={`KYC document of ${user.name}`}
+                className="w-full rounded-xl border border-gray-100 bg-gray-50 object-contain max-h-[50vh]" />
+            ) : (
+              <iframe src={membership.kyc_document} title={`KYC document of ${user.name}`}
+                className="w-full h-[50vh] rounded-xl border border-gray-100 bg-gray-50" />
+            )}
+          </div>
+        </div>
+      </motion.div>
     </div>
   );
 }

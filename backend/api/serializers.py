@@ -80,10 +80,19 @@ class AdminUserSerializer(serializers.ModelSerializer):
         application = getattr(obj, 'membership_application', None)
         if not application or application.status != 'Paid':
             return None
+        document_url = application.kyc_document.url if application.kyc_document else None
+        request = self.context.get('request')
+        if document_url and request and document_url.startswith('/'):
+            document_url = request.build_absolute_uri(document_url)
         return {
             'amount': application.amount,
             'paid_at': application.paid_at,
             'payment_id': application.razorpay_payment_id,
+            # KYC submitted on the Join page (admins only)
+            'city': application.city,
+            'aadhaar_number': application.aadhaar_number,
+            'kyc_document': document_url,
+            'kyc_document_mimetype': application.kyc_document_mimetype,
         }
 
 # --- Accommodation Serializers ---
