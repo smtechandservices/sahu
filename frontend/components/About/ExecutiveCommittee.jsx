@@ -51,8 +51,8 @@ const advisoryMembers = [
 ];
 
 const committeeChairpersons = [
-  { name: "Shri Ranvijay Sahu", committee: ['Building Construction Committee', 'भवन निर्माण समिति'], mobile: "9386153874" },
-  { name: "Shri Bimal Kishore Bittu", committee: ['Art and Culture Operations Committee', 'कला एवं संस्कृति संचालन समिति'], mobile: "9304327556" },
+  { name: "Shri Ranvijay Sahu", committee: ['Building Construction Committee', 'भवन निर्माण समिति'], mobile: "9386153874", image: "/assets/president.png" },
+  { name: "Shri Bimal Kishore Bittu", committee: ['Art and Culture Operations Committee', 'कला एवं संस्कृति संचालन समिति'], mobile: "9304327556", image: "/assets/bimal-square.jpg" },
   { name: "Shri Amardeep Kumar alias Pappu", committee: ['Meritorious Poor Students & Helpless Upliftment Committee', 'मेधावी निर्धन छात्र एवं असहाय उत्थान समिति'], mobile: "9304770996" },
   { name: "Er. Pramod Kumar", committee: ['Yoga and Intellectual Committee', 'योग एवं बौद्धिक समिति'], mobile: "9835213555" },
   { name: "Shri Raghunath Sah", committee: ['Building Operations Committee', 'भवन संचालन समिति'], mobile: "9934891806" },
@@ -131,9 +131,21 @@ const districtCommittee = [
 
 const mahilaCommittee = [
   { name: "Sima Prasad", role: ["Mahila Adhyaksh (Women's President)", 'महिला अध्यक्ष'], mobile: "8709607778", image: "/assets/sima.jpeg" },
+  { name: "Sheetal Gupta", role: ['Mahamantri (General Secretary, Mahila Morcha)', 'महामंत्री (महिला मोर्चा)'], mobile: "9973315777", image: "/assets/sheetal.jpg" },
+  { name: "Rooplata", role: ['Koshadhyaksh (Treasurer, Mahila Morcha)', 'कोषाध्यक्ष (महिला मोर्चा)'], image: "/assets/rooplata.jpg" },
 ];
 
 const PER_PAGE = 18;
+
+const initials = (name) =>
+  name
+    .replace(/\(.*?\)/g, '')
+    .replace(/^(Shri|Shrimati|Dr\.|Er\.|Prof\.)\s+/, '')
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((w) => w[0].toUpperCase())
+    .join('');
 
 const tabs = [
   { id: 'executive', label: ['Executive Members', 'कार्यकारिणी सदस्य'], count: executiveMembers.length },
@@ -296,21 +308,37 @@ const ExecutiveCommittee = () => {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
           >
             {pageItems(committeeChairpersons).map((member, index) => (
               <div
                 key={index}
-                className="bg-white border border-yellow-200 rounded-xl p-4 hover:shadow-sm hover:border-yellow-300 transition-all"
+                className="relative aspect-square w-full max-w-sm mx-auto sm:max-w-none overflow-hidden rounded-2xl border border-yellow-200 shadow-sm"
               >
-                <p className="text-primary text-xs font-bold uppercase tracking-wide mb-2 leading-snug">{t(...member.committee)}</p>
-                <h4 className="font-bold text-gray-900 text-sm leading-snug mb-1">{member.name}</h4>
-                <a
-                  href={`tel:+91${member.mobile}`}
-                  className="text-xs text-gray-400 hover:text-primary flex items-center gap-1 transition-colors"
-                >
-                  <Phone size={10} /> {member.mobile}
-                </a>
+                {member.image ? (
+                  <Image
+                    src={member.image}
+                    alt={member.name}
+                    fill
+                    sizes="(max-width: 640px) 384px, (max-width: 1024px) 50vw, 25vw"
+                    className="object-cover"
+                    style={{ objectPosition: member.imagePosition || 'top' }}
+                  />
+                ) : (
+                  <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-yellow-100 to-yellow-300 pb-16">
+                    <span className="text-5xl font-bold text-yellow-700/70">{initials(member.name)}</span>
+                  </div>
+                )}
+                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/55 to-transparent p-4 pt-12">
+                  <h4 className="text-lg font-bold text-white leading-tight">{member.name}</h4>
+                  <p className="text-[#f5b301] text-sm mb-1 leading-snug">{t(...member.committee)}</p>
+                  <a
+                    href={`tel:+91${member.mobile}`}
+                    className="text-sm text-white/85 hover:text-white flex items-center gap-1.5 transition-colors"
+                  >
+                    <Phone size={12} /> +91 {member.mobile.slice(0, 5)} {member.mobile.slice(5)}
+                  </a>
+                </div>
               </div>
             ))}
           </motion.div>
@@ -374,12 +402,14 @@ const ExecutiveCommittee = () => {
                 <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/55 to-transparent p-4 pt-12">
                   <h4 className="text-lg font-bold text-white leading-tight">{member.name}</h4>
                   <p className="text-[#f5b301] text-sm mb-1">{t(...member.role)}</p>
-                  <a
-                    href={`tel:+91${member.mobile}`}
-                    className="text-sm text-white/85 hover:text-white flex items-center gap-1.5 transition-colors"
-                  >
-                    <Phone size={12} /> +91 {member.mobile.slice(0, 5)} {member.mobile.slice(5)}
-                  </a>
+                  {member.mobile && (
+                    <a
+                      href={`tel:+91${member.mobile}`}
+                      className="text-sm text-white/85 hover:text-white flex items-center gap-1.5 transition-colors"
+                    >
+                      <Phone size={12} /> +91 {member.mobile.slice(0, 5)} {member.mobile.slice(5)}
+                    </a>
+                  )}
                 </div>
               </div>
             ))}
