@@ -1,10 +1,11 @@
 from rest_framework import status, viewsets, permissions, views, response
 from rest_framework.exceptions import ValidationError
-from rest_framework.decorators import api_view, permission_classes, action
+from rest_framework.decorators import api_view, permission_classes, throttle_classes, action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.throttling import AnonRateThrottle
 from rest_framework_simplejwt.tokens import RefreshToken
+from django.db import transaction
 from django.utils import timezone
 from datetime import timedelta
 from django.conf import settings
@@ -12,13 +13,13 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.pagination import PageNumberPagination
 from django.db.models.functions import TruncMonth
-from django.db.models import Count, Sum
+from django.db.models import Count, Q, Sum
 from django.http import HttpResponse, HttpResponseRedirect
 from .models import (
     User, OTPRecord, Accommodation, Booking,
     JobListing, Advertisement, MatrimonialProfile, MatrimonialInterest,
     Article, Event, EventRegistration, SiteSettings,
-    HeroCarouselImage, UserSession, Media, Donation
+    HeroCarouselImage, UserSession, Media, Donation, MembershipApplication
 )
 from .serializers import (
     UserSerializer, AdminUserSerializer, AccommodationSerializer, BookingSerializer,
@@ -26,9 +27,11 @@ from .serializers import (
     MatrimonialProfileSerializer, ArticleSerializer,
     EventSerializer, EventRegistrationSerializer, SiteSettingsSerializer,
     HeroCarouselImageSerializer, UserSessionSerializer, CustomTokenRefreshSerializer,
-    MediaSerializer, DonationSerializer, AdminDonationSerializer
+    MediaSerializer, DonationSerializer, AdminDonationSerializer, MembershipApplicationSerializer,
+    matrimonial_receipt,
 )
 from .permissions import IsAdminOrReadOnly
+from . import razorpay
 
 def create_user_session(user, refresh, request):
     user_agent = request.META.get('HTTP_USER_AGENT', '')
@@ -178,19 +181,29 @@ def verify_register_otp(request):
 
 
 
+class RegisterAnonThrottle(AnonRateThrottle):
+    rate = '10/hour'
+
+
 @api_view(['POST'])
 @permission_classes([AllowAny])
+@throttle_classes([RegisterAnonThrottle])
 def register(request):
+    """
+    Join page, after the OTP step. Saves the application (Aadhaar, KYC document, chosen fee)
+    and opens a Razorpay order for the membership fee. The account itself is created by
+    verify_membership_payment once the fee is paid.
+    """
     phone = request.data.get('phone')
-    name = request.data.get('name')
     code = request.data.get('code')
 
-    if not phone or not name or not code:
-        return Response({'error': 'Phone, name and code are required'}, status=status.HTTP_400_BAD_REQUEST)
+    if not phone or not code:
+        return Response({'error': 'Phone and code are required'}, status=status.HTTP_400_BAD_REQUEST)
 
     if User.objects.filter(phone=phone).exists():
         return Response({'error': 'User with this phone already exists. Please login.'}, status=status.HTTP_400_BAD_REQUEST)
 
+    otp = None
     if not _is_dev_otp(code, phone):
         otp = OTPRecord.objects.filter(phone=phone, code=code, is_used=False).order_by('-created_at').first()
         if not otp:
@@ -200,10 +213,76 @@ def register(request):
         if timezone.now() > expiry:
             return Response({'error': 'OTP has expired'}, status=status.HTTP_400_BAD_REQUEST)
 
+    if not razorpay.is_configured():
+        return Response({'error': 'Online payments are not available right now. Please try again later.'},
+                        status=status.HTTP_503_SERVICE_UNAVAILABLE)
+
+    serializer = MembershipApplicationSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+    application = serializer.save()
+
+    amount_paise = int(application.amount * 100)
+    try:
+        order = razorpay.create_order(
+            amount_paise,
+            receipt=f'membership_{application.id}',
+            notes={'membership_application_id': str(application.id), 'phone': application.phone},
+        )
+    except razorpay.RazorpayError as exc:
+        application.status = 'Failed'
+        application.notes = str(exc)
+        application.save(update_fields=['status', 'notes'])
+        return Response({'error': 'Could not start the payment. Please try again.'},
+                        status=status.HTTP_502_BAD_GATEWAY)
+
+    application.razorpay_order_id = order['id']
+    application.save(update_fields=['razorpay_order_id'])
+    if otp:
         otp.is_used = True
         otp.save()
 
-    user = User.objects.create_user(phone=phone, name=name)
+    return Response({
+        'application': serializer.data,
+        'razorpay': {
+            'key_id': settings.RAZORPAY_KEY_ID,
+            'order_id': order['id'],
+            'amount': amount_paise,
+            'currency': 'INR',
+        },
+    }, status=status.HTTP_201_CREATED)
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def verify_membership_payment(request):
+    """Checkout's success handler posts the signed payment here; this creates the member's account."""
+    order_id = request.data.get('razorpay_order_id', '')
+    payment_id = request.data.get('razorpay_payment_id', '')
+    signature = request.data.get('razorpay_signature', '')
+    if not razorpay.verify_payment_signature(order_id, payment_id, signature):
+        return Response({'error': 'Payment could not be verified.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    with transaction.atomic():
+        application = MembershipApplication.objects.select_for_update().filter(razorpay_order_id=order_id).first()
+        if not application:
+            return Response({'error': 'Membership application not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        if application.status != 'Paid':
+            application.status = 'Paid'
+            application.razorpay_payment_id = payment_id
+            application.paid_at = timezone.now()
+            application.save(update_fields=['status', 'razorpay_payment_id', 'paid_at'])
+
+        user = application.user
+        if not user:
+            if User.objects.filter(phone=application.phone).exists():
+                # Someone registered this number while the payment was in progress
+                return Response({'error': f'This phone number is already registered. Please contact the Sabha with payment ID {payment_id}.'},
+                                status=status.HTTP_409_CONFLICT)
+            user = User.objects.create_user(phone=application.phone, name=application.name, is_member=True)
+            application.user = user
+            application.save(update_fields=['user'])
+
     refresh = RefreshToken.for_user(user)
     refresh.access_token['refresh_jti'] = refresh.payload.get('jti')
     create_user_session(user, refresh, request)
@@ -211,7 +290,8 @@ def register(request):
     return Response({
         'refresh': str(refresh),
         'access': str(refresh.access_token),
-        'user': UserSerializer(user).data
+        'user': UserSerializer(user).data,
+        'application': MembershipApplicationSerializer(application).data,
     }, status=status.HTTP_201_CREATED)
 
 @api_view(['POST'])
@@ -271,6 +351,13 @@ def profile_view(request):
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def my_membership(request):
+    """The membership fee the user paid when joining, or null (e.g. accounts from before online joining)."""
+    application = MembershipApplication.objects.filter(user=request.user, status='Paid').first()
+    return Response({'membership': MembershipApplicationSerializer(application).data if application else None})
+
 # --- User Management Views ---
 class UserPagination(PageNumberPagination):
     page_size = 20
@@ -289,7 +376,7 @@ class UserViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         if not getattr(self.request.user, 'is_admin', False):
             return User.objects.none()
-        return User.objects.all().order_by('-date_joined')
+        return User.objects.select_related('membership_application').order_by('-date_joined')
 
     @action(detail=True, methods=['get'])
     def sessions(self, request, pk=None):
@@ -345,8 +432,8 @@ class DonationAnonThrottle(AnonRateThrottle):
 
 class DonationViewSet(viewsets.ModelViewSet):
     """
-    Donors POST here from the Donate page, logged in or not; it's saved as Pending until an
-    admin confirms the payment. Admins see every donation and can update/delete them.
+    Donors POST here from the Donate page, logged in or not; it's saved as Pending and becomes
+    Completed once Razorpay confirms the payment. Admins see every donation and can update/delete them.
     """
     permission_classes = [IsAuthenticated]
     pagination_class = DonationPagination
@@ -359,11 +446,6 @@ class DonationViewSet(viewsets.ModelViewSet):
     def _is_admin(self):
         return getattr(self.request.user, 'is_admin', False)
 
-    def get_permissions(self):
-        if self.action == 'create':
-            return [AllowAny()]
-        return super().get_permissions()
-
     def get_throttles(self):
         if self.action == 'create':
             return [DonationAnonThrottle()]
@@ -375,7 +457,9 @@ class DonationViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         qs = Donation.objects.select_related('user', 'recorded_by')
         if not self._is_admin():
-            return qs.filter(user=self.request.user)
+            # Their own donations plus any made with their (OTP-verified) number while logged out
+            user = self.request.user
+            return qs.filter(Q(user=user) | Q(phone=user.phone[-10:]))
         # Optional date range: ?from=YYYY-MM-DD&to=YYYY-MM-DD
         date_from = self.request.query_params.get('from')
         date_to = self.request.query_params.get('to')
@@ -387,15 +471,75 @@ class DonationViewSet(viewsets.ModelViewSet):
 
     def check_permissions(self, request):
         super().check_permissions(request)
-        # Donors may only create and view their own; everything else is admin-only
-        if self.action not in ('create', 'list', 'retrieve') and not self._is_admin():
+        # Donors may only create, pay and view their own; everything else is admin-only
+        if self.action not in ('create', 'verify', 'list', 'retrieve') and not self._is_admin():
             self.permission_denied(request, message='Administrator privileges required.')
 
-    def perform_create(self, serializer):
-        # Website donations always start as Pending online payments, even when an admin donates
-        user = self.request.user if self.request.user.is_authenticated else None
-        serializer.save(user=user, status='Pending', payment_method='Online',
-                        transaction_ref='', notes='')
+    def get_permissions(self):
+        if self.action in ('create', 'verify'):
+            return [AllowAny()]
+        return super().get_permissions()
+
+    def create(self, request, *args, **kwargs):
+        # Website donations are paid through Razorpay: save a Pending donation, open an order
+        # for it and hand the order to the browser for Checkout
+        if not razorpay.is_configured():
+            return Response({'error': 'Online donations are not available right now. Please try again later.'},
+                            status=status.HTTP_503_SERVICE_UNAVAILABLE)
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        if serializer.validated_data['amount'] < 1:
+            return Response({'error': 'The minimum online donation is ₹1.'}, status=status.HTTP_400_BAD_REQUEST)
+        user = request.user if request.user.is_authenticated else None
+        # Even when an admin donates, the fields only an admin may set are reset
+        donation = serializer.save(user=user, status='Pending', payment_method='Online',
+                                   transaction_ref='', notes='')
+        amount_paise = int(donation.amount * 100)
+        try:
+            order = razorpay.create_order(
+                amount_paise,
+                receipt=f'donation_{donation.id}',
+                notes={'donation_id': str(donation.id), 'purpose': donation.purpose},
+            )
+        except razorpay.RazorpayError as exc:
+            donation.status = 'Failed'
+            donation.notes = str(exc)
+            donation.save(update_fields=['status', 'notes', 'updated_at'])
+            return Response({'error': 'Could not start the payment. Please try again.'},
+                            status=status.HTTP_502_BAD_GATEWAY)
+        donation.razorpay_order_id = order['id']
+        donation.save(update_fields=['razorpay_order_id', 'updated_at'])
+        return Response({
+            **serializer.data,
+            'razorpay': {
+                'key_id': settings.RAZORPAY_KEY_ID,
+                'order_id': order['id'],
+                'amount': amount_paise,
+                'currency': 'INR',
+            },
+        }, status=status.HTTP_201_CREATED)
+
+    def _mark_paid(self, donation, payment_id):
+        if donation.status == 'Completed':
+            return
+        donation.status = 'Completed'
+        donation.razorpay_payment_id = payment_id
+        donation.transaction_ref = payment_id
+        donation.save(update_fields=['status', 'razorpay_payment_id', 'transaction_ref', 'updated_at'])
+
+    @action(detail=False, methods=['post'])
+    def verify(self, request):
+        """Checkout's success handler posts the signed payment here to confirm the donation."""
+        order_id = request.data.get('razorpay_order_id', '')
+        payment_id = request.data.get('razorpay_payment_id', '')
+        signature = request.data.get('razorpay_signature', '')
+        if not razorpay.verify_payment_signature(order_id, payment_id, signature):
+            return Response({'error': 'Payment could not be verified.'}, status=status.HTTP_400_BAD_REQUEST)
+        donation = Donation.objects.filter(razorpay_order_id=order_id).first()
+        if not donation:
+            return Response({'error': 'Donation not found.'}, status=status.HTTP_404_NOT_FOUND)
+        self._mark_paid(donation, payment_id)
+        return Response(DonationSerializer(donation).data)
 
     @action(detail=False, methods=['post'])
     def record(self, request):
@@ -580,11 +724,8 @@ class MatrimonialProfileViewSet(viewsets.ModelViewSet):
         return context
 
     def get_queryset(self):
-        qs = MatrimonialProfile.objects.all()
-        if self.request.user.is_authenticated and getattr(self.request.user, 'is_admin', False):
-            pass  # admins see all
-        else:
-            qs = qs.filter(is_approved=True) | qs.filter(user=self.request.user)
+        # Unpaid profiles don't exist yet as far as anyone (owner and admins included) is concerned
+        qs = MatrimonialProfile.objects.filter(is_active=True)
 
         # Age range filter
         age_min = self.request.query_params.get('age_min')
@@ -604,11 +745,73 @@ class MatrimonialProfileViewSet(viewsets.ModelViewSet):
 
         return qs.distinct()
 
-    def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+    def create(self, request, *args, **kwargs):
+        """
+        Saves the profile as inactive and opens a Razorpay order for the creation fee
+        (by gender). verify_payment activates it once the fee is paid.
+        """
+        existing = MatrimonialProfile.objects.filter(user=request.user).first()
+        if existing and existing.is_active:
+            return Response({'error': 'You already have a matrimonial profile.'}, status=status.HTTP_400_BAD_REQUEST)
+        if not razorpay.is_configured():
+            return Response({'error': 'Online payments are not available right now. Please try again later.'},
+                            status=status.HTTP_503_SERVICE_UNAVAILABLE)
+
+        # An earlier attempt that was never paid is reused rather than duplicated
+        serializer = self.get_serializer(existing, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        fee = MatrimonialProfile.FEES[serializer.validated_data['gender']]
+        profile = serializer.save(user=request.user, is_active=False, amount_paid=None,
+                                  razorpay_payment_id='', paid_at=None)
+
+        amount_paise = fee * 100
+        try:
+            order = razorpay.create_order(
+                amount_paise,
+                receipt=f'matrimonial_{profile.id}',
+                notes={'matrimonial_profile_id': str(profile.id), 'phone': request.user.phone},
+            )
+        except razorpay.RazorpayError:
+            return Response({'error': 'Could not start the payment. Please try again.'},
+                            status=status.HTTP_502_BAD_GATEWAY)
+        profile.razorpay_order_id = order['id']
+        profile.save(update_fields=['razorpay_order_id'])
+
+        return Response({
+            'profile': self.get_serializer(profile).data,
+            'razorpay': {
+                'key_id': settings.RAZORPAY_KEY_ID,
+                'order_id': order['id'],
+                'amount': amount_paise,
+                'currency': 'INR',
+            },
+        }, status=status.HTTP_201_CREATED)
+
+    @action(detail=False, methods=['post'])
+    def verify_payment(self, request):
+        """Checkout's success handler posts the signed payment here; this makes the profile live."""
+        order_id = request.data.get('razorpay_order_id', '')
+        payment_id = request.data.get('razorpay_payment_id', '')
+        signature = request.data.get('razorpay_signature', '')
+        if not razorpay.verify_payment_signature(order_id, payment_id, signature):
+            return Response({'error': 'Payment could not be verified.'}, status=status.HTTP_400_BAD_REQUEST)
+        profile = MatrimonialProfile.objects.filter(razorpay_order_id=order_id, user=request.user).first()
+        if not profile:
+            return Response({'error': 'Profile not found.'}, status=status.HTTP_404_NOT_FOUND)
+        if not profile.is_active:
+            profile.is_active = True
+            profile.amount_paid = MatrimonialProfile.FEES[profile.gender]
+            profile.razorpay_payment_id = payment_id
+            profile.paid_at = timezone.now()
+            profile.save(update_fields=['is_active', 'amount_paid', 'razorpay_payment_id', 'paid_at'])
+        return Response({
+            'profile': self.get_serializer(profile).data,
+            'receipt': matrimonial_receipt(profile),
+        })
 
     def perform_update(self, serializer):
-        serializer.save(is_approved=False)
+        # The fee depends on gender, so it can't be changed after creation
+        serializer.save(gender=serializer.instance.gender)
 
     @action(detail=True, methods=['post', 'delete'])
     def interest(self, request, pk=None):
@@ -620,10 +823,8 @@ class MatrimonialProfileViewSet(viewsets.ModelViewSet):
         if from_profile == to_profile:
             return Response({'error': 'Cannot send interest to yourself.'}, status=status.HTTP_400_BAD_REQUEST)
         if request.method == 'POST':
-            if not from_profile.is_approved:
-                return Response({'error': 'Your profile is pending admin approval. You can express interest once it is approved.'}, status=status.HTTP_403_FORBIDDEN)
-            if not to_profile.is_approved:
-                return Response({'error': 'This profile is not approved yet.'}, status=status.HTTP_400_BAD_REQUEST)
+            if not from_profile.is_active:
+                return Response({'error': 'Complete the payment for your matrimonial profile to express interest.'}, status=status.HTTP_403_FORBIDDEN)
             MatrimonialInterest.objects.get_or_create(from_profile=from_profile, to_profile=to_profile)
             is_match = MatrimonialInterest.objects.filter(
                 from_profile=to_profile, to_profile=from_profile
@@ -644,7 +845,7 @@ class MatrimonialProfileViewSet(viewsets.ModelViewSet):
         )
         profiles = MatrimonialProfile.objects.filter(
             sent_interests__to_profile=my_profile,
-            is_approved=True
+            is_active=True
         ).exclude(id__in=sent_ids)
         serializer = self.get_serializer(profiles, many=True)
         return Response(serializer.data)
@@ -664,18 +865,9 @@ class MatrimonialProfileViewSet(viewsets.ModelViewSet):
         match_ids = [pid for pid in profile_ids if pid in received_from_ids]
         return Response({'profile_ids': profile_ids, 'match_ids': match_ids})
 
-    @action(detail=True, methods=['patch'])
-    def approve(self, request, pk=None):
-        if not getattr(request.user, 'is_admin', False):
-            return Response({'error': 'Unauthorized'}, status=status.HTTP_403_FORBIDDEN)
-        profile = self.get_object()
-        profile.is_approved = True
-        profile.save()
-        return Response({'message': 'Profile approved successfully'})
-
     @action(detail=False, methods=['get'], permission_classes=[permissions.IsAuthenticated])
     def filter_options(self, request):
-        qs = MatrimonialProfile.objects.filter(is_approved=True)
+        qs = MatrimonialProfile.objects.filter(is_active=True)
 
         def distinct_vals(field):
             return sorted(filter(None, qs.values_list(field, flat=True).distinct()))
@@ -760,7 +952,7 @@ def admin_dashboard_stats(request):
         'members': User.objects.filter(is_active=True).count(),
         'bookings': Booking.objects.count(),
         'events': Event.objects.filter(is_active=True).count(),
-        'matrimonials': MatrimonialProfile.objects.count(),
+        'matrimonials': MatrimonialProfile.objects.filter(is_active=True).count(),
         'jobs': JobListing.objects.filter(is_active=True).count(),
         'articles': Article.objects.filter(is_published=True).count(),
     }
@@ -819,11 +1011,11 @@ def admin_dashboard_stats(request):
             'timestamp': b.created_at.isoformat(),
         })
 
-    for m in MatrimonialProfile.objects.select_related('user').filter(is_approved=False).order_by('-created_at')[:3]:
+    for m in MatrimonialProfile.objects.select_related('user').filter(is_active=True).order_by('-created_at')[:3]:
         activities.append({
             'type': 'matrimonial',
-            'title': 'Profile Approval',
-            'desc': f'New Matrimonial profile by {m.user.name} needs review',
+            'title': 'New Matrimonial Profile',
+            'desc': f'Matrimonial profile created by {m.user.name}',
             'timestamp': m.created_at.isoformat(),
         })
 

@@ -1,7 +1,7 @@
 from django.contrib import admin
 from .models import (
     User, OTPRecord, Accommodation, Booking,
-    JobListing, Advertisement, MatrimonialProfile, MatrimonialInterest,
+    JobListing, Advertisement, MatrimonialProfile, MatrimonialInterest, MembershipApplication,
     Article, Event, EventRegistration,
     HeroCarouselImage, Media, SiteSettings, UserSession, Donation
 )
@@ -44,14 +44,16 @@ class AdvertisementAdmin(admin.ModelAdmin):
 
 @admin.register(MatrimonialProfile)
 class MatrimonialProfileAdmin(admin.ModelAdmin):
-    list_display = ('user', 'gender', 'age', 'city', 'marital_status', 'gotra', 'manglik', 'is_approved', 'created_at')
-    list_filter = ('gender', 'is_approved', 'marital_status', 'manglik', 'complexion')
+    list_display = ('user', 'gender', 'age', 'city', 'marital_status', 'gotra', 'manglik', 'is_active', 'amount_paid', 'created_at')
+    list_filter = ('gender', 'is_active', 'marital_status', 'manglik', 'complexion')
     search_fields = ('user__name', 'user__phone', 'city', 'gotra')
-    actions = ['approve_profiles']
 
-    def approve_profiles(self, request, queryset):
-        queryset.update(is_approved=True)
-    approve_profiles.short_description = "Approve selected profiles"
+@admin.register(MembershipApplication)
+class MembershipApplicationAdmin(admin.ModelAdmin):
+    list_display = ('name', 'phone', 'amount', 'status', 'user', 'created_at', 'paid_at')
+    list_filter = ('status', 'amount')
+    search_fields = ('name', 'phone', 'aadhaar_number', 'razorpay_order_id', 'razorpay_payment_id')
+    readonly_fields = ('razorpay_order_id', 'razorpay_payment_id', 'created_at', 'paid_at')
 
 @admin.register(MatrimonialInterest)
 class MatrimonialInterestAdmin(admin.ModelAdmin):

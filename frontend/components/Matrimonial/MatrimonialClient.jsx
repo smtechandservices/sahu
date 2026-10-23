@@ -64,7 +64,6 @@ export default function MatrimonialClient() {
   const formatProfile = (p) => ({
     id: p.id,
     userId: p.user,
-    isApproved: p.is_approved,
     name: p.user_detail?.name || "Unknown",
     contactPhone: p.contact_phone || null,
     age: p.age,
@@ -90,6 +89,7 @@ export default function MatrimonialClient() {
       ? "/assets/avatar_male.png"
       : "/assets/avatar_female.png",
     bgColor: p.gender === "Male" ? "#1a7a6e" : "#1a2a4a",
+    payment: p.payment || null, // own profile only, when the fee was paid
   });
 
   const loadMatrimonialData = async () => {
@@ -161,17 +161,6 @@ export default function MatrimonialClient() {
     }
 
     const alreadyLiked = liked.includes(profileId);
-    // Pending profiles can withdraw existing interest but not send new ones
-    if (!myProfile.isApproved && !alreadyLiked) {
-      Swal.fire({
-        icon: "info",
-        title: t('Approval Pending', 'स्वीकृति लंबित'),
-        text: t('Your profile is pending admin approval. You can express interest once it is approved.', 'आपकी प्रोफ़ाइल व्यवस्थापक की स्वीकृति के लिए लंबित है। स्वीकृत होने के बाद आप रुचि दिखा सकते हैं।'),
-        confirmButtonColor: "#EAB308",
-      });
-      return;
-    }
-
     setLiked((prev) =>
       alreadyLiked ? prev.filter((x) => x !== profileId) : [...prev, profileId]
     );
@@ -204,9 +193,8 @@ export default function MatrimonialClient() {
     const receivedIds = new Set(receivedProfiles.map(p => p.id));
 
     const browseList = profiles.filter(p => {
-      // Exclude current user's own profile and unapproved profiles
+      // Exclude current user's own profile
       if (p.userId === user?.id) return false;
-      if (!p.isApproved) return false;
 
       // Search
       if (searchQuery) {

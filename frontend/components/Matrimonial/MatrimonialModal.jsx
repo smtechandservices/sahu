@@ -1,8 +1,10 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Image from 'next/image';
+import Swal from 'sweetalert2';
 import { useLanguage } from '../../context/LanguageContext';
+import { downloadMatrimonialReceipt } from '../../lib/receipts';
 
 const MatrimonialModal = ({ profile, liked, isMatch, onLike, onClose, isOwn, onEdit }) => {
   const isLiked = liked?.includes(profile.id);
@@ -109,6 +111,9 @@ const MatrimonialModal = ({ profile, liked, isMatch, onLike, onClose, isOwn, onE
             </div>
           </section>
 
+          {/* Profile fee — only on your own profile, and only if one was paid */}
+          {isOwn && profile.payment && <ProfileFee payment={profile.payment} />}
+
           {/* Contact — only for mutual matches */}
           {isMatch && profile.contactPhone && !isOwn && (
             <section>
@@ -204,5 +209,56 @@ function formatPhone(phone) {
   if (digits.length === 10) return `+91 ${digits.slice(0, 5)} ${digits.slice(5)}`;
   return phone;
 }
+
+const ProfileFee = ({ payment }) => {
+  const { t, locale } = useLanguage();
+  const [downloading, setDownloading] = useState(false);
+
+  const handleDownload = async () => {
+    setDownloading(true);
+    try {
+      await downloadMatrimonialReceipt(payment);
+    } catch (err) {
+      console.error(err);
+      Swal.fire({
+        icon: 'error',
+        title: t('Could not create the receipt', 'रसीद नहीं बन सकी'),
+        text: t('Please try again.', 'कृपया फिर से प्रयास करें।'),
+        confirmButtonColor: '#EAB308',
+      });
+    } finally {
+      setDownloading(false);
+    }
+  };
+
+  return (
+    <section>
+      <SectionTitle icon={<ReceiptIcon />}>{t('Profile Fee', 'प्रोफ़ाइल शुल्क')}</SectionTitle>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-green-50 rounded-xl px-4 py-4 border border-green-100">
+        <div>
+          <p className="text-[10px] font-bold text-green-700 uppercase tracking-widest mb-1">{t('Amount Paid', 'भुगतान राशि')}</p>
+          <p className="text-lg font-bold text-gray-900">₹{Number(payment.amount).toLocaleString('en-IN')}</p>
+          <p className="text-xs text-gray-500 mt-0.5">
+            {payment.paid_at && new Date(payment.paid_at).toLocaleDateString(locale, { day: 'numeric', month: 'short', year: 'numeric' })}
+            {' · '}
+            {t('Payment ID', 'भुगतान आईडी')}: {payment.razorpay_payment_id}
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={handleDownload}
+          disabled={downloading}
+          className="shrink-0 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border border-green-200 bg-white text-sm font-bold text-green-700 hover:bg-green-100 transition-colors cursor-pointer disabled:opacity-60"
+        >
+          <DownloadIcon />
+          {downloading ? t('Downloading...', 'डाउनलोड हो रहा है...') : t('Download Receipt', 'रसीद डाउनलोड करें')}
+        </button>
+      </div>
+    </section>
+  );
+};
+
+const ReceiptIcon = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 2v20l3-2 3 2 3-2 3 2 3-2 1 .67V2l-1 .67L16 2l-3 2-3-2-3 2-3-2z" /><path d="M8 8h8M8 12h8M8 16h5" /></svg>;
+const DownloadIcon = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><path d="M7 10l5 5 5-5" /><path d="M12 15V3" /></svg>;
 
 export default MatrimonialModal;

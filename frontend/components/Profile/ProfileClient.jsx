@@ -9,11 +9,12 @@ import { getCookie } from "../../lib/cookies";
 import { 
   User as UserIcon, Mail, Phone, Calendar, 
   Camera, ShieldCheck, Edit3, Save, X,
-  Briefcase, Heart, BookOpen
+  Briefcase, Heart, BookOpen, BadgeCheck, Download, Loader2
 } from "lucide-react";
 import { motion } from "framer-motion";
 import Swal from "sweetalert2";
 import { useLanguage } from '../../context/LanguageContext';
+import { downloadMembershipReceipt } from '../../lib/receipts';
 
 export default function ProfileClient() {
   const { user, login, loading: authLoading } = useAuth();
@@ -21,6 +22,8 @@ export default function ProfileClient() {
   const [isEditing, setIsEditing] = useState(false);
   const [bookings, setBookings] = useState([]);
   const [matrimonialProfile, setMatrimonialProfile] = useState(null);
+  const [membership, setMembership] = useState(null);
+  const [downloadingReceipt, setDownloadingReceipt] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -49,6 +52,30 @@ export default function ProfileClient() {
       setMatrimonialProfile(matData || null);
     } catch (err) {
       console.error("Error fetching user data:", err);
+    }
+    try {
+      const { fetchApi } = await import('../../lib/api');
+      const data = await fetchApi('/auth/membership/');
+      setMembership(data?.membership || null);
+    } catch (err) {
+      console.error("Error fetching membership:", err);
+    }
+  };
+
+  const handleDownloadReceipt = async () => {
+    setDownloadingReceipt(true);
+    try {
+      await downloadMembershipReceipt(membership);
+    } catch (err) {
+      console.error(err);
+      Swal.fire({
+        icon: 'error',
+        title: t('Could not create the receipt', 'रसीद नहीं बन सकी'),
+        text: t('Please try again.', 'कृपया फिर से प्रयास करें।'),
+        confirmButtonColor: '#EAB308',
+      });
+    } finally {
+      setDownloadingReceipt(false);
     }
   };
 
@@ -277,6 +304,36 @@ export default function ProfileClient() {
                   </div>
                 </div>
               </div>
+
+              {/* Membership fee paid when joining */}
+              {membership && (
+                <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-8">
+                  <div className="flex items-center gap-2 mb-8 pb-4 border-b border-gray-50">
+                    <BadgeCheck className="text-primary" size={24} />
+                    <h2 className="text-xl font-bold text-gray-900">{t('Membership', 'सदस्यता')}</h2>
+                  </div>
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+                    <div className="space-y-1">
+                      <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">{t('Membership Fee Paid', 'भुगतान किया गया सदस्यता शुल्क')}</p>
+                      <p className="text-3xl font-bold text-gray-900">₹{Number(membership.amount).toLocaleString('en-IN')}</p>
+                      <p className="text-xs text-gray-400">
+                        {membership.paid_at && new Date(membership.paid_at).toLocaleDateString(locale, { year: 'numeric', month: 'long', day: 'numeric' })}
+                        {' · '}
+                        {t('Payment ID', 'भुगतान आईडी')}: {membership.razorpay_payment_id}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleDownloadReceipt}
+                      disabled={downloadingReceipt}
+                      className="btn-primary rounded-xl px-5 py-3 text-sm font-bold flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
+                    >
+                      {downloadingReceipt ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
+                      {t('Download Receipt', 'रसीद डाउनलोड करें')}
+                    </button>
+                  </div>
+                </div>
+              )}
 
               {/* Recent Activity */}
               <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-8">

@@ -184,8 +184,16 @@ class MatrimonialProfile(models.Model):
     photo = models.FileField(upload_to='matrimonial/', storage=private_storage, max_length=255, null=True, blank=True)
     photo_mimetype = models.CharField(max_length=50, null=True, blank=True)
     bio = models.TextField()
-    is_approved = models.BooleanField(default=False)
+    # Live once the profile fee is paid; profiles from before paid creation were all made active
+    is_active = models.BooleanField(default=False)
+    amount_paid = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
+    razorpay_order_id = models.CharField(max_length=64, blank=True, default='', db_index=True)
+    razorpay_payment_id = models.CharField(max_length=64, blank=True, default='')
+    paid_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    # One-time profile creation fee by gender (₹)
+    FEES = {'Male': 1000, 'Female': 500}
 
     def __str__(self):
         return f"{self.user.name} - {self.city}"
@@ -332,6 +340,9 @@ class Donation(models.Model):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending')
     payment_method = models.CharField(max_length=20, choices=METHOD_CHOICES, default='Online')
     transaction_ref = models.CharField(max_length=100, blank=True, default='', help_text="UPI / bank / receipt reference")
+    # Filled in for website donations paid through Razorpay
+    razorpay_order_id = models.CharField(max_length=64, blank=True, default='', db_index=True)
+    razorpay_payment_id = models.CharField(max_length=64, blank=True, default='')
     notes = models.TextField(blank=True, default='')
     recorded_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='recorded_donations')
     created_at = models.DateTimeField(auto_now_add=True)
@@ -342,6 +353,40 @@ class Donation(models.Model):
 
     def __str__(self):
         return f"{self.name} - ₹{self.amount} ({self.status})"
+
+
+class MembershipApplication(models.Model):
+    """
+    A sign-up from the Join page. The account is only created (as a member) once the
+    membership fee is paid through Razorpay; until then the details wait here.
+    """
+    FEE_CHOICES = [1000, 2500, 5000, 10000, 25000]
+    STATUS_CHOICES = (
+        ('Pending', 'Pending'),
+        ('Paid', 'Paid'),
+        ('Failed', 'Failed'),
+    )
+
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='membership_application')
+    name = models.CharField(max_length=255)
+    phone = models.CharField(max_length=15)
+    city = models.CharField(max_length=100, blank=True, default='')
+    aadhaar_number = models.CharField(max_length=12)
+    kyc_document = models.FileField(upload_to='kyc/', storage=private_storage, max_length=255)
+    kyc_document_mimetype = models.CharField(max_length=50, blank=True, default='')
+    amount = models.DecimalField(max_digits=12, decimal_places=2)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending')
+    razorpay_order_id = models.CharField(max_length=64, blank=True, default='', db_index=True)
+    razorpay_payment_id = models.CharField(max_length=64, blank=True, default='')
+    notes = models.TextField(blank=True, default='')
+    created_at = models.DateTimeField(auto_now_add=True)
+    paid_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.name} ({self.phone}) - ₹{self.amount} ({self.status})"
 
 
 class UserSession(models.Model):

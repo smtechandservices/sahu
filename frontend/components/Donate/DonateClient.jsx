@@ -7,6 +7,7 @@ import DonateHero from './DonateHero';
 import DonateTiers from './DonateTiers';
 import DonateForm from './DonateForm';
 import DonateSidebar from './DonateSidebar';
+import DonateHistory from './DonateHistory';
 
 import { useAuth } from '../../context/AuthContext';
 import Link from 'next/link';
@@ -14,6 +15,8 @@ import { Lock } from 'lucide-react';
 
 import Swal from 'sweetalert2';
 import { fetchApi } from '../../lib/api';
+import { downloadDonationReceipt } from '../../lib/receipts';
+import { loadRazorpayCheckout, errorMessage } from '../../lib/razorpay';
 import { useLanguage } from '../../context/LanguageContext';
 
 const DonateClient = () => {
@@ -27,6 +30,7 @@ const DonateClient = () => {
 
   const [selectedTier, setSelectedTier] = useState(null);
   const [submitting, setSubmitting] = useState(false);
+  const [historyKey, setHistoryKey] = useState(0);
   const { t } = useLanguage();
 
   if (loading) return <div className="min-h-screen bg-gray-50 flex items-center justify-center">{t('Loading...', 'लोड हो रहा है...')}</div>;
@@ -63,9 +67,11 @@ const DonateClient = () => {
 
     setSubmitting(true);
     try {
-      // Saved as Pending; the Sabha team confirms it once the payment is received.
-      // Payment gateway integration would go here.
-      await fetchApi('/donations/', {
+      const loaded = await loadRazorpayCheckout();
+      if (!loaded) throw new Error(t('Could not load the payment window. Check your connection and try again.', 'भुगतान विंडो लोड नहीं हो सकी। अपना कनेक्शन जाँचें और फिर से प्रयास करें।'));
+
+      // Saved as Pending; it becomes Completed once Razorpay confirms the payment
+      const donation = await fetchApi('/donations/', {
         method: 'POST',
         body: JSON.stringify({
           name: formData.name.trim(),
@@ -74,33 +80,71 @@ const DonateClient = () => {
           amount: formData.amount,
         }),
       });
-      Swal.fire({
-        icon: 'success',
-        title: t('Thank You!', 'धन्यवाद!'),
-        text: t(
-          `Your contribution of ₹${Number(formData.amount).toLocaleString('en-IN')} has been recorded. Our team will contact you to complete the payment.`,
-          `आपका ₹${Number(formData.amount).toLocaleString('en-IN')} का योगदान दर्ज कर लिया गया है। भुगतान पूरा करने के लिए हमारी टीम आपसे संपर्क करेगी।`
-        ),
-        confirmButtonColor: '#EAB308',
+
+      const checkout = new window.Razorpay({
+        key: donation.razorpay.key_id,
+        order_id: donation.razorpay.order_id,
+        amount: donation.razorpay.amount,
+        currency: donation.razorpay.currency,
+        name: 'Sahu Sabha',
+        description: t('Donation', 'दान'),
+        prefill: { name: formData.name.trim(), contact: formData.phone },
+        theme: { color: '#EAB308' },
+        handler: async (payment) => {
+          try {
+            const confirmed = await fetchApi('/donations/verify/', { method: 'POST', body: JSON.stringify(payment) });
+            setSelectedTier(null);
+            setFormData(prev => ({ ...prev, amount: '' }));
+            setSubmitting(false);
+            setHistoryKey(k => k + 1);
+            // The donor can only close this by downloading their receipt
+            Swal.fire({
+              icon: 'success',
+              title: t('Thank You!', 'धन्यवाद!'),
+              text: t(
+                `Your donation of ₹${Number(confirmed.amount).toLocaleString('en-IN')} was received. Payment ID: ${payment.razorpay_payment_id}`,
+                `आपका ₹${Number(confirmed.amount).toLocaleString('en-IN')} का दान प्राप्त हो गया है। भुगतान आईडी: ${payment.razorpay_payment_id}`
+              ),
+              confirmButtonText: t('Download Receipt', 'रसीद डाउनलोड करें'),
+              confirmButtonColor: '#EAB308',
+              allowOutsideClick: false,
+              allowEscapeKey: false,
+              showLoaderOnConfirm: true,
+              preConfirm: () =>
+                downloadDonationReceipt(confirmed, payment.razorpay_payment_id).catch((err) => {
+                  console.error(err);
+                  Swal.showValidationMessage(t('Could not create the receipt. Please try again.', 'रसीद नहीं बन सकी। कृपया फिर से प्रयास करें।'));
+                  return false;
+                }),
+            });
+          } catch (err) {
+            // The money was taken but we couldn't confirm it; the team can match it by payment ID
+            Swal.fire({
+              icon: 'info',
+              title: t('Payment Received', 'भुगतान प्राप्त'),
+              text: t(
+                `We received your payment (ID: ${payment.razorpay_payment_id}) but could not confirm it yet. Our team will confirm it; please keep this ID for reference.`,
+                `आपका भुगतान (आईडी: ${payment.razorpay_payment_id}) प्राप्त हुआ, लेकिन अभी पुष्टि नहीं हो सकी। हमारी टीम इसकी पुष्टि करेगी; कृपया संदर्भ के लिए यह आईडी रखें।`
+              ),
+              confirmButtonColor: '#EAB308',
+            });
+          } finally {
+            setSubmitting(false);
+          }
+        },
+        modal: { ondismiss: () => setSubmitting(false) },
       });
-      setSelectedTier(null);
-      setFormData(prev => ({ ...prev, amount: '' }));
+      checkout.open();
     } catch (err) {
       Swal.fire({
         icon: 'error',
         title: t('Something went wrong', 'कुछ गलत हो गया'),
-        text: err.message || t('Could not record your donation. Please try again.', 'आपका दान दर्ज नहीं हो सका। कृपया फिर से प्रयास करें।'),
+        text: errorMessage(err) || t('Could not start your donation. Please try again.', 'आपका दान शुरू नहीं हो सका। कृपया फिर से प्रयास करें।'),
         confirmButtonColor: '#EAB308',
       });
-    } finally {
       setSubmitting(false);
     }
   };
-
-  // The donation QR is revealed only once every field of the form is filled in
-  const detailsComplete = Boolean(
-    formData.name.trim() && formData.phone.trim() && formData.purpose && Number(formData.amount) > 0
-  );
 
   return (
     <>
@@ -128,8 +172,9 @@ const DonateClient = () => {
             </div>
 
             {/* Right Column: Sidebar */}
-            <div className="lg:col-span-4">
-              <DonateSidebar canShowQr={detailsComplete} />
+            <div className="lg:col-span-4 space-y-8">
+              <DonateSidebar />
+              {user && <DonateHistory user={user} reloadKey={historyKey} />}
             </div>
 
           </div>

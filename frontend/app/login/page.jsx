@@ -7,6 +7,7 @@ import { ShieldCheck, LogIn, ChevronRight, ArrowLeft } from 'lucide-react';
 import { fetchApi } from '../../lib/api';
 import { useAuth } from '../../context/AuthContext';
 import { useLanguage, LanguageToggle } from '../../context/LanguageContext';
+import OtpInput from '../../components/Auth/OtpInput';
 
 export default function LoginPage() {
   const [phone, setPhone] = useState('');
@@ -82,7 +83,7 @@ export default function LoginPage() {
 
   const handleVerifyOtp = async (e) => {
     e.preventDefault();
-    if (!otp) return setError(t('OTP is required', 'OTP आवश्यक है'));
+    if (otp.length !== 6) return setError(t('Enter the 6-digit OTP', '6 अंकों का OTP दर्ज करें'));
     setLoading(true);
     setError('');
     try {
@@ -209,13 +210,7 @@ export default function LoginPage() {
                             : t('Resend OTP', 'OTP दोबारा भेजें')}
                         </button>
                       </div>
-                      <input
-                        type="text"
-                        placeholder={t('Enter OTP', 'OTP दर्ज करें')}
-                        value={otp}
-                        onChange={(e) => setOtp(e.target.value)}
-                        className="w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-300 placeholder:text-gray-400 font-medium"
-                      />
+                      <OtpInput value={otp} onChange={setOtp} autoFocus />
                     </div>
                   )}
 

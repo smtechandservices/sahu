@@ -36,10 +36,12 @@ urlpatterns = [
     path('auth/send-register-otp/', views.send_register_otp, name='send_register_otp'),
     path('auth/verify-register-otp/', views.verify_register_otp, name='verify_register_otp'),
     path('auth/register/', views.register, name='register'),
+    path('auth/register/verify-payment/', views.verify_membership_payment, name='verify_membership_payment'),
     path('auth/admin-login/', views.admin_login, name='admin_login'),
     path('auth/logout/', views.logout_view, name='logout_view'),
     path('auth/refresh/', views.CustomTokenRefreshView.as_view(), name='token_refresh'),
     path('auth/profile/', views.profile_view, name='profile_view'),
+    path('auth/membership/', views.my_membership, name='my_membership'),
     
     # Public stats
     path('magazine-stats/', views.public_stats, name='magazine_stats'),

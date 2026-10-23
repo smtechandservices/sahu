@@ -82,7 +82,7 @@ export default function EditProfileModal({ isOpen, onClose, profile }) {
       Swal.fire({
         icon: "success",
         title: t('Profile Updated', 'प्रोफ़ाइल अपडेट हो गई'),
-        text: t('Profile updated! It will be visible after admin approval.', 'प्रोफ़ाइल अपडेट हो गई! एडमिन की स्वीकृति के बाद यह दिखाई देगी।'),
+        text: t('Your matrimonial profile has been updated.', 'आपकी वैवाहिक प्रोफ़ाइल अपडेट हो गई है।'),
         confirmButtonColor: "#EAB308",
       });
       onClose();
@@ -115,7 +115,7 @@ export default function EditProfileModal({ isOpen, onClose, profile }) {
         <div className="sticky top-0 bg-white border-b border-gray-100 px-8 py-5 flex items-center justify-between rounded-t-3xl z-10">
           <div>
             <h2 className="text-2xl font-bold text-gray-900">{t('Edit Matrimonial Profile', 'वैवाहिक प्रोफ़ाइल संपादित करें')}</h2>
-            <p className="text-sm text-gray-500 mt-0.5">{t('Changes will go to admin for approval before going live.', 'बदलाव प्रकाशित होने से पहले एडमिन की स्वीकृति के लिए जाएँगे।')}</p>
+            <p className="text-sm text-gray-500 mt-0.5">{t('Changes go live as soon as you save.', 'सहेजते ही बदलाव प्रकाशित हो जाएँगे।')}</p>
           </div>
           <button
             onClick={onClose}
@@ -155,7 +155,8 @@ export default function EditProfileModal({ isOpen, onClose, profile }) {
             </div>
             <div>
               <label className="block text-sm font-bold text-gray-700 mb-2">{t('Gender', 'लिंग')}</label>
-              <select name="gender" value={formData.gender} onChange={handleChange} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 outline-none focus:border-primary transition-colors">
+              {/* Locked: the profile fee depended on gender */}
+              <select name="gender" value={formData.gender} disabled title={t('Gender cannot be changed after the profile is created', 'प्रोफ़ाइल बनने के बाद लिंग नहीं बदला जा सकता')} className="w-full bg-gray-100 border border-gray-200 rounded-xl px-4 py-3 outline-none text-gray-500 cursor-not-allowed">
                 <option value="Male">{tv('Male')}</option>
                 <option value="Female">{tv('Female')}</option>
               </select>

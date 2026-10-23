@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { fetchApi } from '../../lib/api';
 import {
-  Heart, Search, Check, X, Eye, Trash2, Edit,
+  Heart, Search, X, Eye, Trash2, Edit,
   User, MapPin, GraduationCap, Briefcase, Users
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -17,7 +17,7 @@ export default function MatrimonialManager() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterGender, setFilterGender] = useState('All');
-  const [filterStatus, setFilterStatus] = useState('All');
+  const [filterFee, setFilterFee] = useState('All');
   const [filterGotra, setFilterGotra] = useState('All');
   const [selectedProfile, setSelectedProfile] = useState(null);
   const [editingProfile, setEditingProfile] = useState(null);
@@ -40,19 +40,6 @@ export default function MatrimonialManager() {
       console.error(err);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleApprove = async (id) => {
-    setProcessing(id);
-    try {
-      await fetchApi(`/matrimonial/${id}/approve/`, { method: 'PATCH' });
-      setProfiles(prev => prev.map(p => p.id === id ? { ...p, is_approved: true } : p));
-      if (selectedProfile?.id === id) setSelectedProfile(p => ({ ...p, is_approved: true }));
-    } catch (err) {
-      Swal.fire({ icon: 'error', title: 'Approval Failed', text: 'Failed to approve profile' });
-    } finally {
-      setProcessing(null);
     }
   };
 
@@ -93,11 +80,11 @@ export default function MatrimonialManager() {
     const matchSearch = name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       p.city?.toLowerCase().includes(searchQuery.toLowerCase());
     const matchGender = filterGender === 'All' || p.gender === filterGender;
-    const matchStatus = filterStatus === 'All' ||
-      (filterStatus === 'Approved' && p.is_approved) ||
-      (filterStatus === 'Pending' && !p.is_approved);
+    const matchFee = filterFee === 'All' ||
+      (filterFee === 'Paid' && p.amount_paid) ||
+      (filterFee === 'NoPayment' && !p.amount_paid);
     const matchGotra = filterGotra === 'All' || (p.gotra || '').toLowerCase() === filterGotra.toLowerCase();
-    return matchSearch && matchGender && matchStatus && matchGotra;
+    return matchSearch && matchGender && matchFee && matchGotra;
   });
 
   // A delete can leave the last page empty — show the new last page instead
@@ -110,8 +97,9 @@ export default function MatrimonialManager() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const pending = profiles.filter(p => !p.is_approved).length;
-  const approved = profiles.filter(p => p.is_approved).length;
+  // Profiles created before the creation fee have no amount_paid
+  const paidProfiles = profiles.filter(p => p.amount_paid);
+  const feeCollected = paidProfiles.reduce((sum, p) => sum + Number(p.amount_paid), 0);
   const male = profiles.filter(p => p.gender === 'Male').length;
   const female = profiles.filter(p => p.gender === 'Female').length;
 
@@ -119,8 +107,8 @@ export default function MatrimonialManager() {
     <div className="space-y-8">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-black text-gray-900">Matrimonial Approvals</h1>
-        <p className="text-gray-500 font-medium">Review and approve community matrimonial profiles.</p>
+        <h1 className="text-3xl font-black text-gray-900">Matrimonial Profiles</h1>
+        <p className="text-gray-500 font-medium">Profiles go live once the creation fee (₹1,000 male / ₹500 female) is paid.</p>
       </div>
 
       {/* Stats */}
@@ -129,8 +117,8 @@ export default function MatrimonialManager() {
           { label: 'Total Profiles', value: profiles.length, color: 'text-gray-900' },
           { label: 'Male', value: male, color: 'text-blue-600' },
           { label: 'Female', value: female, color: 'text-pink-600' },
-          { label: 'Pending Review', value: pending, color: 'text-yellow-600' },
-          { label: 'Approved', value: approved, color: 'text-green-600' },
+          { label: 'Paid Online', value: paidProfiles.length, color: 'text-green-600' },
+          { label: 'Fee Collected', value: `₹${feeCollected.toLocaleString('en-IN')}`, color: 'text-green-600' },
         ].map(s => (
           <div key={s.label} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
             <p className={`text-3xl font-black ${s.color}`}>{s.value}</p>
@@ -154,10 +142,10 @@ export default function MatrimonialManager() {
           <option value="Male">Male</option>
           <option value="Female">Female</option>
         </select>
-        <select value={filterStatus} onChange={withReset(setFilterStatus)} className="input-field md:w-36">
-          <option value="All">All Status</option>
-          <option value="Pending">Pending</option>
-          <option value="Approved">Approved</option>
+        <select value={filterFee} onChange={withReset(setFilterFee)} className="input-field md:w-44">
+          <option value="All">All Profiles</option>
+          <option value="Paid">Fee Paid</option>
+          <option value="NoPayment">No Payment Record</option>
         </select>
         <select value={filterGotra} onChange={withReset(setFilterGotra)} className="input-field md:w-40">
           <option value="All">All Gotras</option>
@@ -192,9 +180,11 @@ export default function MatrimonialManager() {
                   ) : (
                     <User size={56} />
                   )}
-                  <div className={`absolute top-4 right-4 px-3 py-1 rounded-full text-[10px] font-black uppercase ${profile.is_approved ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
-                    {profile.is_approved ? 'Approved' : 'Pending'}
-                  </div>
+                  {profile.amount_paid && (
+                    <div className="absolute top-4 right-4 px-3 py-1 rounded-full text-[10px] font-black uppercase bg-green-100 text-green-700">
+                      Paid ₹{Number(profile.amount_paid).toLocaleString('en-IN')}
+                    </div>
+                  )}
                   <div className="absolute top-4 left-4 px-3 py-1 rounded-full text-[10px] font-black uppercase bg-white/90 text-gray-700">
                     {profile.gender}
                   </div>
@@ -219,12 +209,6 @@ export default function MatrimonialManager() {
                       className="flex-1 py-2 text-xs font-bold text-blue-600 border border-blue-200 rounded-lg hover:bg-blue-50 transition-all flex items-center justify-center gap-1">
                       <Edit size={14} /> Edit
                     </button>
-                    {!profile.is_approved && (
-                      <button onClick={() => handleApprove(profile.id)} disabled={processing === profile.id}
-                        className="flex-1 py-2 text-xs font-bold text-green-600 border border-green-200 rounded-lg hover:bg-green-50 transition-all flex items-center justify-center gap-1 disabled:opacity-50">
-                        <Check size={14} /> Approve
-                      </button>
-                    )}
                     <button onClick={() => handleDelete(profile.id)} disabled={processing === profile.id}
                       className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all disabled:opacity-50">
                       <Trash2 size={16} />
@@ -295,6 +279,19 @@ export default function MatrimonialManager() {
                   ))}
                 </div>
 
+                <div className="bg-gray-50 rounded-xl p-3">
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Profile Fee</p>
+                  {selectedProfile.amount_paid ? (
+                    <p className="text-sm font-bold text-gray-800">
+                      ₹{Number(selectedProfile.amount_paid).toLocaleString('en-IN')} paid
+                      {selectedProfile.paid_at && ` on ${new Date(selectedProfile.paid_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}`}
+                      <span className="block text-xs font-medium text-gray-400 mt-0.5">Payment ID: {selectedProfile.razorpay_payment_id}</span>
+                    </p>
+                  ) : (
+                    <p className="text-sm font-medium text-gray-500">No payment record (created before the profile fee)</p>
+                  )}
+                </div>
+
                 <div>
                   <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Bio</p>
                   <p className="text-sm text-gray-600 leading-relaxed">{selectedProfile.bio}</p>
@@ -302,15 +299,6 @@ export default function MatrimonialManager() {
               </div>
 
               <div className="p-6 bg-gray-50 border-t border-gray-100 flex gap-3">
-                {!selectedProfile.is_approved && (
-                  <button
-                    onClick={() => handleApprove(selectedProfile.id)}
-                    disabled={processing === selectedProfile.id}
-                    className="flex-1 btn-primary rounded-xl py-3 disabled:opacity-60"
-                  >
-                    <Check size={16} /> {processing === selectedProfile.id ? 'Approving...' : 'Approve Profile'}
-                  </button>
-                )}
                 <button
                   onClick={() => handleDelete(selectedProfile.id)}
                   disabled={processing === selectedProfile.id}

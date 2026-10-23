@@ -24,8 +24,18 @@ const About = () => {
           <p className="text-xl md:text-2xl leading-loose text-[#564337] mb-10">
             {t('Dear members of our community,', 'प्रिय समाजबंधुओं,')} <br />
             {t(
-              'Bihar Tailik Sahu Sabha works tirelessly for the unity, education and development of our community. Our aim is to empower the youth and give society a new direction. Let us all come together to build a bright future for our community. Heartfelt thanks to all of you for your support and trust.',
-              'बिहार तैलिक साहू सभा समाज की एकता, शिक्षा एवं विकास के लिए निरंतर कार्यरत है। हमारा उद्देश्य युवाओं को सशक्त बनाकर समाज को नई दिशा देना है। आइए, हम सभी मिलकर समाज के उज्ज्वल भविष्य का निर्माण करें। आप सभी के सहयोग एवं विश्वास के लिए हार्दिक धन्यवाद।'
+              'Bihar Tailik Sahu Sabha works tirelessly for the unity, education and development of our community.',
+              'बिहार तैलिक साहू सभा समाज की एकता, शिक्षा एवं विकास के लिए निरंतर कार्यरत है।'
+            )}
+            <br />
+            {t(
+              'Our aim is to empower the community educationally and socially, to stand united and raise our voice against any form of atrocity and misconduct, and to give every possible support and encouragement to any member of the community who wishes to move ahead in politics or any other field.',
+              'हमारा उद्देश्य समाज को शैक्षणिक एवं सामाजिक रूप से सशक्त बनाना, किसी भी प्रकार के अत्याचार एवं दुराचार के विरुद्ध एकजुट होकर आवाज़ उठाना तथा समाज के किसी भी व्यक्ति को राजनीति या किसी अन्य क्षेत्र में आगे बढ़ने के लिए हर संभव सहयोग एवं प्रोत्साहन देना है।'
+            )}
+            <br />
+            {t(
+              'Let us all come together to build a bright future for our community. Heartfelt thanks to all of you for your support and trust.',
+              'आइए, हम सभी मिलकर समाज के उज्ज्वल भविष्य का निर्माण करें। आप सभी के सहयोग एवं विश्वास के लिए हार्दिक धन्यवाद।'
             )}
           </p>
         </div>

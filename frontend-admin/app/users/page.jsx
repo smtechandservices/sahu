@@ -270,6 +270,7 @@ export default function UsersManager() {
                 <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">User</th>
                 <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Phone</th>
                 <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Member</th>
+                <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Membership Fee</th>
                 <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Admin</th>
                 <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Status</th>
                 <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Joined</th>
@@ -300,6 +301,24 @@ export default function UsersManager() {
                     {user.is_member
                       ? <CheckCircle size={18} className="text-green-500" />
                       : <XCircle size={18} className="text-gray-300" />}
+                  </td>
+                  <td className="px-6 py-4">
+                    {user.membership ? (
+                      <div title={`Payment ID: ${user.membership.payment_id}`}>
+                        <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold bg-green-50 text-green-600">
+                          Paid ₹{Number(user.membership.amount).toLocaleString('en-IN')}
+                        </span>
+                        {user.membership.paid_at && (
+                          <p className="text-[11px] text-gray-400 mt-1">
+                            {new Date(user.membership.paid_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                          </p>
+                        )}
+                      </div>
+                    ) : user.is_member ? (
+                      <span className="text-xs font-medium text-gray-400">No online payment</span>
+                    ) : (
+                      <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold bg-gray-100 text-gray-400">Not paid</span>
+                    )}
                   </td>
                   <td className="px-6 py-4">
                     {user.is_admin

@@ -114,6 +114,33 @@
     background: #A16207;
   }
 
+  /* Vertical counterpart for scrollable panels (same always-visible approach) */
+  .scrollbar-thin-y {
+    scrollbar-width: auto;
+    scrollbar-color: auto;
+  }
+  @supports (-moz-appearance: none) {
+    .scrollbar-thin-y {
+      scrollbar-width: thin;
+      scrollbar-color: #EAB308 #F3F4F6;
+    }
+  }
+  .scrollbar-thin-y::-webkit-scrollbar {
+    width: 6px;
+  }
+  .scrollbar-thin-y::-webkit-scrollbar-track {
+    background: #F3F4F6;
+    border-radius: 9999px;
+  }
+  .scrollbar-thin-y::-webkit-scrollbar-thumb {
+    background: #EAB308;
+    border: none;
+    border-radius: 9999px;
+  }
+  .scrollbar-thin-y::-webkit-scrollbar-thumb:hover {
+    background: #A16207;
+  }
+
   @keyframes marquee {
     0% { transform: translateX(0); }
     100% { transform: translateX(-50%); }

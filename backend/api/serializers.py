@@ -1,5 +1,6 @@
 import base64
 import mimetypes
+import re
 import uuid
 from django.conf import settings
 from django.core.files.base import ContentFile
@@ -10,7 +11,7 @@ from .models import (
     User, OTPRecord, Accommodation, Booking,
     JobListing, Advertisement, MatrimonialProfile,
     Article, Event, EventRegistration, SiteSettings,
-    HeroCarouselImage, UserSession, Media, Donation
+    HeroCarouselImage, UserSession, Media, Donation, MembershipApplication
 )
 
 
@@ -67,11 +68,23 @@ class UserSerializer(serializers.ModelSerializer):
 
 class AdminUserSerializer(serializers.ModelSerializer):
     profile_photo = Base64FileField(mimetype_field='profile_photo_mimetype', required=False, allow_null=True)
+    membership = serializers.SerializerMethodField()
 
     class Meta:
         model = User
-        fields = ['id', 'phone', 'name', 'email', 'profile_photo', 'profile_photo_mimetype', 'is_member', 'is_admin', 'is_active', 'date_joined']
+        fields = ['id', 'phone', 'name', 'email', 'profile_photo', 'profile_photo_mimetype', 'is_member', 'is_admin', 'is_active', 'date_joined', 'membership']
         read_only_fields = ['phone', 'date_joined']
+
+    def get_membership(self, obj):
+        """Membership fee paid online from the Join page; None for accounts created before it or offline."""
+        application = getattr(obj, 'membership_application', None)
+        if not application or application.status != 'Paid':
+            return None
+        return {
+            'amount': application.amount,
+            'paid_at': application.paid_at,
+            'payment_id': application.razorpay_payment_id,
+        }
 
 # --- Accommodation Serializers ---
 class AccommodationSerializer(serializers.ModelSerializer):
@@ -117,9 +130,27 @@ class MatrimonialPublicUserSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'email']
 
 
+def matrimonial_receipt(profile):
+    """Details for the profile-fee receipt, or None if no fee was paid (older profiles)."""
+    if not profile.amount_paid:
+        return None
+    return {
+        'id': profile.id,
+        'name': profile.user.name,
+        'phone': profile.user.phone,
+        'gender': profile.gender,
+        'age': profile.age,
+        'city': profile.city,
+        'amount': profile.amount_paid,
+        'razorpay_payment_id': profile.razorpay_payment_id,
+        'paid_at': profile.paid_at,
+    }
+
+
 class MatrimonialProfileSerializer(serializers.ModelSerializer):
     user_detail = MatrimonialPublicUserSerializer(source='user', read_only=True)
     contact_phone = serializers.SerializerMethodField()
+    payment = serializers.SerializerMethodField()
     photo = Base64FileField(mimetype_field='photo_mimetype', required=False, allow_null=True)
     marital_status_display = serializers.CharField(source='get_marital_status_display', read_only=True)
     manglik_display = serializers.CharField(source='get_manglik_display', read_only=True)
@@ -130,11 +161,18 @@ class MatrimonialProfileSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'user', 'age', 'gender', 'city', 'education', 'occupation', 'family_type',
             'gotra', 'marital_status', 'manglik', 'complexion', 'height_cm', 'annual_income',
-            'mother_tongue', 'photo', 'photo_mimetype', 'bio', 'is_approved', 'created_at',
-            'user_detail', 'contact_phone',
+            'mother_tongue', 'photo', 'photo_mimetype', 'bio', 'created_at',
+            'user_detail', 'contact_phone', 'payment',
             'marital_status_display', 'manglik_display', 'complexion_display',
         ]
-        read_only_fields = ['user', 'is_approved', 'created_at']
+        read_only_fields = ['user', 'created_at']
+
+    def get_payment(self, obj):
+        # Only the owner sees what they paid
+        request = self.context.get('request')
+        if not request or obj.user_id != request.user.id:
+            return None
+        return matrimonial_receipt(obj)
 
     def get_contact_phone(self, obj):
         request = self.context.get('request')
@@ -152,6 +190,10 @@ class MatrimonialProfileSerializer(serializers.ModelSerializer):
 
 class AdminMatrimonialProfileSerializer(MatrimonialProfileSerializer):
     user_detail = UserSerializer(source='user', read_only=True)
+
+    class Meta(MatrimonialProfileSerializer.Meta):
+        fields = MatrimonialProfileSerializer.Meta.fields + ['amount_paid', 'razorpay_payment_id', 'paid_at']
+        read_only_fields = MatrimonialProfileSerializer.Meta.read_only_fields + ['amount_paid', 'razorpay_payment_id', 'paid_at']
 
     def get_contact_phone(self, obj):
         return obj.user.phone
@@ -280,13 +322,95 @@ class CustomTokenRefreshSerializer(TokenRefreshSerializer):
 
 
 
+# --- Membership Serializers ---
+# Verhoeff checksum tables; the last digit of every Aadhaar number is a Verhoeff check digit
+_VERHOEFF_D = [
+    [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], [1, 2, 3, 4, 0, 6, 7, 8, 9, 5], [2, 3, 4, 0, 1, 7, 8, 9, 5, 6],
+    [3, 4, 0, 1, 2, 8, 9, 5, 6, 7], [4, 0, 1, 2, 3, 9, 5, 6, 7, 8], [5, 9, 8, 7, 6, 0, 4, 3, 2, 1],
+    [6, 5, 9, 8, 7, 1, 0, 4, 3, 2], [7, 6, 5, 9, 8, 2, 1, 0, 4, 3], [8, 7, 6, 5, 9, 3, 2, 1, 0, 4],
+    [9, 8, 7, 6, 5, 4, 3, 2, 1, 0],
+]
+_VERHOEFF_P = [
+    [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], [1, 5, 7, 6, 2, 8, 3, 0, 9, 4], [5, 8, 0, 3, 7, 9, 6, 1, 4, 2],
+    [8, 9, 1, 6, 0, 4, 3, 5, 2, 7], [9, 4, 5, 3, 1, 2, 6, 8, 7, 0], [4, 2, 8, 6, 5, 7, 3, 9, 0, 1],
+    [2, 7, 9, 3, 8, 0, 6, 4, 1, 5], [7, 0, 4, 6, 9, 1, 3, 2, 5, 8],
+]
+
+
+def is_valid_aadhaar(number):
+    if len(number) != 12 or not number.isdigit() or number[0] in '01':
+        return False
+    check = 0
+    for i, digit in enumerate(reversed(number)):
+        check = _VERHOEFF_D[check][_VERHOEFF_P[i % 8][int(digit)]]
+    return check == 0
+
+
+PHONE_REGEX = re.compile(r'[6-9]\d{9}')
+KYC_ALLOWED_TYPES = {'image/jpeg', 'image/png', 'image/webp', 'application/pdf'}
+KYC_MAX_SIZE_BYTES = 5 * 1024 * 1024
+
+
+class MembershipApplicationSerializer(serializers.ModelSerializer):
+    """Join page sign-up. Aadhaar and the KYC file go in but only a masked Aadhaar comes back."""
+    aadhaar_number = serializers.CharField(write_only=True)
+    kyc_document = serializers.FileField(write_only=True)
+    aadhaar_masked = serializers.SerializerMethodField()
+
+    class Meta:
+        model = MembershipApplication
+        fields = [
+            'id', 'name', 'phone', 'city', 'aadhaar_number', 'aadhaar_masked', 'kyc_document',
+            'amount', 'status', 'razorpay_payment_id', 'created_at', 'paid_at',
+        ]
+        read_only_fields = ['status', 'razorpay_payment_id', 'created_at', 'paid_at']
+
+    def get_aadhaar_masked(self, obj):
+        return f'XXXX XXXX {obj.aadhaar_number[-4:]}'
+
+    def validate_name(self, value):
+        value = value.strip()
+        if not value:
+            raise serializers.ValidationError('Name is required.')
+        return value
+
+    def validate_phone(self, value):
+        if not PHONE_REGEX.fullmatch(value):
+            raise serializers.ValidationError('Enter a valid 10-digit mobile number starting with 6, 7, 8 or 9.')
+        return value
+
+    def validate_aadhaar_number(self, value):
+        value = ''.join(value.split())
+        if not is_valid_aadhaar(value):
+            raise serializers.ValidationError('Enter a valid 12-digit Aadhaar number.')
+        if MembershipApplication.objects.filter(aadhaar_number=value, status='Paid').exists():
+            raise serializers.ValidationError('This Aadhaar number is already registered with a member.')
+        return value
+
+    def validate_kyc_document(self, value):
+        if value.content_type not in KYC_ALLOWED_TYPES:
+            raise serializers.ValidationError('Upload a JPG, PNG, WEBP or PDF file.')
+        if value.size > KYC_MAX_SIZE_BYTES:
+            raise serializers.ValidationError('The KYC document must be 5 MB or smaller.')
+        return value
+
+    def validate_amount(self, value):
+        if value not in MembershipApplication.FEE_CHOICES:
+            raise serializers.ValidationError('Choose one of the membership amounts.')
+        return value
+
+    def create(self, validated_data):
+        validated_data['kyc_document_mimetype'] = validated_data['kyc_document'].content_type
+        return super().create(validated_data)
+
+
 # --- Donation Serializers ---
 class DonationSerializer(serializers.ModelSerializer):
     """Used by donors on the website: they can only submit who/how much/what for."""
     class Meta:
         model = Donation
-        fields = ['id', 'name', 'phone', 'email', 'amount', 'purpose', 'status', 'payment_method', 'created_at']
-        read_only_fields = ['status', 'payment_method', 'created_at']
+        fields = ['id', 'name', 'phone', 'email', 'amount', 'purpose', 'status', 'payment_method', 'razorpay_payment_id', 'created_at']
+        read_only_fields = ['status', 'payment_method', 'razorpay_payment_id', 'created_at']
 
     def validate_amount(self, value):
         if value <= 0:
@@ -308,7 +432,8 @@ class AdminDonationSerializer(DonationSerializer):
     class Meta(DonationSerializer.Meta):
         fields = [
             'id', 'user', 'user_name', 'name', 'phone', 'email', 'amount', 'purpose', 'status',
-            'payment_method', 'transaction_ref', 'notes', 'recorded_by', 'recorded_by_name',
-            'created_at', 'updated_at',
+            'payment_method', 'transaction_ref', 'razorpay_order_id', 'razorpay_payment_id',
+            'notes', 'recorded_by', 'recorded_by_name', 'created_at', 'updated_at',
         ]
-        read_only_fields = ['user', 'recorded_by', 'created_at', 'updated_at']
+        read_only_fields = ['user', 'recorded_by', 'razorpay_order_id', 'razorpay_payment_id',
+                            'created_at', 'updated_at']

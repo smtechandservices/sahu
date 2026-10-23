@@ -6,6 +6,11 @@ import { useAuth } from "../../context/AuthContext";
 
 import Swal from "sweetalert2";
 import { useLanguage } from '../../context/LanguageContext';
+import { loadRazorpayCheckout, errorMessage } from '../../lib/razorpay';
+import { downloadMatrimonialReceipt } from '../../lib/receipts';
+
+// One-time profile creation fee (₹), must match MatrimonialProfile.FEES on the backend
+const PROFILE_FEES = { Male: 1000, Female: 500 };
 
 export default function CreateProfileModal({ isOpen, onClose, onCreated }) {
   const router = useRouter();
@@ -57,10 +62,61 @@ export default function CreateProfileModal({ isOpen, onClose, onCreated }) {
 
 
 
+  const fee = PROFILE_FEES[formData.gender];
+
+  // The profile only goes live once Razorpay confirms the fee
+  const confirmPayment = async (payment) => {
+    try {
+      const { fetchApi } = await import("../../lib/api");
+      const data = await fetchApi("/matrimonial/verify_payment/", { method: "POST", body: JSON.stringify(payment) });
+      // Can only be closed by downloading the receipt
+      await Swal.fire({
+        icon: "success",
+        title: t('Profile Created', 'प्रोफ़ाइल बन गई'),
+        text: t(
+          `Your matrimonial profile is now live. Payment ID: ${payment.razorpay_payment_id}. Download your receipt to continue.`,
+          `आपकी वैवाहिक प्रोफ़ाइल अब प्रकाशित हो गई है। भुगतान आईडी: ${payment.razorpay_payment_id}। आगे बढ़ने के लिए अपनी रसीद डाउनलोड करें।`
+        ),
+        confirmButtonText: t('Download Receipt', 'रसीद डाउनलोड करें'),
+        confirmButtonColor: "#EAB308",
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        showLoaderOnConfirm: true,
+        preConfirm: () =>
+          downloadMatrimonialReceipt(data.receipt).catch((err) => {
+            console.error(err);
+            Swal.showValidationMessage(t('Could not create the receipt. Please try again.', 'रसीद नहीं बन सकी। कृपया फिर से प्रयास करें।'));
+            return false;
+          }),
+      });
+      if (onCreated) {
+        await onCreated();
+      } else {
+        onClose();
+        router.refresh();
+      }
+    } catch (err) {
+      Swal.fire({
+        icon: "info",
+        title: t('Payment Received', 'भुगतान प्राप्त'),
+        text: errorMessage(err) || t(
+          `We received your payment (ID: ${payment.razorpay_payment_id}) but could not activate your profile. Please contact the Sabha with this ID.`,
+          `आपका भुगतान (आईडी: ${payment.razorpay_payment_id}) प्राप्त हुआ, लेकिन प्रोफ़ाइल सक्रिय नहीं हो सकी। कृपया इस आईडी के साथ सभा से संपर्क करें।`
+        ),
+        confirmButtonColor: "#EAB308",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
+      const loaded = await loadRazorpayCheckout();
+      if (!loaded) throw new Error(t('Could not load the payment window. Check your connection and try again.', 'भुगतान विंडो लोड नहीं हो सकी। अपना कनेक्शन जाँचें और फिर से प्रयास करें।'));
+
       const { fetchApi } = await import("../../lib/api");
       const payload = { ...formData };
       if (photo) {
@@ -70,31 +126,32 @@ export default function CreateProfileModal({ isOpen, onClose, onCreated }) {
         payload.photo_mimetype = mimetype;
       }
 
-      await fetchApi("/matrimonial/", {
+      // Saved but hidden until paid; resubmitting replaces an unpaid attempt
+      const pending = await fetchApi("/matrimonial/", {
         method: "POST",
         body: JSON.stringify(payload),
       });
-      Swal.fire({
-        icon: "success",
-        title: t('Profile Created', 'प्रोफ़ाइल बन गई'),
-        text: t('Matrimonial profile created successfully! It will be visible after admin approval.', 'वैवाहिक प्रोफ़ाइल सफलतापूर्वक बन गई! एडमिन की स्वीकृति के बाद यह दिखाई देगी।'),
-        confirmButtonColor: "#EAB308",
+      const checkout = new window.Razorpay({
+        key: pending.razorpay.key_id,
+        order_id: pending.razorpay.order_id,
+        amount: pending.razorpay.amount,
+        currency: pending.razorpay.currency,
+        name: 'Sahu Sabha',
+        description: t('Matrimonial Profile Fee', 'वैवाहिक प्रोफ़ाइल शुल्क'),
+        prefill: { name: user?.name, contact: user?.phone },
+        theme: { color: '#EAB308' },
+        handler: confirmPayment,
+        modal: { ondismiss: () => setLoading(false) },
       });
-      if (onCreated) {
-        await onCreated();
-      } else {
-        onClose();
-        router.refresh();
-      }
+      checkout.open();
     } catch (err) {
       console.error(err);
       Swal.fire({
         icon: "error",
         title: t('Creation Failed', 'प्रोफ़ाइल नहीं बन सकी'),
-        text: t('Failed to create profile. You may already have one.', 'प्रोफ़ाइल नहीं बन सकी। हो सकता है आपकी प्रोफ़ाइल पहले से मौजूद हो।'),
+        text: errorMessage(err) || t('Failed to create profile. Please try again.', 'प्रोफ़ाइल नहीं बन सकी। कृपया फिर से प्रयास करें।'),
         confirmButtonColor: "#EAB308",
       });
-    } finally {
       setLoading(false);
     }
   };
@@ -154,6 +211,12 @@ export default function CreateProfileModal({ isOpen, onClose, onCreated }) {
                 <option value="Male">{tv('Male')}</option>
                 <option value="Female">{tv('Female')}</option>
               </select>
+              <p className="text-xs text-gray-500 mt-1.5">
+                {t(
+                  `One-time profile fee: ₹${fee.toLocaleString('en-IN')} (₹1,000 for male, ₹500 for female)`,
+                  `एकमुश्त प्रोफ़ाइल शुल्क: ₹${fee.toLocaleString('en-IN')} (पुरुष ₹1,000, महिला ₹500)`
+                )}
+              </p>
             </div>
             <div>
               <label className="block text-sm font-bold text-gray-700 mb-2">{t('Height (cm)', 'ऊँचाई (सेमी)')}</label>
@@ -224,7 +287,9 @@ export default function CreateProfileModal({ isOpen, onClose, onCreated }) {
               {t('Cancel', 'रद्द करें')}
             </button>
             <button type="submit" disabled={loading} className="btn-primary px-8 rounded-xl shadow-lg shadow-primary/20">
-              {loading ? t('Creating...', 'बनाई जा रही है...') : t('Create Profile', 'प्रोफ़ाइल बनाएँ')}
+              {loading
+                ? t('Please wait...', 'कृपया प्रतीक्षा करें...')
+                : t(`Pay ₹${fee.toLocaleString('en-IN')} & Create Profile`, `₹${fee.toLocaleString('en-IN')} भुगतान करें और प्रोफ़ाइल बनाएँ`)}
             </button>
           </div>
         </form>
