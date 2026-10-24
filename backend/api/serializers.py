@@ -5,10 +5,11 @@ import uuid
 from django.conf import settings
 from django.core.files.base import ContentFile
 from django.core.files.uploadedfile import UploadedFile
+from django.db import transaction
 from django.utils import timezone
 from rest_framework import serializers
 from .models import (
-    User, OTPRecord, Accommodation, Booking,
+    User, OTPRecord, Accommodation, AccommodationImage, Booking,
     JobListing, Advertisement, MatrimonialProfile,
     Article, Event, EventRegistration, SiteSettings,
     HeroCarouselImage, UserSession, Media, Donation, MembershipApplication
@@ -96,12 +97,82 @@ class AdminUserSerializer(serializers.ModelSerializer):
         }
 
 # --- Accommodation Serializers ---
+MAX_ACCOMMODATION_IMAGES = 10
+
+class AccommodationImageSerializer(serializers.ModelSerializer):
+    image = Base64FileField(read_only=True)
+
+    class Meta:
+        model = AccommodationImage
+        fields = ['id', 'image', 'image_mimetype', 'order']
+
 class AccommodationSerializer(serializers.ModelSerializer):
-    image = Base64FileField(mimetype_field='image_mimetype', required=False, allow_null=True)
-    
+    # Cover photo: mirrors the first entry of `images`
+    image = Base64FileField(read_only=True)
+    images = AccommodationImageSerializer(many=True, read_only=True)
+    # Full ordered photo list from the admin form: {'id': n} keeps an existing photo,
+    # {'image': <data URI>, 'image_mimetype': ...} adds one; existing photos left out are removed.
+    gallery = serializers.ListField(
+        child=serializers.DictField(), write_only=True, required=False, max_length=MAX_ACCOMMODATION_IMAGES
+    )
+
     class Meta:
         model = Accommodation
         fields = '__all__'
+        read_only_fields = ['image_mimetype']
+
+    def validate_gallery(self, items):
+        decode = Base64FileField(default_ext='.jpg')
+        photos = []
+        for item in items:
+            if item.get('id') is not None:
+                try:
+                    photos.append(int(item['id']))
+                except (TypeError, ValueError):
+                    raise serializers.ValidationError("Invalid photo id")
+            elif item.get('image'):
+                photos.append((decode.to_internal_value(item['image']), item.get('image_mimetype')))
+            else:
+                raise serializers.ValidationError("Each photo needs an id or image data")
+        return photos
+
+    @transaction.atomic
+    def create(self, validated_data):
+        gallery = validated_data.pop('gallery', None)
+        accommodation = super().create(validated_data)
+        if gallery is not None:
+            self._save_gallery(accommodation, gallery)
+        return accommodation
+
+    @transaction.atomic
+    def update(self, instance, validated_data):
+        gallery = validated_data.pop('gallery', None)
+        accommodation = super().update(instance, validated_data)
+        if gallery is not None:
+            self._save_gallery(accommodation, gallery)
+        return accommodation
+
+    def _save_gallery(self, accommodation, gallery):
+        existing = {photo.id: photo for photo in accommodation.images.all()}
+        kept = []
+        for order, item in enumerate(gallery):
+            if isinstance(item, tuple):
+                file, mimetype = item
+                kept.append(AccommodationImage.objects.create(
+                    accommodation=accommodation, image=file, image_mimetype=mimetype, order=order
+                ))
+            elif item in existing:
+                photo = existing.pop(item)
+                photo.order = order
+                photo.save(update_fields=['order'])
+                kept.append(photo)
+        AccommodationImage.objects.filter(id__in=existing).delete()
+        cover = kept[0] if kept else None
+        accommodation.image = cover.image if cover else None
+        accommodation.image_mimetype = cover.image_mimetype if cover else None
+        accommodation.save(update_fields=['image', 'image_mimetype'])
+        # Drop the prefetched/cached photos so the response shows the new list
+        getattr(accommodation, '_prefetched_objects_cache', {}).pop('images', None)
 
 class BookingSerializer(serializers.ModelSerializer):
     accommodation_detail = AccommodationSerializer(source='accommodation', read_only=True)

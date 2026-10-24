@@ -83,6 +83,19 @@ class Accommodation(models.Model):
     def __str__(self):
         return self.title
 
+class AccommodationImage(models.Model):
+    """Property photo gallery; the first one is mirrored into Accommodation.image as the cover."""
+    accommodation = models.ForeignKey(Accommodation, on_delete=models.CASCADE, related_name='images')
+    image = models.FileField(upload_to='accommodation/', storage=public_storage, max_length=255)
+    image_mimetype = models.CharField(max_length=50, null=True, blank=True)
+    order = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ['order', 'id']
+
+    def __str__(self):
+        return f"{self.accommodation.title} #{self.order}"
+
 class Booking(models.Model):
     STATUS_CHOICES = (
         ('Pending', 'Pending'),

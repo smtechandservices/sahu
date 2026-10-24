@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { fetchApi } from '../../lib/api';
 import {
-  Plus, MapPin, Edit, Trash2, CheckCircle, X, Upload
+  Plus, MapPin, Edit, Trash2, CheckCircle, X, Upload, Star, Images
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Swal from 'sweetalert2';
@@ -19,9 +19,34 @@ const EMPTY_FORM = {
   unit: '',
   location: '',
   is_active: true,
-  image: null,
-  image_mimetype: null,
 };
+
+const MAX_PHOTOS = 10;
+const MAX_PHOTO_DIMENSION = 1600;
+
+// Downscale camera photos to JPEG so a full gallery fits in one save request
+const readPhoto = (file) =>
+  new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const img = new window.Image();
+    img.onload = () => {
+      const scale = Math.min(1, MAX_PHOTO_DIMENSION / Math.max(img.width, img.height));
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.round(img.width * scale);
+      canvas.height = Math.round(img.height * scale);
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#fff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      URL.revokeObjectURL(url);
+      resolve(canvas.toDataURL('image/jpeg', 0.85));
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error(`Could not read ${file.name}`));
+    };
+    img.src = url;
+  });
 
 export default function AccommodationManager() {
   const [accommodations, setAccommodations] = useState([]);
@@ -32,7 +57,8 @@ export default function AccommodationManager() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editingAcc, setEditingAcc] = useState(null);
   const [form, setForm] = useState(EMPTY_FORM);
-  const [imagePreview, setImagePreview] = useState(null);
+  // Ordered gallery, first is the cover: { key, id } for saved photos, { key, image } for new data URIs
+  const [photos, setPhotos] = useState([]);
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
   const fileRef = useRef(null);
@@ -59,7 +85,7 @@ export default function AccommodationManager() {
   const openCreate = () => {
     setEditingAcc(null);
     setForm(EMPTY_FORM);
-    setImagePreview(null);
+    setPhotos([]);
     setModalOpen(true);
   };
 
@@ -75,12 +101,8 @@ export default function AccommodationManager() {
       unit: acc.unit || '',
       location: acc.location || '',
       is_active: acc.is_active ?? true,
-      image: acc.image || null,
-      image_mimetype: acc.image_mimetype || null,
     });
-    setImagePreview(
-      acc.image || null
-    );
+    setPhotos((acc.images || []).map((p) => ({ key: `saved-${p.id}`, id: p.id, url: p.image })));
     setModalOpen(true);
   };
 
@@ -88,26 +110,37 @@ export default function AccommodationManager() {
     setModalOpen(false);
     setEditingAcc(null);
     setForm(EMPTY_FORM);
-    setImagePreview(null);
+    setPhotos([]);
   };
 
-  const handleImageChange = (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const base64 = reader.result;
-      setImagePreview(base64);
-      const b64data = base64.split('base64,')[1];
-      setForm((f) => ({ ...f, image: b64data, image_mimetype: file.type }));
-    };
-    reader.readAsDataURL(file);
+  const handleImagesChange = async (e) => {
+    const files = Array.from(e.target.files || []);
+    e.target.value = '';
+    if (!files.length) return;
+    const room = MAX_PHOTOS - photos.length;
+    if (files.length > room) {
+      Swal.fire({ icon: 'warning', title: 'Too Many Photos', text: `A property can have up to ${MAX_PHOTOS} photos.` });
+    }
+    try {
+      const added = await Promise.all(files.slice(0, room).map(readPhoto));
+      setPhotos((prev) => [
+        ...prev,
+        ...added.map((image, i) => ({ key: `new-${Date.now()}-${i}`, image, url: image })),
+      ]);
+    } catch (err) {
+      Swal.fire({ icon: 'error', title: 'Upload Failed', text: err.message });
+    }
   };
+
+  const removePhoto = (key) => setPhotos((prev) => prev.filter((p) => p.key !== key));
+
+  const makeCover = (key) =>
+    setPhotos((prev) => [...prev.filter((p) => p.key === key), ...prev.filter((p) => p.key !== key)]);
 
   const handleSave = async (e) => {
     e.preventDefault();
-    if (!editingAcc && !form.image) {
-      Swal.fire({ icon: 'warning', title: 'Image Required', text: 'Please upload a property image.' });
+    if (!photos.length) {
+      Swal.fire({ icon: 'warning', title: 'Image Required', text: 'Please upload at least one property photo.' });
       return;
     }
     setSaving(true);
@@ -121,7 +154,7 @@ export default function AccommodationManager() {
         unit: form.unit,
         location: form.location,
         is_active: form.is_active,
-        ...(form.image && { image: form.image, image_mimetype: form.image_mimetype }),
+        gallery: photos.map((p) => (p.id ? { id: p.id } : { image: p.image, image_mimetype: 'image/jpeg' })),
       };
 
       if (editingAcc) {
@@ -223,6 +256,11 @@ export default function AccommodationManager() {
                   {!acc.is_active && (
                     <div className="absolute top-4 left-4 bg-gray-700 text-white px-3 py-1 rounded-full text-[10px] font-bold">
                       Inactive
+                    </div>
+                  )}
+                  {acc.images?.length > 1 && (
+                    <div className="absolute bottom-4 right-4 bg-black/60 text-white px-2.5 py-1 rounded-full text-[10px] font-bold flex items-center gap-1">
+                      <Images size={12} /> {acc.images.length}
                     </div>
                   )}
                 </div>
@@ -401,22 +439,67 @@ export default function AccommodationManager() {
               <form onSubmit={handleSave} className="flex-1 overflow-y-auto p-8 space-y-6 scrollbar-hide">
                 <div>
                   <label className="block text-sm font-bold text-gray-700 mb-2">
-                    Property Image {!editingAcc && <span className="text-red-400">*</span>}
+                    Property Photos <span className="text-red-400">*</span>{' '}
+                    <span className="text-gray-400 font-normal">
+                      ({photos.length}/{MAX_PHOTOS}, first photo is the cover)
+                    </span>
                   </label>
-                  <div
-                    onClick={() => fileRef.current?.click()}
-                    className="w-full h-40 rounded-2xl border-2 border-dashed border-gray-200 flex items-center justify-center cursor-pointer hover:border-primary/40 hover:bg-primary/5 transition-all overflow-hidden relative"
-                  >
-                    {imagePreview ? (
-                      <img src={imagePreview} alt="preview" className="w-full h-full object-cover" />
-                    ) : (
+                  {photos.length === 0 ? (
+                    <div
+                      onClick={() => fileRef.current?.click()}
+                      className="w-full h-40 rounded-2xl border-2 border-dashed border-gray-200 flex items-center justify-center cursor-pointer hover:border-primary/40 hover:bg-primary/5 transition-all"
+                    >
                       <div className="text-center text-gray-400">
                         <Upload size={28} className="mx-auto mb-2" />
-                        <p className="text-sm font-medium">Click to upload image</p>
+                        <p className="text-sm font-medium">Click to upload photos</p>
+                        <p className="text-xs">You can select several at once</p>
                       </div>
-                    )}
-                  </div>
-                  <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-3 md:grid-cols-4 gap-3">
+                      {photos.map((photo, index) => (
+                        <div key={photo.key} className="relative aspect-[4/3] rounded-xl overflow-hidden bg-gray-100 group/photo">
+                          <img src={photo.url} alt={`Photo ${index + 1}`} className="w-full h-full object-cover" />
+                          {index === 0 && (
+                            <span className="absolute top-1.5 left-1.5 bg-primary text-white px-2 py-0.5 rounded-full text-[9px] font-bold">
+                              Cover
+                            </span>
+                          )}
+                          <div className="absolute top-1.5 right-1.5 flex gap-1 opacity-0 group-hover/photo:opacity-100 transition-opacity">
+                            {index > 0 && (
+                              <button
+                                type="button"
+                                onClick={() => makeCover(photo.key)}
+                                title="Set as cover"
+                                className="w-6 h-6 rounded-full bg-white/90 text-gray-700 hover:text-primary flex items-center justify-center shadow"
+                              >
+                                <Star size={12} />
+                              </button>
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => removePhoto(photo.key)}
+                              title="Remove photo"
+                              className="w-6 h-6 rounded-full bg-white/90 text-gray-700 hover:text-red-500 flex items-center justify-center shadow"
+                            >
+                              <X size={12} />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                      {photos.length < MAX_PHOTOS && (
+                        <button
+                          type="button"
+                          onClick={() => fileRef.current?.click()}
+                          className="aspect-[4/3] rounded-xl border-2 border-dashed border-gray-200 flex flex-col items-center justify-center text-gray-400 hover:border-primary/40 hover:bg-primary/5 transition-all"
+                        >
+                          <Plus size={20} />
+                          <span className="text-[11px] font-medium mt-1">Add photos</span>
+                        </button>
+                      )}
+                    </div>
+                  )}
+                  <input ref={fileRef} type="file" accept="image/*" multiple className="hidden" onChange={handleImagesChange} />
                 </div>
 
                 <div>

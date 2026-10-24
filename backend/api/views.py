@@ -615,8 +615,8 @@ class AccommodationViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         if self.request.user.is_authenticated and getattr(self.request.user, 'is_admin', False):
-            return Accommodation.objects.all().order_by('-created_at')
-        return Accommodation.objects.filter(is_active=True).order_by('-created_at')
+            return Accommodation.objects.prefetch_related('images').order_by('-created_at')
+        return Accommodation.objects.filter(is_active=True).prefetch_related('images').order_by('-created_at')
 
 class BookingViewSet(viewsets.ModelViewSet):
     serializer_class = BookingSerializer
