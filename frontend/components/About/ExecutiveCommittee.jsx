@@ -146,15 +146,6 @@ const mahilaCommittee = [
   { name: "Simmy Prasad", role: ["Pradesh Mahila Adhyaksh (State Women's President, Mahila Morcha)", 'प्रदेश महिला अध्यक्ष (महिला मोर्चा)'], mobile: "9798470411", image: "/assets/simmi-prasad.jpg" },
   { name: "Sheetal Gupta", role: ['Mahamantri (General Secretary, Mahila Morcha)', 'महामंत्री (महिला मोर्चा)'], mobile: "9973315777", image: "/assets/sheetal.jpg" },
   { name: "Rooplata", role: ['Koshadhyaksh (Treasurer, Mahila Morcha)', 'कोषाध्यक्ष (महिला मोर्चा)'], image: "/assets/rooplata.jpg" },
-  { name: "Shrimati Savitri Devi", role: ['Former Mahila Adhyaksh, Chhapra (1983–1989)', 'पूर्व महिला अध्यक्ष, छपरा (1983–1989)'] },
-  { name: "Shrimati Renu Priyadarshini", role: ['Former Mahila Adhyaksh, Patna (1989–1992)', 'पूर्व महिला अध्यक्ष, पटना (1989–1992)'] },
-  { name: "Prof. Dr. Kiran Aryani Mishra", role: ['Former Mahila Adhyaksh, Patna (1992–1995)', 'पूर्व महिला अध्यक्ष, पटना (1992–1995)'] },
-  { name: "Shrimati Gayatri Gupta", role: ['Former Mahila Adhyaksh, Patna (1995–2005)', 'पूर्व महिला अध्यक्ष, पटना (1995–2005)'] },
-  { name: "Sushri Sushma Sahu", role: ['Former Mahila Adhyaksh, Patna (2005–2007)', 'पूर्व महिला अध्यक्ष, पटना (2005–2007)'] },
-  { name: "Dr. Shanti Brahmachari", role: ['Former Mahila Adhyaksh, Patna (2007–2009)', 'पूर्व महिला अध्यक्ष, पटना (2007–2009)'] },
-  { name: "Shrimati Manju Gupta", role: ['Former Mahila Adhyaksh, Chhapra (2009–2013)', 'पूर्व महिला अध्यक्ष, छपरा (2009–2013)'] },
-  { name: "Shrimati Kanchan Gupta", role: ['Former Mahila Adhyaksh, Patna (2013–2018)', 'पूर्व महिला अध्यक्ष, पटना (2013–2018)'] },
-  { name: "Dr. Madhuri Gupta", role: ['Former Mahila Adhyaksh, Patna (2018–2023)', 'पूर्व महिला अध्यक्ष, पटना (2018–2023)'] },
 ];
 
 const yuvaCommittee = [
