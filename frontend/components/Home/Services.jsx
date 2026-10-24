@@ -16,7 +16,7 @@ const Services = () => {
             <span className="text-yellow-600 font-bold tracking-widest text-sm uppercase mb-2 block">
               {t('ESSENTIAL RESOURCES', 'आवश्यक संसाधन')}
             </span>
-            <h2 className="text-3xl md:text-5xl font-bold text-slate-900">{t('Quick Access', 'त्वरित पहुँच')}</h2>
+            <h2 className="text-3xl md:text-5xl font-bold text-slate-900">{t('Quick Access', 'प्रमुख सेवाएँ')}</h2>
           </div>
           <Link href="/services" className="text-yellow-700 font-bold flex items-center gap-2 hover:gap-3 transition-all group">
             {t('View All Services', 'सभी सेवाएँ देखें')} <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />

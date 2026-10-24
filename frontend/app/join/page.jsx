@@ -10,10 +10,11 @@ import { useAuth } from '../../context/AuthContext';
 import { fetchApi } from '../../lib/api';
 import { loadRazorpayCheckout, errorMessage } from '../../lib/razorpay';
 import { downloadMembershipReceipt } from '../../lib/receipts';
+import { MEMBERSHIP_TIERS } from '../../lib/membership';
 import { useLanguage, LanguageToggle } from '../../context/LanguageContext';
 import OtpInput from '../../components/Auth/OtpInput';
+import { UpiQrPayment, RazorpayTestNotice } from '../../components/Payments/UpiQrPayment';
 
-const MEMBERSHIP_FEES = [1000, 2500, 5000, 10000, 25000];
 const KYC_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
 const KYC_MAX_BYTES = 5 * 1024 * 1024;
 
@@ -338,13 +339,14 @@ export default function JoinCommunity() {
                       <div className="space-y-2">
                         <label className="text-sm font-bold text-gray-700 ml-1">{t('Membership Amount', 'सदस्यता राशि')} <span className="text-red-500">*</span></label>
                         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                          {MEMBERSHIP_FEES.map((fee) => (
+                          {MEMBERSHIP_TIERS.map(({ amount: fee, name }) => (
                             <button
                               key={fee}
                               type="button"
                               onClick={() => setFormData({...formData, amount: fee})}
-                              className={`${fee === MEMBERSHIP_FEES.at(-1) ? 'col-span-2' : ''} py-3 rounded-xl border font-bold transition-all duration-300 cursor-pointer ${formData.amount === fee ? 'bg-primary text-white border-primary shadow-md shadow-primary/20' : 'bg-gray-50 text-gray-700 border-gray-200 hover:border-primary'}`}
+                              className={`${fee === MEMBERSHIP_TIERS.at(-1).amount ? 'col-span-2' : ''} py-3 px-2 rounded-xl border font-bold transition-all duration-300 cursor-pointer ${formData.amount === fee ? 'bg-primary text-white border-primary shadow-md shadow-primary/20' : 'bg-gray-50 text-gray-700 border-gray-200 hover:border-primary'}`}
                             >
+                              <span className="block text-xs font-semibold opacity-80 leading-tight">{t(...name)}</span>
                               ₹{fee.toLocaleString('en-IN')}
                             </button>
                           ))}
@@ -374,6 +376,13 @@ export default function JoinCommunity() {
                       </div>
                       <OtpInput value={otp} onChange={setOtp} autoFocus />
                     </div>
+                  )}
+
+                  {step !== 1 && (
+                    <>
+                      <UpiQrPayment amount={formData.amount} />
+                      <RazorpayTestNotice />
+                    </>
                   )}
 
                   {error && <p className="text-red-500 text-sm font-medium bg-red-50 p-3 rounded-lg border border-red-100">{error}</p>}

@@ -7,6 +7,7 @@ import { useAuth } from "../../context/AuthContext";
 import Swal from "sweetalert2";
 import { useLanguage } from '../../context/LanguageContext';
 import { loadRazorpayCheckout, errorMessage } from '../../lib/razorpay';
+import { UpiQrPayment, RazorpayTestNotice } from '../Payments/UpiQrPayment';
 import { downloadMatrimonialReceipt } from '../../lib/receipts';
 
 // One-time profile creation fee (₹), must match MatrimonialProfile.FEES on the backend
@@ -281,6 +282,9 @@ export default function CreateProfileModal({ isOpen, onClose, onCreated }) {
             <label className="block text-sm font-bold text-gray-700 mb-2">{t('About You (Bio)', 'आपके बारे में (परिचय)')}</label>
             <textarea name="bio" required rows="4" value={formData.bio} onChange={handleChange} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 outline-none focus:border-primary transition-colors" />
           </div>
+
+          <UpiQrPayment amount={fee} />
+          <RazorpayTestNotice />
 
           <div className="pt-2 pb-2 flex justify-end gap-4">
             <button type="button" onClick={onClose} className="px-6 py-3 rounded-xl font-bold text-gray-500 hover:bg-gray-100 transition-colors">

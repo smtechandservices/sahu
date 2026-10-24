@@ -12,17 +12,14 @@ import { fetchApi } from "../../lib/api";
 import { Search, History, Calendar, Clock, MapPin, Loader2 } from "lucide-react";
 import { useLanguage } from '../../context/LanguageContext';
 
-const serviceTypes = ["Hostel", "Community Hall", "Guest Rooms"];
+const serviceTypes = ["Hostel", "Community Hall", "Guest Rooms", "Library"];
+const allTypesSelected = () => Object.fromEntries(serviceTypes.map((type) => [type, true]));
 const ALL_LOCATIONS = "All Locations";
 
 export default function AccommodationClient() {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('explore'); // 'explore' or 'enquiries'
-  const [selectedTypes, setSelectedTypes] = useState({
-    Hostel: true,
-    "Community Hall": true,
-    "Guest Rooms": true,
-  });
+  const [selectedTypes, setSelectedTypes] = useState(allTypesSelected);
   const [selectedLocation, setSelectedLocation] = useState(ALL_LOCATIONS);
   const [accommodations, setAccommodations] = useState([]);
   const [myEnquiries, setMyEnquiries] = useState([]);
@@ -67,7 +64,7 @@ export default function AccommodationClient() {
   };
 
   const clearFilters = () => {
-    setSelectedTypes({ Hostel: true, "Community Hall": true, "Guest Rooms": true });
+    setSelectedTypes(allTypesSelected());
     setSelectedLocation(ALL_LOCATIONS);
   };
 

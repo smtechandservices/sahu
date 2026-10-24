@@ -8,7 +8,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import Swal from 'sweetalert2';
 
-const ACCOMMODATION_TYPES = ['Hostel', 'Community Hall', 'Guest Rooms'];
+const ACCOMMODATION_TYPES = ['Hostel', 'Community Hall', 'Guest Rooms', 'Library'];
 
 const EMPTY_FORM = {
   title: '',

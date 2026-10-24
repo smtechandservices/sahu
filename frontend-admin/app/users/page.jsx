@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { fetchApi } from '../../lib/api';
+import { membershipTierName } from '../../lib/membership';
 import { useAuth } from '../../context/AuthContext';
 import Pagination from '../../components/Pagination/Pagination';
 import {
@@ -311,6 +312,7 @@ export default function UsersManager() {
                       <div title={`Payment ID: ${user.membership.payment_id}`}>
                         <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold bg-green-50 text-green-600">
                           Paid ₹{Number(user.membership.amount).toLocaleString('en-IN')}
+                          {membershipTierName(user.membership.amount) && ` · ${membershipTierName(user.membership.amount)}`}
                         </span>
                         {user.membership.paid_at && (
                           <p className="text-[11px] text-gray-400 mt-1">
@@ -583,7 +585,7 @@ function KycModal({ user, onClose }) {
             {[
               { label: 'Aadhaar Number', value: aadhaar },
               { label: 'City', value: membership.city || '—' },
-              { label: 'Membership', value: `₹${Number(membership.amount).toLocaleString('en-IN')}` },
+              { label: 'Membership', value: [membershipTierName(membership.amount), `₹${Number(membership.amount).toLocaleString('en-IN')}`].filter(Boolean).join(' · ') },
             ].map(({ label, value }) => (
               <div key={label} className="bg-gray-50 rounded-xl p-3">
                 <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">{label}</p>

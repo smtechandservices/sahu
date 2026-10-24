@@ -11,6 +11,13 @@ const digitalCommittee = [
   { name: "Bimal Kishore Bittu", role: ['Digital Committee Member', 'डिजिटल समिति सदस्य'], image: "/assets/bimal.png" },
 ];
 
+// The initiative was the President's; the committee's work was carried out under his leadership
+const initiator = {
+  name: ['Shri Ranvijay Sahu', 'श्री रण विजय साहू'],
+  role: ['President', 'अध्यक्ष'],
+  image: "/assets/president.jpg",
+};
+
 const AboutDigitalCommittee = () => {
   const { t } = useLanguage();
   return (
@@ -27,10 +34,42 @@ const AboutDigitalCommittee = () => {
           <div className="w-16 h-1 bg-primary mb-4"></div>
           <p className="text-gray-600 text-lg">
             {t(
-              'Four dedicated individuals have played an important role in connecting the Sahu community with the digital age and giving new direction to its activities through modern technology.',
-              'साहू समाज को डिजिटल युग से जोड़ने और आधुनिक तकनीक के माध्यम से समाज की गतिविधियों को नई दिशा देने में चार समर्पित व्यक्तियों का महत्वपूर्ण योगदान रहा है।'
+              'At the initiative of President Shri Ranvijay Sahu, and under his leadership, four dedicated individuals have played an important role in connecting the Sahu community with the digital age and giving new direction to its activities through modern technology.',
+              'अध्यक्ष श्री रण विजय साहू की पहल पर और उनके नेतृत्व में, चार समर्पित व्यक्तियों ने साहू समाज को डिजिटल युग से जोड़ने और आधुनिक तकनीक के माध्यम से समाज की गतिविधियों को नई दिशा देने में महत्वपूर्ण योगदान दिया है।'
             )}
           </p>
+        </motion.div>
+
+        {/* Initiator */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          viewport={{ once: true }}
+          className="bg-primary/5 border border-yellow-200 rounded-2xl p-4 sm:p-6 mb-8 flex items-center gap-4 sm:gap-6"
+        >
+          <div className="relative w-24 h-24 sm:w-36 sm:h-36 shrink-0 overflow-hidden rounded-xl border border-yellow-200">
+            <Image
+              src={initiator.image}
+              alt={t(...initiator.name)}
+              fill
+              sizes="144px"
+              className="object-cover object-top"
+            />
+          </div>
+          <div className="min-w-0">
+            <p className="text-primary font-bold text-xs uppercase tracking-widest mb-1">
+              {t('Initiative & Leadership', 'पहल एवं नेतृत्व')}
+            </p>
+            <h3 className="text-lg sm:text-2xl font-bold text-gray-900 leading-tight">{t(...initiator.name)}</h3>
+            <p className="text-gray-500 text-sm font-semibold mt-0.5">{t(...initiator.role)}</p>
+            <p className="text-gray-600 text-sm sm:text-base mt-2 leading-relaxed">
+              {t(
+                'The Digital Initiative was his vision, and all of this work has been carried out under his guidance.',
+                'डिजिटल पहल उन्हीं की सोच है, और यह सारा कार्य उनके मार्गदर्शन में संपन्न हुआ है।'
+              )}
+            </p>
+          </div>
         </motion.div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
           {digitalCommittee.map((member, index) => (

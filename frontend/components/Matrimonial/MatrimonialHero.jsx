@@ -8,12 +8,13 @@ const MatrimonialHero = () => {
   const { t } = useLanguage();
   return (
     <section className="relative overflow-hidden pt-12 pb-10 border-b border-gray-100">
+      {/* Photo: Sumit Bhatia on Unsplash (unsplash.com/photos/K2JtyCVdeuQ), Unsplash License */}
       <Image
-        src="/assets/matrimony-hero.jpg"
+        src="/assets/matrimony-banner.jpg"
         alt=""
         fill
         sizes="100vw"
-        className="object-cover object-[center_72%]"
+        className="object-cover object-center"
         priority
       />
       <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/60 to-black/30" />

@@ -1,6 +1,8 @@
 // Builds and downloads PDF receipts for payments confirmed through Razorpay (donations, membership fees).
 // jsPDF's built-in fonts have no ₹ glyph, so amounts are written as "Rs."
 
+import { membershipTier } from './membership';
+
 const ORG = {
   name: 'Bihar Tailik Sahu Sabha',
   address: ['Sahu Bhawan, Langer Toli Chauraha,', 'Bihari Sao Ln, Patna, Bihar 800004'],
@@ -160,7 +162,7 @@ export async function downloadMembershipReceipt(application) {
       ['City', application.city || '-'],
       ['Aadhaar No.', application.aadhaar_masked],
       ['KYC Document', 'Submitted'],
-      ['Payment For', 'Community Membership Fee'],
+      ['Payment For', `${membershipTier(application.amount)?.name[0] ?? 'Community'} Membership Fee`],
       ['Payment Mode', 'Online (Razorpay)'],
       ['Payment ID', application.razorpay_payment_id],
       ['Status', 'Paid'],

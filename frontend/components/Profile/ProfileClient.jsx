@@ -6,6 +6,7 @@ import Header from "../Header/Header";
 import Footer from "../Footer/Footer";
 import { useAuth } from "../../context/AuthContext";
 import { getCookie } from "../../lib/cookies";
+import { membershipTier } from "../../lib/membership";
 import { 
   User as UserIcon, Mail, Phone, Calendar, 
   Camera, ShieldCheck, Edit3, Save, X,
@@ -316,6 +317,9 @@ export default function ProfileClient() {
                     <div className="space-y-1">
                       <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">{t('Membership Fee Paid', 'भुगतान किया गया सदस्यता शुल्क')}</p>
                       <p className="text-3xl font-bold text-gray-900">₹{Number(membership.amount).toLocaleString('en-IN')}</p>
+                      {membershipTier(membership.amount) && (
+                        <p className="text-sm font-bold text-primary">{t(...membershipTier(membership.amount).name)}</p>
+                      )}
                       <p className="text-xs text-gray-400">
                         {membership.paid_at && new Date(membership.paid_at).toLocaleDateString(locale, { year: 'numeric', month: 'long', day: 'numeric' })}
                         {' · '}

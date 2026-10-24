@@ -52,7 +52,7 @@ const Header = () => {
         <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5 shrink-0 hidden sm:block" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
-        <span className="font-medium whitespace-nowrap hidden sm:inline">{t('Mon – Sun', 'सोम – रवि')} &nbsp;·&nbsp; {t('8:00 AM – 8:00 PM', 'सुबह 8:00 – रात 8:00')}</span>
+        <span className="font-medium whitespace-nowrap hidden sm:inline">{t('Mon – Sun', 'सोम – रवि')} &nbsp;·&nbsp; {t('10:00 AM – 5:00 PM', 'सुबह 10:00 – शाम 5:00')}</span>
         <LanguageToggle className="ml-auto" />
       </div>
 

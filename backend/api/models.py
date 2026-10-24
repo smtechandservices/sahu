@@ -66,6 +66,7 @@ class AccommodationType(models.TextChoices):
     HOSTEL = 'Hostel', 'Hostel'
     COMMUNITY_HALL = 'Community Hall', 'Community Hall'
     GUEST_ROOMS = 'Guest Rooms', 'Guest Rooms'
+    LIBRARY = 'Library', 'Library'
 
 class Accommodation(models.Model):
     title = models.CharField(max_length=255)

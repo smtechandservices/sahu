@@ -9,6 +9,7 @@ export const metadata = {
     "Hostel",
     "Community Hall",
     "Guest Rooms",
+    "Library",
     "Sabha Atithi Griha",
     "Heritage Grand Hall",
     "Sahu Vidyarthi Bhavan",

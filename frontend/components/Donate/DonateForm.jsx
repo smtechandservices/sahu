@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
+import { UpiQrPayment, RazorpayTestNotice } from '../Payments/UpiQrPayment';
 
 const DonateForm = ({ formData, setFormData, onDonate, submitting = false }) => {
   const { user } = useAuth();
@@ -82,6 +83,9 @@ const DonateForm = ({ formData, setFormData, onDonate, submitting = false }) => 
             className="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-xl font-bold text-primary focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
           />
         </div>
+
+        <UpiQrPayment amount={formData.amount} />
+        <RazorpayTestNotice />
 
         <div className="text-center">
           <button 

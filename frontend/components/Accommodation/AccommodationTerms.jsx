@@ -7,6 +7,7 @@ const TERMS = [
   { type: 'Hostel', file: '/assets/hostel-terms.pdf', filename: 'Hostel-Terms-and-Conditions.pdf' },
   { type: 'Community Hall', file: null, filename: 'Community-Hall-Terms-and-Conditions.pdf' },
   { type: 'Guest Rooms', file: null, filename: 'Guest-Rooms-Terms-and-Conditions.pdf' },
+  { type: 'Library', file: null, filename: 'Library-Terms-and-Conditions.pdf' },
 ];
 
 const AccommodationTerms = () => {

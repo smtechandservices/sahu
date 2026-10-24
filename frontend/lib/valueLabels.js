@@ -5,6 +5,7 @@ export const VALUE_HI = {
   'Hostel': 'छात्रावास',
   'Community Hall': 'सामुदायिक भवन',
   'Guest Rooms': 'अतिथि कक्ष',
+  'Library': 'पुस्तकालय',
 
   // Booking / donation status
   'Pending': 'लंबित',

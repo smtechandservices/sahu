@@ -203,7 +203,7 @@ const Footer = () => {
                   </svg>
                 </span>
                 <span>
-                  {t('Mon – Sun', 'सोम – रवि')} &nbsp;·&nbsp; {t('8:00 AM – 8:00 PM', 'सुबह 8:00 – रात 8:00')}
+                  {t('Mon – Sun', 'सोम – रवि')} &nbsp;·&nbsp; {t('10:00 AM – 5:00 PM', 'सुबह 10:00 – शाम 5:00')}
                 </span>
               </li>
             </ul>
