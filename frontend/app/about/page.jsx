@@ -27,7 +27,7 @@ export default function AboutPage() {
               className="w-full h-full object-cover object-fill"
             />
           </div>
-          <h1 className="absolute bottom-14 right-4 sm:right-8 md:right-12 z-10 text-3xl sm:text-4xl md:text-5xl font-bold text-white drop-shadow-lg">
+          <h1 className="sr-only">
             <T en="Sahu Samaj" hi="साहू समाज" />
           </h1>
           <div className="px-4 sm:px-6 md:px-8 lg:px-16 relative z-10 py-12 md:py-0">

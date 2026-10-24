@@ -24,11 +24,11 @@ const executiveMembers = [
   { name: "Shri Kumar Digvijay Sunil", role: JOINT_SECRETARY, mobile: "9431245626", image: "/assets/kumar-digvijay-sunil.jpg" },
   { name: "Shri Mukesh Kumar", role: ORGANISATION_SECRETARY, mobile: "9709779465", image: "/assets/mukesh-kumar.jpg" },
   { name: "Shri Sanjiv Shekhar Gupt", role: ORGANISATION_SECRETARY, mobile: "7352137420", image: "/assets/sanjeev-shekhar-gupt.jpg" },
-  { name: "Shri Arjun Prasad", role: INTERNAL_AUDITOR, mobile: "9334531252" },
+  { name: "Shri Arjun Prasad", role: INTERNAL_AUDITOR, mobile: "9334531252", image: "/assets/arjun-prasad.jpg" },
   { name: "Shri Pradeep Kumar", role: INTERNAL_AUDITOR, mobile: "8809291488", image: "/assets/pradeep-kumar.jpg" },
   { name: "Shri Hiralal Sahu", district: ['Tirhut', 'तिरहुत'], mobile: "7765937654", image: "/assets/hiralal-sahu.jpg" },
-  { name: "Shri Ranjit Sahu", district: ['Bhagalpur', 'भागलपुर'], mobile: "9771512170" },
-  { name: "Shri Satya Narayan Sahu", district: ['Darbhanga', 'दरभंगा'], mobile: "9835454139" },
+  { name: "Shri Ranjit Sah", district: ['Bhagalpur', 'भागलपुर'], mobile: "9771512170", image: "/assets/ranjit-sah.jpg" },
+  { name: "Shri Satya Narayan Sahu", district: ['Darbhanga', 'दरभंगा'], mobile: "9835454139", image: "/assets/satya-narayan-sahu-darbhanga.jpg" },
   { name: "Shri Satyanarayan Sahu", district: ['Saharsa', 'सहरसा'], mobile: "6200701594", image: "/assets/satyanarayan-sahu.jpg" },
   { name: "Shri Manoj Kumar", district: ['Munger', 'मुंगेर'], mobile: "7004414405", image: "/assets/manoj-kumar.jpg" },
   { name: "Shri Rajan Prasad Gupta", district: ['Saran', 'सारण'], mobile: "9123436336", image: "/assets/rajan-prasad-gupta.jpg" },
@@ -38,7 +38,7 @@ const executiveMembers = [
   { name: "Shri Mayanand Sahu", district: ['Madhepura', 'मधेपुरा'], mobile: "7739726062", image: "/assets/mayanand-sahu.jpg" },
   { name: "Shri Balram Sahu (Advocate)", district: ['Madhubani', 'मधुबनी'], mobile: "9931789314", image: "/assets/balram-sahu.jpg" },
   { name: "Shri Vipin Gupta", district: ['Kaimur', 'कैमूर'], mobile: "7717731365", image: "/assets/vipin-gupta.jpg" },
-  { name: "Shri Virendra Prasad Gupta", district: ['Rohtas', 'रोहतास'], mobile: "8084878543" },
+  { name: "Shri Birendra Prasad Gupta", district: ['Rohtas', 'रोहतास'], mobile: "8084878543", image: "/assets/birendra-prasad-gupta.jpg" },
 ];
 
 const advisoryMembers = [
@@ -101,7 +101,7 @@ const committeeChairpersons = [
 const districtCommittee = [
   { district: ["Patna Mahanagar", "पटना महानगर"], head: ["Shri Sanjeet Kumar", "श्री संजीत कुमार"], headMobiles: ["9835608831", "7909088290"], incharge: ["Shri Pradeep Kumar & Shri Sanjeev Shekhar Gupta", "श्री प्रदीप कुमार सह श्री संजीव शेखर गुप्ता"], inchargeMobiles: ["8809291488", "7352137420"] },
   { district: ["Patna East", "पटना पूर्वी"], head: ["Shri Sanjay Sao", "श्री संजय साव"], headMobiles: ["8434692826"], incharge: ["Shri Amardeep Kumar alias Pappu", "श्री अमरदीप कुमार उर्फ पप्पू"], inchargeMobiles: ["9304770969"] },
-  { district: ["Patna West Rural", "पटना पश्चिमी ग्रामीण"], head: ["Shri Sulendra Prasad Gupta", "श्री सुलेन्द्र प्रसाद गुप्ता"], headMobiles: ["7991150765", "9608049081"], incharge: ["Smt. Simmi Pr. & Shri Vipul Kumar", "श्रीमती सिम्मी प्र. सह श्री विपुल कुमार"], inchargeMobiles: ["9798470411", "8210703879"] },
+  { district: ["Patna West Rural", "पटना पश्चिमी ग्रामीण"], head: ["Shri Sulendra Prasad Gupta", "श्री सुलेन्द्र प्रसाद गुप्ता"], headMobiles: ["7991150765", "9608049081"], incharge: ["Smt. Simmy Pr. & Shri Vipul Kumar", "श्रीमती सिम्मी प्र. सह श्री विपुल कुमार"], inchargeMobiles: ["9798470411", "8210703879"] },
   { district: ["Vaishali", "वैशाली"], head: ["Shri Mahesh Sah", "श्री महेश साह"], headMobiles: ["9939676425"], incharge: ["Shri Vinay Kumar alias Guddu Sah", "श्री विनय कुमार उर्फ गुड्डू साह"], inchargeMobiles: ["9852274574", "8340370501"] },
   { district: ["Saran", "सारण"], head: ["Shri Brahmdev Narayan Gyani", "श्री ब्रह्मदेव नारायण ज्ञानी"], headMobiles: ["9199038596"], incharge: ["Shri Aditya Sah", "श्री आदित्य साह"], inchargeMobiles: ["9798852444"] },
   { district: ["Siwan", "सीवान"], head: ["Shri Arun Ku. Gupta", "श्री अरुण कु. गुप्ता"], headMobiles: ["9006680450"], incharge: ["Shri Gautam Sah", "श्री गौतम साह"], inchargeMobiles: ["9006527573"] },
@@ -143,9 +143,18 @@ const districtCommittee = [
 ];
 
 const mahilaCommittee = [
-  { name: "Simmi Prasad", role: ["Pradesh Mahila Adhyaksh (State Women's President, Mahila Morcha)", 'प्रदेश महिला अध्यक्ष (महिला मोर्चा)'], mobile: "9798470411", image: "/assets/simmi-prasad.jpg" },
+  { name: "Simmy Prasad", role: ["Pradesh Mahila Adhyaksh (State Women's President, Mahila Morcha)", 'प्रदेश महिला अध्यक्ष (महिला मोर्चा)'], mobile: "9798470411", image: "/assets/simmi-prasad.jpg" },
   { name: "Sheetal Gupta", role: ['Mahamantri (General Secretary, Mahila Morcha)', 'महामंत्री (महिला मोर्चा)'], mobile: "9973315777", image: "/assets/sheetal.jpg" },
   { name: "Rooplata", role: ['Koshadhyaksh (Treasurer, Mahila Morcha)', 'कोषाध्यक्ष (महिला मोर्चा)'], image: "/assets/rooplata.jpg" },
+  { name: "Shrimati Savitri Devi", role: ['Former Mahila Adhyaksh, Chhapra (1983–1989)', 'पूर्व महिला अध्यक्ष, छपरा (1983–1989)'] },
+  { name: "Shrimati Renu Priyadarshini", role: ['Former Mahila Adhyaksh, Patna (1989–1992)', 'पूर्व महिला अध्यक्ष, पटना (1989–1992)'] },
+  { name: "Prof. Dr. Kiran Aryani Mishra", role: ['Former Mahila Adhyaksh, Patna (1992–1995)', 'पूर्व महिला अध्यक्ष, पटना (1992–1995)'] },
+  { name: "Shrimati Gayatri Gupta", role: ['Former Mahila Adhyaksh, Patna (1995–2005)', 'पूर्व महिला अध्यक्ष, पटना (1995–2005)'] },
+  { name: "Sushri Sushma Sahu", role: ['Former Mahila Adhyaksh, Patna (2005–2007)', 'पूर्व महिला अध्यक्ष, पटना (2005–2007)'] },
+  { name: "Dr. Shanti Brahmachari", role: ['Former Mahila Adhyaksh, Patna (2007–2009)', 'पूर्व महिला अध्यक्ष, पटना (2007–2009)'] },
+  { name: "Shrimati Manju Gupta", role: ['Former Mahila Adhyaksh, Chhapra (2009–2013)', 'पूर्व महिला अध्यक्ष, छपरा (2009–2013)'] },
+  { name: "Shrimati Kanchan Gupta", role: ['Former Mahila Adhyaksh, Patna (2013–2018)', 'पूर्व महिला अध्यक्ष, पटना (2013–2018)'] },
+  { name: "Dr. Madhuri Gupta", role: ['Former Mahila Adhyaksh, Patna (2018–2023)', 'पूर्व महिला अध्यक्ष, पटना (2018–2023)'] },
 ];
 
 const yuvaCommittee = [
@@ -157,7 +166,7 @@ const PER_PAGE = 16;
 const initials = (name) =>
   name
     .replace(/\(.*?\)/g, '')
-    .replace(/^(Shri|Shrimati|Dr\.|Er\.|Prof\.)\s+/, '')
+    .replace(/^((Shri|Shrimati|Sushri|Dr\.|Er\.|Prof\.)\s+)+/, '')
     .split(/\s+/)
     .filter(Boolean)
     .slice(0, 2)
