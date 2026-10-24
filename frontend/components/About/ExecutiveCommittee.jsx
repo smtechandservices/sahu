@@ -7,23 +7,35 @@ import { Phone } from 'lucide-react';
 import { useLanguage } from '../../context/LanguageContext';
 import Pagination from '../Pagination/Pagination';
 
-const chairman = {
-  name: "Shri Shailesh Narayan Sah",
-  role: ['Chairman, Bandhu Patrika Management Committee', 'अध्यक्ष, बंधु पत्रिका प्रबंधन समिति'],
-  district: ['Patna', 'पटना'],
-};
+const VICE_PRESIDENT = ['Vice President', 'उपाध्यक्ष'];
+const JOINT_SECRETARY = ['Joint Secretary', 'संयुक्त मंत्री'];
+const ORGANISATION_SECRETARY = ['Organisation Secretary', 'संगठन मंत्री'];
+const INTERNAL_AUDITOR = ['Internal Auditor', 'आंतरिक अंकेक्षक'];
 
 const executiveMembers = [
-  { name: "Shri Hiralal Sah", district: ['Tirhut', 'तिरहुत'], mobile: "7765937654" },
-  { name: "Shri Ranjit Sah", district: ['Bhagalpur', 'भागलपुर'], mobile: "9771512170" },
+  // Office bearers (shown with their post instead of a district)
+  { name: "Shri Mahendra Sahu", role: VICE_PRESIDENT, mobile: "9431890742", image: "/assets/mahendra-sahu.jpg" },
+  { name: "Shri Bhim Kumar Sahu", role: VICE_PRESIDENT, mobile: "9122820033", image: "/assets/bhim-kumar-sahu.jpg" },
+  { name: "Sahu Bhupal Bharti", role: VICE_PRESIDENT, mobile: "9934613153", image: "/assets/bhupal-bharti-v2.jpg" },
+  { name: "Shri Sanjay Sao", role: VICE_PRESIDENT, mobile: "9431227027", image: "/assets/sanjay-sao.jpg" },
+  { name: "Shri Ram Charitra Sahu", role: VICE_PRESIDENT, mobile: "9123101589", image: "/assets/ram-charitra-sahu.jpg" },
+  { name: "Shrimati Rekha Gupta", role: ['Treasurer', 'कोषाध्यक्ष'], mobile: "7488937858", image: "/assets/rekha-gupta.jpg" },
+  { name: "Shri Manoj Kumar Sahu", role: JOINT_SECRETARY, mobile: "7004598450", image: "/assets/manoj-kumar-sahu.jpg" },
+  { name: "Shri Kumar Digvijay Sunil", role: JOINT_SECRETARY, mobile: "9431245626", image: "/assets/kumar-digvijay-sunil.jpg" },
+  { name: "Shri Mukesh Kumar", role: ORGANISATION_SECRETARY, mobile: "9709779465" },
+  { name: "Shri Sanjeev Shekhar Gupta", role: ORGANISATION_SECRETARY, mobile: "7352137420" },
+  { name: "Shri Arjun Prasad", role: INTERNAL_AUDITOR, mobile: "9334531252" },
+  { name: "Shri Pradeep Kumar", role: INTERNAL_AUDITOR, mobile: "8809291488" },
+  { name: "Shri Hiralal Sahu", district: ['Tirhut', 'तिरहुत'], mobile: "7765937654", image: "/assets/hiralal-sahu.jpg" },
+  { name: "Shri Ranjit Sahu", district: ['Bhagalpur', 'भागलपुर'], mobile: "9771512170" },
   { name: "Shri Satya Narayan Sahu", district: ['Darbhanga', 'दरभंगा'], mobile: "9835454139" },
-  { name: "Shri Satyanarayan Sah", district: ['Saharsa', 'सहरसा'], mobile: "6200701594" },
-  { name: "Shri Manoj Kumar", district: ['Munger', 'मुंगेर'], mobile: "7004414405" },
-  { name: "Shri Rajan Prasad Gupta", district: ['Saran', 'सारण'], mobile: "9123436336" },
-  { name: "Shri Rakesh Kumar Sah", district: ['Purnia', 'पूर्णिया'], mobile: "8789484042" },
-  { name: "Shri Chhotan Sah", district: ['Magadh', 'मगध'], mobile: "9006214490" },
-  { name: "Shri Vipul Kumar", district: ['Patna', 'पटना'], mobile: "8210703879" },
-  { name: "Shri Mayanand Sah", district: ['Madhepura', 'मधेपुरा'], mobile: "7739726062" },
+  { name: "Shri Satyanarayan Sahu", district: ['Saharsa', 'सहरसा'], mobile: "6200701594" },
+  { name: "Shri Manoj Kumar", district: ['Munger', 'मुंगेर'], mobile: "7004414405", image: "/assets/manoj-kumar.jpg" },
+  { name: "Shri Rajan Prasad Gupta", district: ['Saran', 'सारण'], mobile: "9123436336", image: "/assets/rajan-prasad-gupta.jpg" },
+  { name: "Shri Rakesh Kumar Sahu", district: ['Purnia', 'पूर्णिया'], mobile: "8789484042" },
+  { name: "Shri Chhotan Sahu", district: ['Magadh', 'मगध'], mobile: "9006214490", image: "/assets/chhotan-sahu.jpg" },
+  { name: "Shri Vipul Kumar", district: ['Patna', 'पटना'], mobile: "8210703879", image: "/assets/vipul-kumar.jpg" },
+  { name: "Shri Mayanand Sahu", district: ['Madhepura', 'मधेपुरा'], mobile: "7739726062" },
   { name: "Shri Balram Sahu (Advocate)", district: ['Madhubani', 'मधुबनी'], mobile: "9931789314" },
   { name: "Shri Vipin Gupta", district: ['Kaimur', 'कैमूर'], mobile: "7717731365" },
   { name: "Shri Virendra Prasad Gupta", district: ['Rohtas', 'रोहतास'], mobile: "8084878543" },
@@ -82,6 +94,7 @@ const committeeChairpersons = [
   { name: "Shri Vishwanath Gupta", committee: ['Census Committee', 'जनगणना समिति'], mobile: "9852118267" },
   { name: "Shri Umesh Kumar Gupta", committee: ['Commerce and Trade Cell', 'वाणिज्य एवं व्यापार प्रकोष्ठ'], mobile: "9934887736" },
   { name: "Shri Rajesh Kumar", committee: ['Spokesperson & Media In-charge', 'प्रवक्ता एवं मीडिया प्रभारी'], mobile: "9334208224" },
+  { name: "Shri Shailesh Narayan Sah", committee: ['Bandhu Patrika Management Committee', 'बंधु पत्रिका प्रबंधन समिति'] },
 ];
 
 // From the Sabha's list "जिला अध्यक्ष/कार्यकारी/संयोजक/प्रभारी की सूची"
@@ -135,7 +148,7 @@ const mahilaCommittee = [
   { name: "Rooplata", role: ['Koshadhyaksh (Treasurer, Mahila Morcha)', 'कोषाध्यक्ष (महिला मोर्चा)'], image: "/assets/rooplata.jpg" },
 ];
 
-const PER_PAGE = 18;
+const PER_PAGE = 16;
 
 const initials = (name) =>
   name
@@ -197,24 +210,6 @@ const ExecutiveCommittee = () => {
           <div className="w-16 h-1 bg-primary mb-4"></div>
         </motion.div>
 
-        {/* Chairman Card */}
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          viewport={{ once: true }}
-          className="bg-primary/5 border border-primary/20 rounded-xl p-6 mb-10 flex items-center gap-5"
-        >
-          <div className="w-14 h-14 rounded-full bg-primary flex items-center justify-center shrink-0">
-            <span className="text-white font-bold text-xl">S</span>
-          </div>
-          <div>
-            <p className="text-primary font-bold text-xs uppercase tracking-widest mb-1">{t(...chairman.role)}</p>
-            <h3 className="text-xl font-bold text-gray-900">{chairman.name}</h3>
-            <p className="text-gray-500 text-sm mt-0.5">{t(...chairman.district)}</p>
-          </div>
-        </motion.div>
-
         {/* Tabs */}
         <div className="flex gap-2 sm:gap-3 flex-wrap mb-8">
           {tabs.map((tab) => (
@@ -244,27 +239,10 @@ const ExecutiveCommittee = () => {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
           >
             {pageItems(executiveMembers).map((member, index) => (
-              <div
-                key={index}
-                className="bg-white border border-yellow-200 rounded-xl p-4 flex items-center gap-4 hover:shadow-sm hover:border-yellow-300 transition-all"
-              >
-                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                  <span className="text-primary font-bold text-sm">{member.name.split(' ')[1]?.charAt(0) || member.name.charAt(0)}</span>
-                </div>
-                <div className="min-w-0">
-                  <h4 className="font-bold text-gray-900 text-sm leading-snug">{member.name}</h4>
-                  <p className="text-primary text-xs font-semibold mt-0.5">{t(...member.district)}</p>
-                  <a
-                    href={`tel:+91${member.mobile}`}
-                    className="text-xs text-gray-400 hover:text-primary flex items-center gap-1 mt-0.5 transition-colors"
-                  >
-                    <Phone size={10} /> {member.mobile}
-                  </a>
-                </div>
-              </div>
+              <PhotoCard key={index} member={member} subtitle={t(...(member.role || member.district))} />
             ))}
           </motion.div>
         )}
@@ -311,35 +289,7 @@ const ExecutiveCommittee = () => {
             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
           >
             {pageItems(committeeChairpersons).map((member, index) => (
-              <div
-                key={index}
-                className="relative aspect-square w-full max-w-sm mx-auto sm:max-w-none overflow-hidden rounded-2xl border border-yellow-200 shadow-sm"
-              >
-                {member.image ? (
-                  <Image
-                    src={member.image}
-                    alt={member.name}
-                    fill
-                    sizes="(max-width: 640px) 384px, (max-width: 1024px) 50vw, 25vw"
-                    className="object-cover"
-                    style={{ objectPosition: member.imagePosition || 'top' }}
-                  />
-                ) : (
-                  <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-yellow-100 to-yellow-300 pb-16">
-                    <span className="text-5xl font-bold text-yellow-700/70">{initials(member.name)}</span>
-                  </div>
-                )}
-                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/55 to-transparent p-4 pt-12">
-                  <h4 className="text-lg font-bold text-white leading-tight">{member.name}</h4>
-                  <p className="text-[#f5b301] text-sm mb-1 leading-snug">{t(...member.committee)}</p>
-                  <a
-                    href={`tel:+91${member.mobile}`}
-                    className="text-sm text-white/85 hover:text-white flex items-center gap-1.5 transition-colors"
-                  >
-                    <Phone size={12} /> +91 {member.mobile.slice(0, 5)} {member.mobile.slice(5)}
-                  </a>
-                </div>
-              </div>
+              <PhotoCard key={index} member={member} subtitle={t(...member.committee)} />
             ))}
           </motion.div>
         )}
@@ -388,30 +338,7 @@ const ExecutiveCommittee = () => {
             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
           >
             {pageItems(mahilaCommittee).map((member, index) => (
-              <div
-                key={index}
-                className="relative aspect-square w-full max-w-sm mx-auto sm:max-w-none overflow-hidden rounded-2xl border border-yellow-200 shadow-sm"
-              >
-                <Image
-                  src={member.image}
-                  alt={member.name}
-                  fill
-                  sizes="(max-width: 640px) 384px, (max-width: 1024px) 50vw, 25vw"
-                  className="object-cover object-top"
-                />
-                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/55 to-transparent p-4 pt-12">
-                  <h4 className="text-lg font-bold text-white leading-tight">{member.name}</h4>
-                  <p className="text-[#f5b301] text-sm mb-1">{t(...member.role)}</p>
-                  {member.mobile && (
-                    <a
-                      href={`tel:+91${member.mobile}`}
-                      className="text-sm text-white/85 hover:text-white flex items-center gap-1.5 transition-colors"
-                    >
-                      <Phone size={12} /> +91 {member.mobile.slice(0, 5)} {member.mobile.slice(5)}
-                    </a>
-                  )}
-                </div>
-              </div>
+              <PhotoCard key={index} member={member} subtitle={t(...member.role)} />
             ))}
           </motion.div>
         )}
@@ -429,6 +356,40 @@ const ExecutiveCommittee = () => {
     </section>
   );
 };
+
+// Square portrait card with name, post and phone over a dark gradient; initials when there's no photo
+function PhotoCard({ member, subtitle }) {
+  return (
+    <div className="relative aspect-square w-full max-w-sm mx-auto sm:max-w-none overflow-hidden rounded-2xl border border-yellow-200 shadow-sm">
+      {member.image ? (
+        <Image
+          src={member.image}
+          alt={member.name}
+          fill
+          sizes="(max-width: 640px) 384px, (max-width: 1024px) 50vw, 25vw"
+          className="object-cover"
+          style={{ objectPosition: member.imagePosition || 'top' }}
+        />
+      ) : (
+        <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-yellow-100 to-yellow-300 pb-16">
+          <span className="text-5xl font-bold text-yellow-700/70">{initials(member.name)}</span>
+        </div>
+      )}
+      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/55 to-transparent p-4 pt-12">
+        <h4 className="text-lg font-bold text-white leading-tight">{member.name}</h4>
+        <p className="text-[#f5b301] text-sm mb-1 leading-snug">{subtitle}</p>
+        {member.mobile && (
+          <a
+            href={`tel:+91${member.mobile}`}
+            className="text-sm text-white/85 hover:text-white flex items-center gap-1.5 transition-colors"
+          >
+            <Phone size={12} /> +91 {member.mobile.slice(0, 5)} {member.mobile.slice(5)}
+          </a>
+        )}
+      </div>
+    </div>
+  );
+}
 
 function DistrictPerson({ label, name, mobiles }) {
   return (
