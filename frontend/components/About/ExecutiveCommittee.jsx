@@ -23,13 +23,13 @@ const executiveMembers = [
   { name: "Shri Manoj Kumar Sahu", role: JOINT_SECRETARY, mobile: "7004598450", image: "/assets/manoj-kumar-sahu.jpg" },
   { name: "Shri Kumar Digvijay Sunil", role: JOINT_SECRETARY, mobile: "9431245626", image: "/assets/kumar-digvijay-sunil.jpg" },
   { name: "Shri Mukesh Kumar", role: ORGANISATION_SECRETARY, mobile: "9709779465", image: "/assets/mukesh-kumar.jpg" },
-  { name: "Shri Sanjeev Shekhar Gupta", role: ORGANISATION_SECRETARY, mobile: "7352137420" },
+  { name: "Shri Sanjiv Shekhar Gupt", role: ORGANISATION_SECRETARY, mobile: "7352137420", image: "/assets/sanjeev-shekhar-gupt.jpg" },
   { name: "Shri Arjun Prasad", role: INTERNAL_AUDITOR, mobile: "9334531252" },
-  { name: "Shri Pradeep Kumar", role: INTERNAL_AUDITOR, mobile: "8809291488" },
+  { name: "Shri Pradeep Kumar", role: INTERNAL_AUDITOR, mobile: "8809291488", image: "/assets/pradeep-kumar.jpg" },
   { name: "Shri Hiralal Sahu", district: ['Tirhut', 'तिरहुत'], mobile: "7765937654", image: "/assets/hiralal-sahu.jpg" },
   { name: "Shri Ranjit Sahu", district: ['Bhagalpur', 'भागलपुर'], mobile: "9771512170" },
   { name: "Shri Satya Narayan Sahu", district: ['Darbhanga', 'दरभंगा'], mobile: "9835454139" },
-  { name: "Shri Satyanarayan Sahu", district: ['Saharsa', 'सहरसा'], mobile: "6200701594" },
+  { name: "Shri Satyanarayan Sahu", district: ['Saharsa', 'सहरसा'], mobile: "6200701594", image: "/assets/satyanarayan-sahu.jpg" },
   { name: "Shri Manoj Kumar", district: ['Munger', 'मुंगेर'], mobile: "7004414405", image: "/assets/manoj-kumar.jpg" },
   { name: "Shri Rajan Prasad Gupta", district: ['Saran', 'सारण'], mobile: "9123436336", image: "/assets/rajan-prasad-gupta.jpg" },
   { name: "Shri Rakesh Kumar Sahu", district: ['Purnia', 'पूर्णिया'], mobile: "8789484042" },
@@ -102,7 +102,7 @@ const districtCommittee = [
   { district: ["Patna Mahanagar", "पटना महानगर"], head: ["Shri Sanjeet Kumar", "श्री संजीत कुमार"], headMobiles: ["9835608831", "7909088290"], incharge: ["Shri Pradeep Kumar & Shri Sanjeev Shekhar Gupta", "श्री प्रदीप कुमार सह श्री संजीव शेखर गुप्ता"], inchargeMobiles: ["8809291488", "7352137420"] },
   { district: ["Patna East", "पटना पूर्वी"], head: ["Shri Sanjay Sao", "श्री संजय साव"], headMobiles: ["8434692826"], incharge: ["Shri Amardeep Kumar alias Pappu", "श्री अमरदीप कुमार उर्फ पप्पू"], inchargeMobiles: ["9304770969"] },
   { district: ["Patna West Rural", "पटना पश्चिमी ग्रामीण"], head: ["Shri Sulendra Prasad Gupta", "श्री सुलेन्द्र प्रसाद गुप्ता"], headMobiles: ["7991150765", "9608049081"], incharge: ["Smt. Simmi Pr. & Shri Vipul Kumar", "श्रीमती सिम्मी प्र. सह श्री विपुल कुमार"], inchargeMobiles: ["9798470411", "8210703879"] },
-  { district: ["Vaishali", "वैशाली"], head: ["Shri Anil Sah", "श्री अनिल साह"], headMobiles: ["8434551000", "9431026101"], incharge: ["Shri Vinay Kumar alias Guddu Sah", "श्री विनय कुमार उर्फ गुड्डू साह"], inchargeMobiles: ["9852274574", "8340370501"] },
+  { district: ["Vaishali", "वैशाली"], head: ["Shri Mahesh Sah", "श्री महेश साह"], headMobiles: ["9939676425"], incharge: ["Shri Vinay Kumar alias Guddu Sah", "श्री विनय कुमार उर्फ गुड्डू साह"], inchargeMobiles: ["9852274574", "8340370501"] },
   { district: ["Saran", "सारण"], head: ["Shri Brahmdev Narayan Gyani", "श्री ब्रह्मदेव नारायण ज्ञानी"], headMobiles: ["9199038596"], incharge: ["Shri Aditya Sah", "श्री आदित्य साह"], inchargeMobiles: ["9798852444"] },
   { district: ["Siwan", "सीवान"], head: ["Shri Arun Ku. Gupta", "श्री अरुण कु. गुप्ता"], headMobiles: ["9006680450"], incharge: ["Shri Gautam Sah", "श्री गौतम साह"], inchargeMobiles: ["9006527573"] },
   { district: ["Gopalganj", "गोपालगंज"], head: ["Shri Arvind Kumar alias Pappu", "श्री अरविन्द कुमार उर्फ पप्पू"], headMobiles: ["9006120085", "9431059452"], incharge: ["Shri Rajan Prasad Gupta", "श्री राजन प्रसाद गुप्ता"], inchargeMobiles: ["9123436336"] },
@@ -143,9 +143,13 @@ const districtCommittee = [
 ];
 
 const mahilaCommittee = [
-  { name: "Sima Prasad", role: ["Mahila Adhyaksh (Women's President)", 'महिला अध्यक्ष'], mobile: "8709607778", image: "/assets/sima.jpeg" },
+  { name: "Simmi Prasad", role: ["Pradesh Mahila Adhyaksh (State Women's President, Mahila Morcha)", 'प्रदेश महिला अध्यक्ष (महिला मोर्चा)'], mobile: "9798470411", image: "/assets/simmi-prasad.jpg" },
   { name: "Sheetal Gupta", role: ['Mahamantri (General Secretary, Mahila Morcha)', 'महामंत्री (महिला मोर्चा)'], mobile: "9973315777", image: "/assets/sheetal.jpg" },
   { name: "Rooplata", role: ['Koshadhyaksh (Treasurer, Mahila Morcha)', 'कोषाध्यक्ष (महिला मोर्चा)'], image: "/assets/rooplata.jpg" },
+];
+
+const yuvaCommittee = [
+  { name: "Shri Vinay Kumar (Guddu Sah)", role: ['Yuva Adhyaksh (Youth President)', 'युवा अध्यक्ष'], mobile: "9852274574", image: "/assets/vinay-kumar-guddu-sah.jpg" },
 ];
 
 const PER_PAGE = 16;
@@ -166,6 +170,7 @@ const tabs = [
   { id: 'committees', label: ['Committee Chairpersons', 'समिति अध्यक्ष'], count: committeeChairpersons.length },
   { id: 'district', label: ['District Committee', 'जिला समिति'], count: districtCommittee.length },
   { id: 'mahila', label: ['Mahila Committee', 'महिला समिति'], count: mahilaCommittee.length },
+  { id: 'yuva', label: ['Yuva Committee', 'युवा समिति'], count: yuvaCommittee.length },
 ];
 
 const ExecutiveCommittee = () => {
@@ -178,6 +183,7 @@ const ExecutiveCommittee = () => {
     committees: committeeChairpersons,
     district: districtCommittee,
     mahila: mahilaCommittee,
+    yuva: yuvaCommittee,
   };
   const activeList = lists[activeTab];
   const totalPages = Math.ceil(activeList.length / PER_PAGE);
@@ -338,6 +344,21 @@ const ExecutiveCommittee = () => {
             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
           >
             {pageItems(mahilaCommittee).map((member, index) => (
+              <PhotoCard key={index} member={member} subtitle={t(...member.role)} />
+            ))}
+          </motion.div>
+        )}
+
+        {/* Yuva Committee */}
+        {activeTab === 'yuva' && (
+          <motion.div
+            key="yuva"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
+          >
+            {pageItems(yuvaCommittee).map((member, index) => (
               <PhotoCard key={index} member={member} subtitle={t(...member.role)} />
             ))}
           </motion.div>

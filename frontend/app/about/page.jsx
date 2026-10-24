@@ -22,15 +22,13 @@ export default function AboutPage() {
         <section id="about-hero" className="relative min-h-[50vh] sm:min-h-[55vh] md:h-[60vh] flex items-center overflow-hidden bg-gray-900">
           <div className="absolute inset-0">
             <img
-              src="/assets/sabha.jpeg"
-              alt="Sahu Sabha"
-              className="w-full h-full object-fill opacity-40"
+              src="/assets/sahu-samaj-bhavan.jpg"
+              alt="Sahu Samaj"
+              className="w-full h-full object-cover object-fill"
             />
-            <div className="absolute inset-0 bg-gradient-to-r from-gray-900 to-transparent"></div>
           </div>
-          {/* Sits above the photo's timestamp in the bottom-right corner */}
           <h1 className="absolute bottom-14 right-4 sm:right-8 md:right-12 z-10 text-3xl sm:text-4xl md:text-5xl font-bold text-white drop-shadow-lg">
-            <T en="Sahu Sabha" hi="साहू सभा" />
+            <T en="Sahu Samaj" hi="साहू समाज" />
           </h1>
           <div className="px-4 sm:px-6 md:px-8 lg:px-16 relative z-10 py-12 md:py-0">
             <div className="max-w-2xl">
