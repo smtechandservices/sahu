@@ -70,32 +70,6 @@ export default function GalleryPage() {
             </p>
           </div>
 
-          {/* Marquees — only shown while loading or when there is actual data */}
-          {(loading || allItems.length > 0) && (
-            <div className="mt-10 space-y-3 select-none overflow-hidden">
-              {/* Row 1 — gallery images, scrolls left */}
-              {(loading || galleryItems.length > 0) && (
-                <div className="overflow-hidden w-full">
-                  <div ref={galleryTrackRef} className={`flex w-max ${galleryItems.length > 0 ? 'marquee-left' : ''}`}>
-                    {(loading ? Array(10).fill(null) : galleryLoop).map((img, i) => (
-                      <MarqueeThumb key={i} img={img} loading={loading} />
-                    ))}
-                  </div>
-                </div>
-              )}
-              {/* Row 2 — media images, scrolls right */}
-              {(loading || mediaItems.length > 0) && (
-                <div className="overflow-hidden w-full">
-                  <div ref={mediaTrackRef} className={`flex w-max ${mediaItems.length > 0 ? 'marquee-right' : ''}`}>
-                    {(loading ? Array(10).fill(null) : mediaLoop).map((img, i) => (
-                      <MarqueeThumb key={i} img={img} loading={loading} />
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
           {/* Tabs */}
           <div className="px-4 pb-8 mt-8">
             {!loading && (
@@ -152,6 +126,32 @@ export default function GalleryPage() {
           /* One combined grid; the tabs above filter it */
           <div className="py-10 px-4 sm:px-8 md:px-12">
             <GalleryClient key={activeTab} initialImages={displayItems} />
+          </div>
+        )}
+
+        {/* Marquees — only shown while loading or when there is actual data */}
+        {(loading || allItems.length > 0) && (
+          <div className="pb-16 space-y-3 select-none overflow-hidden">
+            {/* Row 1 — gallery images, scrolls left */}
+            {(loading || galleryItems.length > 0) && (
+              <div className="overflow-hidden w-full">
+                <div ref={galleryTrackRef} className={`flex w-max ${galleryItems.length > 0 ? 'marquee-left' : ''}`}>
+                  {(loading ? Array(10).fill(null) : galleryLoop).map((img, i) => (
+                    <MarqueeThumb key={i} img={img} loading={loading} />
+                  ))}
+                </div>
+              </div>
+            )}
+            {/* Row 2 — media images, scrolls right */}
+            {(loading || mediaItems.length > 0) && (
+              <div className="overflow-hidden w-full">
+                <div ref={mediaTrackRef} className={`flex w-max ${mediaItems.length > 0 ? 'marquee-right' : ''}`}>
+                  {(loading ? Array(10).fill(null) : mediaLoop).map((img, i) => (
+                    <MarqueeThumb key={i} img={img} loading={loading} />
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </main>
