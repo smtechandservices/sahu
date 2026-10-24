@@ -22,7 +22,7 @@ const executiveMembers = [
   { name: "Shrimati Rekha Gupta", role: ['Treasurer', 'कोषाध्यक्ष'], mobile: "7488937858", image: "/assets/rekha-gupta.jpg" },
   { name: "Shri Manoj Kumar Sahu", role: JOINT_SECRETARY, mobile: "7004598450", image: "/assets/manoj-kumar-sahu.jpg" },
   { name: "Shri Kumar Digvijay Sunil", role: JOINT_SECRETARY, mobile: "9431245626", image: "/assets/kumar-digvijay-sunil.jpg" },
-  { name: "Shri Mukesh Kumar", role: ORGANISATION_SECRETARY, mobile: "9709779465" },
+  { name: "Shri Mukesh Kumar", role: ORGANISATION_SECRETARY, mobile: "9709779465", image: "/assets/mukesh-kumar.jpg" },
   { name: "Shri Sanjeev Shekhar Gupta", role: ORGANISATION_SECRETARY, mobile: "7352137420" },
   { name: "Shri Arjun Prasad", role: INTERNAL_AUDITOR, mobile: "9334531252" },
   { name: "Shri Pradeep Kumar", role: INTERNAL_AUDITOR, mobile: "8809291488" },
@@ -35,9 +35,9 @@ const executiveMembers = [
   { name: "Shri Rakesh Kumar Sahu", district: ['Purnia', 'पूर्णिया'], mobile: "8789484042" },
   { name: "Shri Chhotan Sahu", district: ['Magadh', 'मगध'], mobile: "9006214490", image: "/assets/chhotan-sahu.jpg" },
   { name: "Shri Vipul Kumar", district: ['Patna', 'पटना'], mobile: "8210703879", image: "/assets/vipul-kumar.jpg" },
-  { name: "Shri Mayanand Sahu", district: ['Madhepura', 'मधेपुरा'], mobile: "7739726062" },
-  { name: "Shri Balram Sahu (Advocate)", district: ['Madhubani', 'मधुबनी'], mobile: "9931789314" },
-  { name: "Shri Vipin Gupta", district: ['Kaimur', 'कैमूर'], mobile: "7717731365" },
+  { name: "Shri Mayanand Sahu", district: ['Madhepura', 'मधेपुरा'], mobile: "7739726062", image: "/assets/mayanand-sahu.jpg" },
+  { name: "Shri Balram Sahu (Advocate)", district: ['Madhubani', 'मधुबनी'], mobile: "9931789314", image: "/assets/balram-sahu.jpg" },
+  { name: "Shri Vipin Gupta", district: ['Kaimur', 'कैमूर'], mobile: "7717731365", image: "/assets/vipin-gupta.jpg" },
   { name: "Shri Virendra Prasad Gupta", district: ['Rohtas', 'रोहतास'], mobile: "8084878543" },
 ];
 
