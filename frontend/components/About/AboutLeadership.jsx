@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { useLanguage } from '../../context/LanguageContext';
+import TenureTable from './TenureTable';
 
 const president = {
   name: "Ranvijay Sahu",
@@ -35,40 +35,8 @@ const pastPresidents = [
   { name: ['Shri Ranvijay Sahu', 'श्री रण विजय साहू'], place: ['Samastipur', 'समस्तीपुर'], term: '29.6.23–', current: true },
 ];
 
-// From the Sabha's board "महिला अध्यक्ष के कार्यकाल की सूची"
-const pastMahilaPresidents = [
-  { name: ['Smt. Savitri Devi', 'श्रीमती सावित्री देवी'], place: ['Chhapra', 'छपरा'], term: '1983–1989' },
-  { name: ['Smt. Renu Priyadarshini', 'श्रीमती रेणु प्रियदर्शिनी'], place: ['Patna', 'पटना'], term: '1989–1992' },
-  { name: ['Prof. Dr. Kiran Aryani Mishra', 'प्रो. डॉ. किरण आर्यणी मिश्रा'], place: ['Patna', 'पटना'], term: '1992–1995' },
-  { name: ['Smt. Gayatri Gupta', 'श्रीमती गायत्री गुप्ता'], place: ['Patna', 'पटना'], term: '1995–2001' },
-  { name: ['Smt. Gayatri Gupta', 'श्रीमती गायत्री गुप्ता'], place: ['Patna', 'पटना'], term: '2001–2005' },
-  { name: ['Ms. Sushma Sahu', 'सुश्री सुषमा साहू'], place: ['Patna', 'पटना'], term: '2005–2007' },
-  { name: ['Dr. Shanti Brahmachari', 'डॉ. शांति ब्रह्मचारी'], place: ['Patna', 'पटना'], term: '2007–2009' },
-  { name: ['Smt. Manju Gupta', 'श्रीमती मंजू गुप्ता'], place: ['Chhapra', 'छपरा'], term: '2009–2013' },
-  { name: ['Smt. Kanchan Gupta', 'श्रीमती कंचन गुप्ता'], place: ['Patna', 'पटना'], term: '2013–2018' },
-  { name: ['Dr. Madhuri Gupta', 'डॉ. माधुरी गुप्ता'], place: ['Patna', 'पटना'], term: '2018–2023' },
-  { name: ['Smt. Simmy Prasad', 'श्रीमती सिम्मी प्रसाद'], place: ['Patna', 'पटना'], term: '2023–', current: true },
-];
-
-const tenureTabs = [
-  { id: 'president', label: ["Presidents' Tenure", 'अध्यक्ष के कार्यकाल की सूची'], terms: pastPresidents },
-  { id: 'mahila', label: ["Mahila Presidents' Tenure", 'महिला अध्यक्ष के कार्यकाल की सूची'], terms: pastMahilaPresidents },
-];
-
 const AboutLeadership = () => {
   const { t } = useLanguage();
-  const tableRef = useRef(null);
-  const [activeTab, setActiveTab] = useState('president');
-
-  const { terms } = tenureTabs.find((tab) => tab.id === activeTab);
-  // Earlier terms scroll; the current term stays pinned at the bottom of the table
-  const earlierTerms = terms.filter((p) => !p.current);
-  const currentTerm = terms.find((p) => p.current);
-
-  // Open each tenure list scrolled to the most recent terms
-  useEffect(() => {
-    if (tableRef.current) tableRef.current.scrollTop = tableRef.current.scrollHeight;
-  }, [activeTab]);
 
   return (
     <section id="about-leadership" className="section-padding bg-white">
@@ -109,62 +77,17 @@ const AboutLeadership = () => {
             </div>
           </div>
 
-          {/* Tenure lists: 2/3 width, capped to the president card's height and scrolls inside */}
+          {/* Tenure list: 2/3 width, capped to the president card's height and scrolls inside */}
           {/* divider: top border when stacked, left border on desktop */}
           <div className="lg:col-span-2 border-t border-yellow-200 pt-10 lg:border-t-0 lg:pt-0 lg:border-l lg:relative">
             <div className="flex flex-col lg:absolute lg:inset-0 lg:pl-8">
-            {/* Tabs sit where the section label was, so the table still lines up with the photo card */}
-            <div className="flex flex-wrap gap-x-6 gap-y-2 mb-6">
-              {tenureTabs.map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`pb-2 border-b-4 text-sm font-semibold uppercase tracking-wider transition-colors ${
-                    activeTab === tab.id
-                      ? 'text-primary border-[#f5b301]'
-                      : 'text-gray-400 border-transparent hover:text-primary'
-                  }`}
-                >
-                  {t(...tab.label)}
-                </button>
-              ))}
+            {/* Label sits level with the president's role label, so the table lines up with the photo card */}
+            <div className="mb-6">
+              <p className="inline-block pb-2 border-b-4 border-[#f5b301] text-sm font-semibold uppercase tracking-wider text-primary">
+                {t("Presidents' Tenure", 'अध्यक्ष के कार्यकाल की सूची')}
+              </p>
             </div>
-            <div ref={tableRef} className="max-h-[28rem] lg:max-h-none lg:flex-1 lg:min-h-0 overflow-auto rounded-2xl border border-yellow-200 shadow-sm">
-              <table className="w-full text-sm text-left">
-                <thead className="sticky top-0 z-10 bg-[#FFFBF7] text-xs font-bold text-gray-500 uppercase tracking-wider">
-                  <tr className="h-11">
-                    <th className="px-4 py-3 w-12">{t('No.', 'क्र.सं.')}</th>
-                    <th className="px-4 py-3">{t('Name', 'नाम')}</th>
-                    <th className="px-4 py-3">{t('Place', 'स्थान')}</th>
-                    <th className="px-4 py-3 whitespace-nowrap">{t('Tenure', 'अवधि')}</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-yellow-100">
-                  {earlierTerms.map((p, index) => (
-                    <tr key={index} className="hover:bg-[#FFFBF7] transition-colors">
-                      <td className="px-4 py-2.5 text-gray-400 font-semibold">{index + 1}</td>
-                      <td className="px-4 py-2.5 font-semibold text-gray-900">{t(...p.name)}</td>
-                      <td className="px-4 py-2.5 text-gray-600">{t(...p.place)}</td>
-                      <td className="px-4 py-2.5 text-gray-600 whitespace-nowrap">{p.term}</td>
-                    </tr>
-                  ))}
-                </tbody>
-                {/* Solid background so scrolled rows don't show through */}
-                <tfoot className="sticky bottom-0 z-10 bg-[#FDF7E6] border-t-2 border-primary/30 text-base">
-                  <tr className="h-24">
-                    <td className="px-4 py-2.5 text-gray-400 font-semibold">{earlierTerms.length + 1}</td>
-                    <td className="px-4 py-2.5 text-lg font-bold text-gray-900">{t(...currentTerm.name)}</td>
-                    <td className="px-4 py-2.5 text-gray-600">{t(...currentTerm.place)}</td>
-                    <td className="px-4 py-2.5 text-gray-600 whitespace-nowrap">
-                      {currentTerm.term}
-                      <span className="ml-2 text-[10px] font-bold uppercase bg-primary text-white px-2 py-0.5 rounded-full">
-                        {t('Present', 'वर्तमान')}
-                      </span>
-                    </td>
-                  </tr>
-                </tfoot>
-              </table>
-            </div>
+            <TenureTable terms={pastPresidents} />
             </div>
           </div>
         </div>

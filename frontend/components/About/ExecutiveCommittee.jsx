@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { Phone } from 'lucide-react';
 import { useLanguage } from '../../context/LanguageContext';
 import Pagination from '../Pagination/Pagination';
+import TenureTable from './TenureTable';
 
 const VICE_PRESIDENT = ['Vice President', 'उपाध्यक्ष'];
 const JOINT_SECRETARY = ['Joint Secretary', 'संयुक्त मंत्री'];
@@ -146,6 +147,21 @@ const mahilaCommittee = [
   { name: "Simmy Prasad", role: ["Pradesh Mahila Adhyaksh (State Women's President, Mahila Morcha)", 'प्रदेश महिला अध्यक्ष (महिला मोर्चा)'], mobile: "9798470411", image: "/assets/simmi-prasad.jpg" },
   { name: "Sheetal Gupta", role: ['Mahamantri (General Secretary, Mahila Morcha)', 'महामंत्री (महिला मोर्चा)'], mobile: "9973315777", image: "/assets/sheetal.jpg" },
   { name: "Rooplata", role: ['Koshadhyaksh (Treasurer, Mahila Morcha)', 'कोषाध्यक्ष (महिला मोर्चा)'], image: "/assets/rooplata.jpg" },
+];
+
+// From the Sabha's board "महिला अध्यक्ष के कार्यकाल की सूची"
+const pastMahilaPresidents = [
+  { name: ['Smt. Savitri Devi', 'श्रीमती सावित्री देवी'], place: ['Chhapra', 'छपरा'], term: '1983–1989' },
+  { name: ['Smt. Renu Priyadarshini', 'श्रीमती रेणु प्रियदर्शिनी'], place: ['Patna', 'पटना'], term: '1989–1992' },
+  { name: ['Prof. Dr. Kiran Aryani Mishra', 'प्रो. डॉ. किरण आर्यणी मिश्रा'], place: ['Patna', 'पटना'], term: '1992–1995' },
+  { name: ['Smt. Gayatri Gupta', 'श्रीमती गायत्री गुप्ता'], place: ['Patna', 'पटना'], term: '1995–2001' },
+  { name: ['Smt. Gayatri Gupta', 'श्रीमती गायत्री गुप्ता'], place: ['Patna', 'पटना'], term: '2001–2005' },
+  { name: ['Ms. Sushma Sahu', 'सुश्री सुषमा साहू'], place: ['Patna', 'पटना'], term: '2005–2007' },
+  { name: ['Dr. Shanti Brahmachari', 'डॉ. शांति ब्रह्मचारी'], place: ['Patna', 'पटना'], term: '2007–2009' },
+  { name: ['Smt. Manju Gupta', 'श्रीमती मंजू गुप्ता'], place: ['Chhapra', 'छपरा'], term: '2009–2013' },
+  { name: ['Smt. Kanchan Gupta', 'श्रीमती कंचन गुप्ता'], place: ['Patna', 'पटना'], term: '2013–2018' },
+  { name: ['Dr. Madhuri Gupta', 'डॉ. माधुरी गुप्ता'], place: ['Patna', 'पटना'], term: '2018–2023' },
+  { name: ['Smt. Simmy Prasad', 'श्रीमती सिम्मी प्रसाद'], place: ['Patna', 'पटना'], term: '2023–', current: true },
 ];
 
 const yuvaCommittee = [
@@ -334,18 +350,32 @@ const ExecutiveCommittee = () => {
           </motion.div>
         )}
 
-        {/* Mahila Adhyaksh */}
+        {/* Mahila Committee: the Adhyaksh beside the tenure list, then the other office-bearers */}
         {activeTab === 'mahila' && (
           <motion.div
             key="mahila"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
+            className="space-y-6"
           >
-            {pageItems(mahilaCommittee).map((member, index) => (
-              <PhotoCard key={index} member={member} subtitle={t(...member.role)} />
-            ))}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <PhotoCard member={mahilaCommittee[0]} subtitle={t(...mahilaCommittee[0].role)} />
+              {/* Tenure list is capped to the photo card's height on desktop and scrolls inside */}
+              <div className="lg:col-span-2 lg:relative">
+                <div className="flex flex-col lg:absolute lg:inset-0">
+                  <p className="mb-4 text-sm font-semibold uppercase tracking-wider text-primary">
+                    {t("Mahila Presidents' Tenure", 'महिला अध्यक्ष के कार्यकाल की सूची')}
+                  </p>
+                  <TenureTable terms={pastMahilaPresidents} />
+                </div>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {mahilaCommittee.slice(1).map((member, index) => (
+                <PhotoCard key={index} member={member} subtitle={t(...member.role)} />
+              ))}
+            </div>
           </motion.div>
         )}
 
