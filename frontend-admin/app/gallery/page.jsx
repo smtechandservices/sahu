@@ -331,9 +331,9 @@ export default function MediaManager() {
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative bg-white w-full max-w-md rounded-3xl shadow-2xl overflow-hidden flex flex-col"
+              className="relative bg-white w-full max-w-3xl max-h-[90vh] rounded-3xl shadow-2xl overflow-hidden flex flex-col"
             >
-              <div className="p-6 border-b border-gray-100 flex justify-between items-center">
+              <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center shrink-0">
                 <h2 className="text-xl font-black text-gray-900">
                   {editingItem ? 'Edit' : 'Upload'}
                 </h2>
@@ -342,15 +342,15 @@ export default function MediaManager() {
                 </button>
               </div>
 
-              <form onSubmit={handleSave} className="p-6 space-y-5">
-                {/* Image upload */}
-                <div>
+              <form onSubmit={handleSave} className="p-6 overflow-y-auto grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
+                {/* Left: image upload (stretches to the height of the fields) */}
+                <div className="flex flex-col">
                   <label className="block text-sm font-bold text-gray-700 mb-2">
                     File {!editingItem && <span className="text-red-400">*</span>}
                   </label>
                   <div
                     onClick={() => fileRef.current?.click()}
-                    className="w-full h-52 rounded-2xl border-2 border-dashed border-gray-200 flex items-center justify-center cursor-pointer hover:border-primary/40 hover:bg-primary/5 transition-all overflow-hidden"
+                    className="w-full h-52 md:h-auto md:flex-1 md:min-h-64 rounded-2xl border-2 border-dashed border-gray-200 flex items-center justify-center cursor-pointer hover:border-primary/40 hover:bg-primary/5 transition-all overflow-hidden"
                   >
                     {imagePreview ? (
                       isVideo(form.image_mimetype) ? (
@@ -369,75 +369,78 @@ export default function MediaManager() {
                   <input ref={fileRef} type="file" accept="image/*,video/mp4,video/webm,video/mov" className="hidden" onChange={handleImageChange} />
                 </div>
 
-                {/* Title */}
-                <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2">Title</label>
-                  <input
-                    type="text"
-                    value={form.title}
-                    onChange={(e) => setForm(f => ({ ...f, title: e.target.value }))}
-                    placeholder="e.g. Annual Day 2025"
-                    className="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all"
-                  />
-                </div>
-
-                {/* Year */}
-                <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2">Year</label>
-                  <input
-                    type="number"
-                    min={1900}
-                    max={2100}
-                    value={form.year}
-                    onChange={(e) => setForm(f => ({ ...f, year: e.target.value }))}
-                    className="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all"
-                  />
-                  <p className="text-[11px] text-gray-400 mt-1">The year of the event — the public gallery is grouped by this.</p>
-                </div>
-
-                {/* Type selector */}
-                <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2">Type</label>
-                  <div className="grid grid-cols-2 gap-3">
-                    {[
-                      { key: 'gallery', label: 'Gallery', desc: 'Community moments & events', icon: Image },
-                      { key: 'media',   label: 'Media',   desc: 'Official media & press',   icon: Film  },
-                    ].map(({ key, label, desc, icon: Icon }) => (
-                      <button
-                        key={key}
-                        type="button"
-                        onClick={() => setForm(f => ({ ...f, media_type: key }))}
-                        className={`flex flex-col items-start gap-1 p-3 rounded-2xl border-2 transition-all text-left ${
-                          form.media_type === key
-                            ? 'border-primary bg-primary/5'
-                            : 'border-gray-100 hover:border-gray-200'
-                        }`}
-                      >
-                        <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${
-                          form.media_type === key ? 'bg-primary text-white' : 'bg-gray-100 text-gray-400'
-                        }`}>
-                          <Icon size={16} />
-                        </div>
-                        <p className="font-bold text-sm text-gray-800">{label}</p>
-                        <p className="text-[11px] text-gray-400 leading-tight">{desc}</p>
-                      </button>
-                    ))}
+                {/* Right: details */}
+                <div className="space-y-5">
+                  {/* Title + Year */}
+                  <div className="grid grid-cols-[1fr_7rem] gap-3">
+                    <div>
+                      <label className="block text-sm font-bold text-gray-700 mb-2">Title</label>
+                      <input
+                        type="text"
+                        value={form.title}
+                        onChange={(e) => setForm(f => ({ ...f, title: e.target.value }))}
+                        placeholder="e.g. Annual Day 2025"
+                        className="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-bold text-gray-700 mb-2">Year</label>
+                      <input
+                        type="number"
+                        min={1900}
+                        max={2100}
+                        value={form.year}
+                        onChange={(e) => setForm(f => ({ ...f, year: e.target.value }))}
+                        className="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                      />
+                    </div>
+                    <p className="col-span-2 -mt-1 text-[11px] text-gray-400">Year of the event — the public gallery is grouped by this.</p>
                   </div>
-                </div>
 
-                {/* Visibility toggle */}
-                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl">
-                  <p className="font-bold text-gray-800 text-sm">Visible to public</p>
-                  <button
-                    type="button"
-                    onClick={() => setForm(f => ({ ...f, is_active: !f.is_active }))}
-                    className={`w-12 h-6 rounded-full transition-all duration-300 relative ${form.is_active ? 'bg-primary' : 'bg-gray-300'}`}
-                  >
-                    <span className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-all duration-300 ${form.is_active ? 'left-7' : 'left-1'}`} />
-                  </button>
-                </div>
+                  {/* Type selector */}
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-2">Type</label>
+                    <div className="grid grid-cols-2 gap-3">
+                      {[
+                        { key: 'gallery', label: 'Gallery', desc: 'Community moments & events', icon: Image },
+                        { key: 'media',   label: 'Media',   desc: 'Official media & press',   icon: Film  },
+                      ].map(({ key, label, desc, icon: Icon }) => (
+                        <button
+                          key={key}
+                          type="button"
+                          onClick={() => setForm(f => ({ ...f, media_type: key }))}
+                          className={`flex flex-col items-start gap-1 p-3 rounded-2xl border-2 transition-all text-left ${
+                            form.media_type === key
+                              ? 'border-primary bg-primary/5'
+                              : 'border-gray-100 hover:border-gray-200'
+                          }`}
+                        >
+                          <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${
+                            form.media_type === key ? 'bg-primary text-white' : 'bg-gray-100 text-gray-400'
+                          }`}>
+                            <Icon size={16} />
+                          </div>
+                          <p className="font-bold text-sm text-gray-800">{label}</p>
+                          <p className="text-[11px] text-gray-400 leading-tight">{desc}</p>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
 
-                <div className="flex justify-end gap-3 pt-2">
+                  {/* Visibility toggle */}
+                  <div className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl">
+                    <p className="font-bold text-gray-800 text-sm">Visible to public</p>
+                    <button
+                      type="button"
+                      onClick={() => setForm(f => ({ ...f, is_active: !f.is_active }))}
+                      className={`w-12 h-6 rounded-full transition-all duration-300 relative ${form.is_active ? 'bg-primary' : 'bg-gray-300'}`}
+                    >
+                      <span className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-all duration-300 ${form.is_active ? 'left-7' : 'left-1'}`} />
+                    </button>
+                  </div>
+                  </div>
+
+                <div className="md:col-span-2 flex justify-end gap-3 pt-4 border-t border-gray-100">
                   <button type="button" onClick={closeModal} className="px-5 py-2.5 rounded-xl border border-gray-200 text-sm font-bold text-gray-500 hover:bg-gray-50 transition-all">
                     Cancel
                   </button>
