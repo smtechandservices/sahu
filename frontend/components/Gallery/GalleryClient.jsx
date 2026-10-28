@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ChevronLeft, ChevronRight, Images, ZoomIn } from 'lucide-react';
 import { useLanguage } from '../../context/LanguageContext';
@@ -8,7 +8,21 @@ import { useLanguage } from '../../context/LanguageContext';
 const isVideo = (m) => m?.startsWith('video/');
 
 export default function GalleryClient({ initialImages }) {
-  const images = initialImages || [];
+  // Newest year first; sort is stable, so the API order is kept within a year.
+  // The lightbox walks this same flat list, so prev/next crosses year sections.
+  const images = useMemo(
+    () => [...(initialImages || [])].sort((a, b) => (b.year || 0) - (a.year || 0)),
+    [initialImages],
+  );
+  const yearGroups = useMemo(() => {
+    const groups = [];
+    images.forEach((img, index) => {
+      const last = groups[groups.length - 1];
+      if (last && last.year === img.year) last.items.push({ img, index });
+      else groups.push({ year: img.year, items: [{ img, index }] });
+    });
+    return groups;
+  }, [images]);
   const [lightboxIndex, setLightboxIndex] = useState(null);
   const { t } = useLanguage();
 
@@ -47,66 +61,78 @@ export default function GalleryClient({ initialImages }) {
   }
 
   return (
-    <section>
-      {/* Pinterest masonry — CSS columns, natural image heights */}
-      <div
-        className="columns-1 sm:columns-2 md:columns-3 lg:columns-4"
-        style={{ columnGap: '12px' }}
-      >
-        {images.map((img, index) => (
-          <motion.div
-            key={img.id}
-            initial={{ opacity: 0, y: 24 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.35, delay: Math.min(index * 0.04, 0.6) }}
-            className="break-inside-avoid mb-3 group cursor-pointer relative hover:z-10"
-            onClick={() => openLightbox(index)}
+    <section className="space-y-12">
+      {yearGroups.map(({ year, items }) => (
+        <div key={year ?? 'none'}>
+          {/* Year heading */}
+          <div className="flex items-center gap-4 mb-5">
+            <h2 className="text-2xl sm:text-3xl font-black text-gray-900">{year}</h2>
+            <span className="text-xs font-bold text-gray-400 bg-gray-100 px-2.5 py-1 rounded-full">
+              {items.length} {t(items.length === 1 ? 'item' : 'items', 'आइटम')}
+            </span>
+            <div className="flex-1 h-px bg-primary/15" />
+          </div>
+          {/* Pinterest masonry — CSS columns, natural image heights */}
+          <div
+            className="columns-1 sm:columns-2 md:columns-3 lg:columns-4"
+            style={{ columnGap: '12px' }}
           >
-            <div className="relative overflow-hidden rounded-2xl bg-gray-100 shadow-sm hover:shadow-lg transition-all duration-300">
-              {isVideo(img.image_mimetype) ? (
-                <video
-                  src={img.image_url}
-                  className="w-full h-auto block"
-                  muted loop playsInline
-                  onMouseEnter={e => e.currentTarget.play()}
-                  onMouseLeave={e => { e.currentTarget.pause(); e.currentTarget.currentTime = 0; }}
-                />
-              ) : (
-                <img
-                  src={img.image_url}
-                  alt={img.title || t('Photo', 'फ़ोटो')}
-                  className="w-full h-auto block group-hover:scale-[1.03] transition-transform duration-500"
-                  loading="lazy"
-                />
-              )}
+            {items.map(({ img, index }) => (
+              <motion.div
+                key={img.id}
+                initial={{ opacity: 0, y: 24 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.35, delay: Math.min(index * 0.04, 0.6) }}
+                className="break-inside-avoid mb-3 group cursor-pointer relative hover:z-10"
+                onClick={() => openLightbox(index)}
+              >
+                <div className="relative overflow-hidden rounded-2xl bg-gray-100 shadow-sm hover:shadow-lg transition-all duration-300">
+                  {isVideo(img.image_mimetype) ? (
+                    <video
+                      src={img.image_url}
+                      className="w-full h-auto block"
+                      muted loop playsInline
+                      onMouseEnter={e => e.currentTarget.play()}
+                      onMouseLeave={e => { e.currentTarget.pause(); e.currentTarget.currentTime = 0; }}
+                    />
+                  ) : (
+                    <img
+                      src={img.image_url}
+                      alt={img.title || t('Photo', 'फ़ोटो')}
+                      className="w-full h-auto block group-hover:scale-[1.03] transition-transform duration-500"
+                      loading="lazy"
+                    />
+                  )}
 
-              {/* Hover overlay */}
-              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors duration-300 rounded-2xl" />
+                  {/* Hover overlay */}
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors duration-300 rounded-2xl" />
 
-              {/* Icon top-right */}
-              <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                <div className="w-8 h-8 rounded-full bg-white/90 shadow flex items-center justify-center">
-                  {isVideo(img.image_mimetype)
-                    ? <span className="text-gray-700 text-xs font-bold">▶</span>
-                    : <ZoomIn size={14} className="text-gray-700" />}
+                  {/* Icon top-right */}
+                  <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                    <div className="w-8 h-8 rounded-full bg-white/90 shadow flex items-center justify-center">
+                      {isVideo(img.image_mimetype)
+                        ? <span className="text-gray-700 text-xs font-bold">▶</span>
+                        : <ZoomIn size={14} className="text-gray-700" />}
+                    </div>
+                  </div>
+
+                  {/* Video badge */}
+                  {isVideo(img.image_mimetype) && (
+                    <div className="absolute bottom-2 left-2 bg-black/60 text-white text-[9px] font-bold px-2 py-0.5 rounded-full">▶ {t('Video', 'वीडियो')}</div>
+                  )}
+
+                  {/* Title pill at bottom */}
+                  {img.title && (
+                    <div className="absolute bottom-0 left-0 right-0 px-3 pb-3 pt-8 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-b-2xl">
+                      <p className="text-white font-semibold text-sm leading-tight line-clamp-2">{img.title}</p>
+                    </div>
+                  )}
                 </div>
-              </div>
-
-              {/* Video badge */}
-              {isVideo(img.image_mimetype) && (
-                <div className="absolute bottom-2 left-2 bg-black/60 text-white text-[9px] font-bold px-2 py-0.5 rounded-full">▶ {t('Video', 'वीडियो')}</div>
-              )}
-
-              {/* Title pill at bottom */}
-              {img.title && (
-                <div className="absolute bottom-0 left-0 right-0 px-3 pb-3 pt-8 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-b-2xl">
-                  <p className="text-white font-semibold text-sm leading-tight line-clamp-2">{img.title}</p>
-                </div>
-              )}
-            </div>
-          </motion.div>
-        ))}
-      </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      ))}
 
       {/* Lightbox */}
       <AnimatePresence>
@@ -170,6 +196,9 @@ export default function GalleryClient({ initialImages }) {
               <div className="mt-4 text-center">
                 {currentImage.title && (
                   <p className="text-white font-bold text-base">{currentImage.title}</p>
+                )}
+                {currentImage.year && (
+                  <p className="text-white/50 text-xs font-semibold mt-0.5">{currentImage.year}</p>
                 )}
                 <p className="text-white/30 text-xs mt-1">{lightboxIndex + 1} / {images.length}</p>
               </div>

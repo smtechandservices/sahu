@@ -351,7 +351,7 @@ class MediaSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Media
-        fields = ['id', 'image', 'image_url', 'image_mimetype', 'title', 'media_type', 'is_active', 'created_at']
+        fields = ['id', 'image', 'image_url', 'image_mimetype', 'title', 'media_type', 'year', 'is_active', 'created_at']
 
     def get_image_url(self, obj):
         if not obj.image:

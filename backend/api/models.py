@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.utils import timezone
 from django.conf import settings
+from django.core.validators import MinValueValidator, MaxValueValidator
 import random
 
 from core.storages import public_storage, private_storage
@@ -284,6 +285,10 @@ class HeroCarouselImage(models.Model):
     def __str__(self):
         return f"Carousel Image {self.id}"
 
+def current_year():
+    return timezone.localdate().year
+
+
 class Media(models.Model):
     MEDIA_TYPE_CHOICES = (
         ('gallery', 'Gallery'),
@@ -293,11 +298,16 @@ class Media(models.Model):
     image_mimetype = models.CharField(max_length=50, default='image/jpeg')
     title = models.CharField(max_length=200, blank=True, default='')
     media_type = models.CharField(max_length=10, choices=MEDIA_TYPE_CHOICES, default='gallery')
+    # Year the photo/event belongs to (not the upload date) — the public gallery groups by this.
+    year = models.PositiveSmallIntegerField(
+        default=current_year, db_index=True,
+        validators=[MinValueValidator(1900), MaxValueValidator(2100)],
+    )
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        ordering = ['-created_at']
+        ordering = ['-year', '-created_at']
 
     def __str__(self):
         return self.title or f"Media {self.id}"

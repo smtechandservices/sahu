@@ -6,7 +6,8 @@ import { Images, Plus, Trash2, Search, X, Upload, Edit, Image, Film } from 'luci
 import { motion, AnimatePresence } from 'framer-motion';
 import Swal from 'sweetalert2';
 
-const EMPTY_FORM = { title: '', media_type: 'gallery', is_active: true, image: null, image_mimetype: null };
+const CURRENT_YEAR = new Date().getFullYear();
+const EMPTY_FORM = { title: '', media_type: 'gallery', year: CURRENT_YEAR, is_active: true, image: null, image_mimetype: null };
 
 const isVideo = (mimetype) => mimetype?.startsWith('video/');
 const MAX_VIDEO_MB = 14;
@@ -28,6 +29,7 @@ export default function MediaManager() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState('all');
+  const [yearFilter, setYearFilter] = useState('all');
 
   const [modalOpen, setModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
@@ -52,9 +54,12 @@ export default function MediaManager() {
 
   const filtered = items.filter(item => {
     const matchesTab = activeTab === 'all' || item.media_type === activeTab;
+    const matchesYear = yearFilter === 'all' || item.year === Number(yearFilter);
     const matchesSearch = !searchQuery || item.title.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesTab && matchesSearch;
+    return matchesTab && matchesYear && matchesSearch;
   });
+
+  const years = [...new Set(items.map(i => i.year))].sort((a, b) => b - a);
 
   const counts = {
     all: items.length,
@@ -75,6 +80,7 @@ export default function MediaManager() {
     setForm({
       title: item.title || '',
       media_type: item.media_type || 'gallery',
+      year: item.year || CURRENT_YEAR,
       is_active: item.is_active ?? true,
       image: null,
       image_mimetype: null,
@@ -113,11 +119,17 @@ export default function MediaManager() {
       Swal.fire({ icon: 'warning', title: 'File Required', text: 'Please select an image, GIF, or video to upload.' });
       return;
     }
+    const year = Number(form.year);
+    if (!Number.isInteger(year) || year < 1900 || year > 2100) {
+      Swal.fire({ icon: 'warning', title: 'Invalid Year', text: 'Please enter a year between 1900 and 2100.' });
+      return;
+    }
     setSaving(true);
     try {
       const payload = {
         title: form.title,
         media_type: form.media_type,
+        year,
         is_active: form.is_active,
         ...(form.image && { image: form.image, image_mimetype: form.image_mimetype }),
       };
@@ -205,6 +217,14 @@ export default function MediaManager() {
             className="w-full bg-gray-50 border border-gray-100 rounded-xl pl-12 pr-4 py-3 text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all"
           />
         </div>
+        <select
+          value={yearFilter}
+          onChange={(e) => setYearFilter(e.target.value)}
+          className="bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-sm font-bold text-gray-600 focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+        >
+          <option value="all">All years</option>
+          {years.map(y => <option key={y} value={y}>{y}</option>)}
+        </select>
         <span className="text-sm font-bold text-gray-400 shrink-0">{filtered.length} images</span>
       </div>
 
@@ -271,8 +291,13 @@ export default function MediaManager() {
                 </div>
 
                 {/* Type badge */}
-                <div className={`absolute top-2 left-2 text-[9px] font-bold px-2 py-0.5 rounded-full ${badge.cls}`}>
-                  {badge.label}
+                <div className="absolute top-2 left-2 flex gap-1">
+                  <div className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${badge.cls}`}>
+                    {badge.label}
+                  </div>
+                  <div className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-black/60 text-white">
+                    {item.year}
+                  </div>
                 </div>
                 {isVideo(item.image_mimetype) && (
                   <div className="absolute bottom-2 left-2 bg-black/60 text-white text-[9px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
@@ -354,6 +379,20 @@ export default function MediaManager() {
                     placeholder="e.g. Annual Day 2025"
                     className="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all"
                   />
+                </div>
+
+                {/* Year */}
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-2">Year</label>
+                  <input
+                    type="number"
+                    min={1900}
+                    max={2100}
+                    value={form.year}
+                    onChange={(e) => setForm(f => ({ ...f, year: e.target.value }))}
+                    className="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                  />
+                  <p className="text-[11px] text-gray-400 mt-1">The year of the event — the public gallery is grouped by this.</p>
                 </div>
 
                 {/* Type selector */}

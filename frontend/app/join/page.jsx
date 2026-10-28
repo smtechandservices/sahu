@@ -11,8 +11,9 @@ import { fetchApi } from '../../lib/api';
 import { loadRazorpayCheckout, errorMessage } from '../../lib/razorpay';
 import { downloadMembershipReceipt } from '../../lib/receipts';
 import { MEMBERSHIP_TIERS } from '../../lib/membership';
-import { useLanguage, LanguageToggle } from '../../context/LanguageContext';
+import { useLanguage } from '../../context/LanguageContext';
 import OtpInput from '../../components/Auth/OtpInput';
+import ContactBanner from '../../components/Header/ContactBanner';
 import { UpiQrPayment, RazorpayTestNotice } from '../../components/Payments/UpiQrPayment';
 
 const KYC_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
@@ -190,6 +191,7 @@ export default function JoinCommunity() {
 
   return (
     <div className="min-h-screen bg-white font-sans selection:bg-primary/30">
+      <ContactBanner />
       <div className="px-4 sm:px-6 md:px-8 py-6 lg:py-16">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-24 items-start">
 
@@ -206,16 +208,13 @@ export default function JoinCommunity() {
               />
             </Link>
             
-            <div className="flex items-center justify-between gap-4">
-              <Link 
-                href="/" 
-                className="flex items-center space-x-2 text-gray-500 hover:text-primary transition-colors duration-300 font-bold text-sm w-fit group"
-              >
-                <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform duration-300" />
-                <span>{t('Back to Home', 'होम पर वापस जाएँ')}</span>
-              </Link>
-              <LanguageToggle />
-            </div>
+            <Link
+              href="/"
+              className="flex items-center space-x-2 text-gray-500 hover:text-primary transition-colors duration-300 font-bold text-sm w-fit group"
+            >
+              <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform duration-300" />
+              <span>{t('Back to Home', 'होम पर वापस जाएँ')}</span>
+            </Link>
 
             <div className="space-y-6">
               <h1 className="text-2xl lg:text-4xl font-bold text-gray-900 leading-[1.15] tracking-tight">

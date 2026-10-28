@@ -84,8 +84,8 @@ class HeroCarouselImageAdmin(admin.ModelAdmin):
 
 @admin.register(Media)
 class MediaAdmin(admin.ModelAdmin):
-    list_display = ('title', 'media_type', 'is_active', 'created_at')
-    list_filter = ('media_type', 'is_active')
+    list_display = ('title', 'media_type', 'year', 'is_active', 'created_at')
+    list_filter = ('media_type', 'year', 'is_active')
     search_fields = ('title',)
 
 @admin.register(SiteSettings)

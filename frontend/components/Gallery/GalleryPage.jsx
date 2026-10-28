@@ -19,6 +19,7 @@ export default function GalleryPage() {
   const [allItems, setAllItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('all');
+  const [activeYear, setActiveYear] = useState('all');
   const { t } = useLanguage();
 
   useEffect(() => {
@@ -33,10 +34,21 @@ export default function GalleryPage() {
   const { trackRef: galleryTrackRef, items: galleryLoop } = useMarquee(galleryItems);
   const { trackRef: mediaTrackRef,   items: mediaLoop }   = useMarquee(mediaItems);
 
-  const displayItems =
+  const tabItems =
     activeTab === 'gallery' ? galleryItems :
     activeTab === 'media'   ? mediaItems   :
     allItems;
+
+  // Years available in the current tab, newest first, with counts
+  const yearCounts = useMemo(() => {
+    const map = new Map();
+    tabItems.forEach(i => map.set(i.year, (map.get(i.year) || 0) + 1));
+    return [...map.entries()].sort((a, b) => b[0] - a[0]);
+  }, [tabItems]);
+
+  // A selected year that the new tab doesn't have falls back to all years
+  const selectedYear = yearCounts.some(([y]) => y === activeYear) ? activeYear : 'all';
+  const displayItems = selectedYear === 'all' ? tabItems : tabItems.filter(i => i.year === selectedYear);
 
   const counts = {
     all:     allItems.length,
@@ -96,6 +108,28 @@ export default function GalleryPage() {
               </div>
             )}
 
+            {/* Year filter */}
+            {!loading && yearCounts.length > 0 && (
+              <div className="flex flex-wrap items-center justify-center gap-2 mt-5">
+                {[['all', tabItems.length], ...yearCounts].map(([year, count]) => (
+                  <button
+                    key={year}
+                    onClick={() => setActiveYear(year)}
+                    className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-bold border transition-all ${
+                      selectedYear === year
+                        ? 'bg-gray-900 text-white border-gray-900'
+                        : 'bg-white/70 text-gray-600 border-primary/15 hover:border-primary/40 hover:text-gray-900'
+                    }`}
+                  >
+                    {year === 'all' ? t('All years', 'सभी वर्ष') : year}
+                    <span className={`text-[10px] sm:text-xs ${selectedYear === year ? 'text-white/60' : 'text-gray-400'}`}>
+                      {count}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            )}
+
             {!loading && activeTab !== 'all' && (
               <p className="text-gray-400 text-sm mt-4 font-medium">
                 {counts[activeTab]} {t(counts[activeTab] === 1 ? 'photo' : 'photos', 'फ़ोटो')}
@@ -125,7 +159,7 @@ export default function GalleryPage() {
         ) : (
           /* One combined grid; the tabs above filter it */
           <div className="py-10 px-4 sm:px-8 md:px-12">
-            <GalleryClient key={activeTab} initialImages={displayItems} />
+            <GalleryClient key={`${activeTab}-${selectedYear}`} initialImages={displayItems} />
           </div>
         )}
 
