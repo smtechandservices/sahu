@@ -176,11 +176,20 @@ const Footer = () => {
             <ul className="flex flex-col gap-4">
               <li>
                 <a
-                  href="tel:+916122303994"
+                  href="tel:+917352137420"
                   className="flex items-start gap-2.5 text-sm text-gray-400 hover:text-[#f5b301] transition-colors group"
                 >
                   <span className="text-[#f5b301] mt-0.5"><PhoneIcon /></span>
-                  <span>+91 6122303994</span>
+                  <span>+91 7352137420</span>
+                </a>
+              </li>
+              <li>
+                <a
+                  href="tel:+919507164127"
+                  className="flex items-start gap-2.5 text-sm text-gray-400 hover:text-[#f5b301] transition-colors group"
+                >
+                  <span className="text-[#f5b301] mt-0.5"><PhoneIcon /></span>
+                  <span>+91 9507164127</span>
                 </a>
               </li>
               {/* <li>

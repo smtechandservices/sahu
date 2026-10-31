@@ -6,7 +6,7 @@ import { membershipTier } from './membership';
 const ORG = {
   name: 'Bihar Tailik Sahu Sabha',
   address: ['Sahu Bhawan, Langer Toli Chauraha,', 'Bihari Sao Ln, Patna, Bihar 800004'],
-  contact: '+91 6122303994  |  info@sahusabha.org',
+  contact: '+91 7352137420  |  +91 9507164127  |  info@sahusabha.org',
 };
 
 const PURPOSE_LABELS = {

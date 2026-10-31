@@ -22,7 +22,7 @@ const executiveMembers = [
   { name: "Shri Ram Charitra Sahu", role: VICE_PRESIDENT, mobile: "9123101589", image: "/assets/ram-charitra-sahu.jpg" },
   { name: "Shrimati Rekha Gupta", role: ['Treasurer', 'कोषाध्यक्ष'], mobile: "7488937858", image: "/assets/rekha-gupta.jpg" },
   { name: "Shri Manoj Kumar Sahu", role: JOINT_SECRETARY, mobile: "7004598450", image: "/assets/manoj-kumar-sahu.jpg" },
-  { name: "Shri Kumar Digvijay Sunil", role: JOINT_SECRETARY, mobile: "9431245626", image: "/assets/kumar-digvijay-sunil.jpg" },
+  { name: "Shri Kumar Digvijay (Sunil)", role: JOINT_SECRETARY, mobile: "9431245626", image: "/assets/kumar-digvijay-sunil.jpg" },
   { name: "Shri Mukesh Kumar", role: ORGANISATION_SECRETARY, mobile: "9709779465", image: "/assets/mukesh-kumar.jpg" },
   { name: "Shri Sanjiv Shekhar Gupt", role: ORGANISATION_SECRETARY, mobile: "7352137420", image: "/assets/sanjeev-shekhar-gupt.jpg" },
   { name: "Shri Arjun Prasad", role: INTERNAL_AUDITOR, mobile: "9334531252", image: "/assets/arjun-prasad.jpg" },
