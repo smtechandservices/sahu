@@ -7,7 +7,6 @@ import { useAuth } from "../../context/AuthContext";
 import Swal from "sweetalert2";
 import { useLanguage } from '../../context/LanguageContext';
 import { loadRazorpayCheckout, errorMessage } from '../../lib/razorpay';
-import { UpiQrPayment, RazorpayTestNotice } from '../Payments/UpiQrPayment';
 import { downloadMatrimonialReceipt } from '../../lib/receipts';
 
 // One-time profile creation fee (₹), must match MatrimonialProfile.FEES on the backend
@@ -65,7 +64,7 @@ export default function CreateProfileModal({ isOpen, onClose, onCreated }) {
 
   const fee = PROFILE_FEES[formData.gender];
 
-  // The profile only goes live once Razorpay confirms the fee
+  // Once Razorpay confirms the fee the profile waits for admin approval before others can see it
   const confirmPayment = async (payment) => {
     try {
       const { fetchApi } = await import("../../lib/api");
@@ -73,10 +72,10 @@ export default function CreateProfileModal({ isOpen, onClose, onCreated }) {
       // Can only be closed by downloading the receipt
       await Swal.fire({
         icon: "success",
-        title: t('Profile Created', 'प्रोफ़ाइल बन गई'),
+        title: t('Pending Admin Approval', 'एडमिन स्वीकृति लंबित'),
         text: t(
-          `Your matrimonial profile is now live. Payment ID: ${payment.razorpay_payment_id}. Download your receipt to continue.`,
-          `आपकी वैवाहिक प्रोफ़ाइल अब प्रकाशित हो गई है। भुगतान आईडी: ${payment.razorpay_payment_id}। आगे बढ़ने के लिए अपनी रसीद डाउनलोड करें।`
+          `Payment status: Successful (Payment ID: ${payment.razorpay_payment_id}). Your matrimonial profile is pending admin approval and will be visible to others once approved. Download your receipt to continue.`,
+          `भुगतान स्थिति: सफल (भुगतान आईडी: ${payment.razorpay_payment_id})। आपकी वैवाहिक प्रोफ़ाइल एडमिन स्वीकृति के लिए लंबित है और स्वीकृत होने के बाद दूसरों को दिखेगी। आगे बढ़ने के लिए अपनी रसीद डाउनलोड करें।`
         ),
         confirmButtonText: t('Download Receipt', 'रसीद डाउनलोड करें'),
         confirmButtonColor: "#EAB308",
@@ -282,9 +281,6 @@ export default function CreateProfileModal({ isOpen, onClose, onCreated }) {
             <label className="block text-sm font-bold text-gray-700 mb-2">{t('About You (Bio)', 'आपके बारे में (परिचय)')}</label>
             <textarea name="bio" required rows="4" value={formData.bio} onChange={handleChange} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 outline-none focus:border-primary transition-colors" />
           </div>
-
-          <UpiQrPayment amount={fee} />
-          <RazorpayTestNotice />
 
           <div className="pt-2 pb-2 flex justify-end gap-4">
             <button type="button" onClick={onClose} className="px-6 py-3 rounded-xl font-bold text-gray-500 hover:bg-gray-100 transition-colors">

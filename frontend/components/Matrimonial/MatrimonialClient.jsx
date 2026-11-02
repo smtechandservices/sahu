@@ -90,6 +90,7 @@ export default function MatrimonialClient() {
       : "/assets/avatar_female.png",
     bgColor: p.gender === "Male" ? "#1a7a6e" : "#1a2a4a",
     payment: p.payment || null, // own profile only, when the fee was paid
+    approvalStatus: p.approval_status || null,
   });
 
   const loadMatrimonialData = async () => {
@@ -292,6 +293,11 @@ export default function MatrimonialClient() {
         <MatrimonialHero />
 
         <div className="px-4 sm:px-6 md:px-8 mt-10">
+          {/* Own profile is paid but hidden from others until an admin approves it */}
+          {myProfile && myProfile.approvalStatus !== 'Approved' && (
+            <ApprovalNotice status={myProfile.approvalStatus} payment={myProfile.payment} />
+          )}
+
           {/* Action bar — above filters and content */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
             <div>
@@ -565,3 +571,25 @@ function FilterPill({ label, onRemove }) {
     </span>
   );
 }
+
+const ApprovalNotice = ({ status, payment }) => {
+  const { t } = useLanguage();
+  const rejected = status === 'Rejected';
+  return (
+    <div className={`mb-6 rounded-xl border px-4 py-3 text-sm ${rejected ? 'bg-red-50 border-red-200 text-red-800' : 'bg-amber-50 border-amber-200 text-amber-800'}`}>
+      <p className="font-bold">
+        {rejected
+          ? t('Your matrimonial profile was not approved', 'आपकी वैवाहिक प्रोफ़ाइल स्वीकृत नहीं हुई')
+          : t('Your matrimonial profile is pending admin approval', 'आपकी वैवाहिक प्रोफ़ाइल एडमिन स्वीकृति के लिए लंबित है')}
+      </p>
+      <p className="mt-0.5">
+        {payment
+          ? t(`Payment status: Successful (ID ${payment.razorpay_payment_id}).`, `भुगतान स्थिति: सफल (आईडी ${payment.razorpay_payment_id})।`)
+          : t('Payment status: Successful.', 'भुगतान स्थिति: सफल।')}{' '}
+        {rejected
+          ? t('Please contact the Sabha.', 'कृपया सभा से संपर्क करें।')
+          : t('Other members will see your profile once it is approved.', 'स्वीकृत होने के बाद अन्य सदस्य आपकी प्रोफ़ाइल देख सकेंगे।')}
+      </p>
+    </div>
+  );
+};

@@ -6,7 +6,6 @@ import Link from 'next/link';
 import { Users, BookOpen, ChevronRight, Mail, ArrowLeft, Upload, FileCheck2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Swal from 'sweetalert2';
-import { useAuth } from '../../context/AuthContext';
 import { fetchApi } from '../../lib/api';
 import { loadRazorpayCheckout, errorMessage } from '../../lib/razorpay';
 import { downloadMembershipReceipt } from '../../lib/receipts';
@@ -14,7 +13,6 @@ import { MEMBERSHIP_TIERS } from '../../lib/membership';
 import { useLanguage } from '../../context/LanguageContext';
 import OtpInput from '../../components/Auth/OtpInput';
 import ContactBanner from '../../components/Header/ContactBanner';
-import { UpiQrPayment, RazorpayTestNotice } from '../../components/Payments/UpiQrPayment';
 
 const KYC_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
 const KYC_MAX_BYTES = 5 * 1024 * 1024;
@@ -41,7 +39,6 @@ export default function JoinCommunity() {
   const [error, setError] = React.useState('');
   const [resendCooldown, setResendCooldown] = React.useState(0);
   const [resendLoading, setResendLoading] = React.useState(false);
-  const { login } = useAuth();
   const router = useRouter();
   const { t } = useLanguage();
 
@@ -101,17 +98,17 @@ export default function JoinCommunity() {
     setKycFile(file);
   };
 
-  // The member's account is created only after payment; the receipt must be downloaded to continue
+  // The member's account is created only once an admin approves the paid application; the receipt must be downloaded to continue
   const completeJoining = async (payment) => {
     setLoading(true);
     try {
       const data = await fetchApi('/auth/register/verify-payment/', { method: 'POST', body: JSON.stringify(payment) });
       await Swal.fire({
         icon: 'success',
-        title: t('Welcome to Sahu Sabha!', 'साहू सभा में आपका स्वागत है!'),
+        title: t('Pending Admin Approval', 'एडमिन स्वीकृति लंबित'),
         text: t(
-          `Your membership fee of ₹${Number(data.application.amount).toLocaleString('en-IN')} was received. Payment ID: ${payment.razorpay_payment_id}. Download your receipt to continue.`,
-          `आपका ₹${Number(data.application.amount).toLocaleString('en-IN')} का सदस्यता शुल्क प्राप्त हो गया है। भुगतान आईडी: ${payment.razorpay_payment_id}। आगे बढ़ने के लिए अपनी रसीद डाउनलोड करें।`
+          `Payment status: Successful. Your membership fee of ₹${Number(data.application.amount).toLocaleString('en-IN')} was received (Payment ID: ${payment.razorpay_payment_id}). Your application is now pending admin approval; you can log in once it is approved. Download your receipt to continue.`,
+          `भुगतान स्थिति: सफल। आपका ₹${Number(data.application.amount).toLocaleString('en-IN')} का सदस्यता शुल्क प्राप्त हो गया है (भुगतान आईडी: ${payment.razorpay_payment_id})। आपका आवेदन अब एडमिन स्वीकृति के लिए लंबित है; स्वीकृत होने के बाद आप लॉग इन कर सकेंगे। आगे बढ़ने के लिए अपनी रसीद डाउनलोड करें।`
         ),
         confirmButtonText: t('Download Receipt', 'रसीद डाउनलोड करें'),
         confirmButtonColor: '#EAB308',
@@ -125,7 +122,6 @@ export default function JoinCommunity() {
             return false;
           }),
       });
-      login(data.user, data.access, data.refresh);
       router.push('/');
     } catch (err) {
       setLoading(false);
@@ -375,13 +371,6 @@ export default function JoinCommunity() {
                       </div>
                       <OtpInput value={otp} onChange={setOtp} autoFocus />
                     </div>
-                  )}
-
-                  {step !== 1 && (
-                    <>
-                      <UpiQrPayment amount={formData.amount} />
-                      <RazorpayTestNotice />
-                    </>
                   )}
 
                   {error && <p className="text-red-500 text-sm font-medium bg-red-50 p-3 rounded-lg border border-red-100">{error}</p>}

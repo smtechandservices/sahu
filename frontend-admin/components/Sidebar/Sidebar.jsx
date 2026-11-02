@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard, Home, Calendar, BookOpen,
-  Users, Briefcase, Settings, LogOut, Heart, Newspaper, Images, HandCoins, ReceiptIndianRupee
+  Users, Briefcase, Settings, LogOut, Heart, Newspaper, Images, HandCoins, ReceiptIndianRupee, UserCheck
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
@@ -20,6 +20,7 @@ const menuItems = [
   { icon: Images, label: 'Gallery', href: '/gallery' },
   { icon: HandCoins, label: 'Donations', href: '/donations' },
   { icon: ReceiptIndianRupee, label: 'Transactions', href: '/transactions' },
+  { icon: UserCheck, label: 'Membership Requests', href: '/memberships' },
   { icon: Users, label: 'Users', href: '/users' },
   { icon: Settings, label: 'Site Settings', href: '/settings' },
 ];

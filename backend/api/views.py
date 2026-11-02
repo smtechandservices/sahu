@@ -27,6 +27,7 @@ from .serializers import (
     EventSerializer, EventRegistrationSerializer, SiteSettingsSerializer,
     HeroCarouselImageSerializer, UserSessionSerializer, CustomTokenRefreshSerializer,
     MediaSerializer, DonationSerializer, AdminDonationSerializer, MembershipApplicationSerializer,
+    AdminMembershipApplicationSerializer,
     matrimonial_receipt,
 )
 from .permissions import IsAdminOrReadOnly
@@ -76,6 +77,23 @@ def create_user_session(user, refresh, request):
 
 
 # --- Auth Views ---
+def _membership_under_review(phone):
+    """Error response for a number whose paid application has no account yet (awaiting or refused approval), else None."""
+    application = (MembershipApplication.objects.filter(phone=phone, status='Paid', user__isnull=True)
+                   .exclude(approval_status='Approved').first())
+    if not application:
+        return None
+    if application.approval_status == 'Rejected':
+        message = (f'Your membership application was not approved. Payment status: Successful (ID {application.razorpay_payment_id}). '
+                   'Please contact the Sabha.')
+    else:
+        message = (f'Your membership application is pending admin approval. Payment status: Successful (ID {application.razorpay_payment_id}). '
+                   'You can log in once it is approved.')
+    return Response({'error': message, 'approval_status': application.approval_status,
+                     'payment_status': 'Success', 'payment_id': application.razorpay_payment_id},
+                    status=status.HTTP_403_FORBIDDEN)
+
+
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def send_otp(request):
@@ -84,7 +102,8 @@ def send_otp(request):
         return Response({'error': 'Phone number is required'}, status=status.HTTP_400_BAD_REQUEST)
 
     if not User.objects.filter(phone=phone).exists():
-        return Response({'error': 'No account found with this number. Please register first.'}, status=status.HTTP_404_NOT_FOUND)
+        return _membership_under_review(phone) or Response(
+            {'error': 'No account found with this number. Please register first.'}, status=status.HTTP_404_NOT_FOUND)
 
     record = OTPRecord.generate_otp(phone)
     print(f'[OTP] Phone: {phone} | Code: {record.code}')
@@ -146,6 +165,9 @@ def send_register_otp(request):
 
     if User.objects.filter(phone=phone).exists():
         return Response({'error': 'An account with this number already exists. Please login.'}, status=status.HTTP_400_BAD_REQUEST)
+    under_review = _membership_under_review(phone)
+    if under_review:
+        return under_review
 
     record = OTPRecord.generate_otp(phone)
     print(f'[OTP] Phone: {phone} | Code: {record.code}')
@@ -190,8 +212,8 @@ class RegisterAnonThrottle(AnonRateThrottle):
 def register(request):
     """
     Join page, after the OTP step. Saves the application (Aadhaar, KYC document, chosen fee)
-    and opens a Razorpay order for the membership fee. The account itself is created by
-    verify_membership_payment once the fee is paid.
+    and opens a Razorpay order for the membership fee. The account itself is created when an
+    admin approves the paid application.
     """
     phone = request.data.get('phone')
     code = request.data.get('code')
@@ -201,6 +223,9 @@ def register(request):
 
     if User.objects.filter(phone=phone).exists():
         return Response({'error': 'User with this phone already exists. Please login.'}, status=status.HTTP_400_BAD_REQUEST)
+    under_review = _membership_under_review(phone)
+    if under_review:
+        return under_review
 
     otp = None
     if not _is_dev_otp(code, phone):
@@ -254,7 +279,7 @@ def register(request):
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def verify_membership_payment(request):
-    """Checkout's success handler posts the signed payment here; this creates the member's account."""
+    """Checkout's success handler posts the signed payment here; the application then waits for admin approval."""
     order_id = request.data.get('razorpay_order_id', '')
     payment_id = request.data.get('razorpay_payment_id', '')
     signature = request.data.get('razorpay_signature', '')
@@ -264,23 +289,8 @@ def verify_membership_payment(request):
     application = MembershipApplication.objects.filter(razorpay_order_id=order_id).first()
     if not application:
         return Response({'error': 'Membership application not found.'}, status=status.HTTP_404_NOT_FOUND)
-    try:
-        application, user = payments.complete_membership(application, payment_id)
-    except payments.PaymentConflict:
-        # Someone registered this number while the payment was in progress
-        return Response({'error': f'This phone number is already registered. Please contact the Sabha with payment ID {payment_id}.'},
-                        status=status.HTTP_409_CONFLICT)
-
-    refresh = RefreshToken.for_user(user)
-    refresh.access_token['refresh_jti'] = refresh.payload.get('jti')
-    create_user_session(user, refresh, request)
-
-    return Response({
-        'refresh': str(refresh),
-        'access': str(refresh.access_token),
-        'user': UserSerializer(user).data,
-        'application': MembershipApplicationSerializer(application).data,
-    }, status=status.HTTP_201_CREATED)
+    application = payments.complete_membership(application, payment_id)
+    return Response({'application': MembershipApplicationSerializer(application).data})
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
@@ -685,6 +695,11 @@ def _matrimonial_match_ids_for_user(user):
     return sent_ids & received_ids
 
 
+def _live_matrimonial_profiles():
+    """Profiles other users can see: fee paid and approved by an admin."""
+    return MatrimonialProfile.objects.filter(is_active=True, approval_status='Approved')
+
+
 class MatrimonialProfileViewSet(viewsets.ModelViewSet):
     serializer_class = MatrimonialProfileSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -704,8 +719,17 @@ class MatrimonialProfileViewSet(viewsets.ModelViewSet):
         return context
 
     def get_queryset(self):
-        # Unpaid profiles don't exist yet as far as anyone (owner and admins included) is concerned
-        qs = MatrimonialProfile.objects.filter(is_active=True)
+        # Unpaid profiles don't exist yet as far as anyone (owner and admins included) is concerned.
+        # Admins see every paid profile to review it; owners see their own while it awaits approval.
+        if getattr(self.request.user, 'is_admin', False):
+            qs = MatrimonialProfile.objects.filter(is_active=True)
+        else:
+            qs = MatrimonialProfile.objects.filter(
+                Q(is_active=True, approval_status='Approved') | Q(is_active=True, user=self.request.user)
+            )
+        approval_status = self.request.query_params.get('approval_status')
+        if approval_status:
+            qs = qs.filter(approval_status=approval_status)
 
         # Age range filter
         age_min = self.request.query_params.get('age_min')
@@ -728,7 +752,7 @@ class MatrimonialProfileViewSet(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         """
         Saves the profile as inactive and opens a Razorpay order for the creation fee
-        (by gender). verify_payment activates it once the fee is paid.
+        (by gender). verify_payment records the fee; an admin then approves the profile.
         """
         existing = MatrimonialProfile.objects.filter(user=request.user).first()
         if existing and existing.is_active:
@@ -742,7 +766,8 @@ class MatrimonialProfileViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         fee = MatrimonialProfile.FEES[serializer.validated_data['gender']]
         profile = serializer.save(user=request.user, is_active=False, amount_paid=None,
-                                  razorpay_payment_id='', paid_at=None)
+                                  razorpay_payment_id='', paid_at=None,
+                                  approval_status='Pending', reviewed_at=None)
 
         amount_paise = fee * 100
         try:
@@ -769,7 +794,7 @@ class MatrimonialProfileViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['post'])
     def verify_payment(self, request):
-        """Checkout's success handler posts the signed payment here; this makes the profile live."""
+        """Checkout's success handler posts the signed payment here; the profile then waits for admin approval."""
         order_id = request.data.get('razorpay_order_id', '')
         payment_id = request.data.get('razorpay_payment_id', '')
         signature = request.data.get('razorpay_signature', '')
@@ -778,7 +803,7 @@ class MatrimonialProfileViewSet(viewsets.ModelViewSet):
         profile = MatrimonialProfile.objects.filter(razorpay_order_id=order_id, user=request.user).first()
         if not profile:
             return Response({'error': 'Profile not found.'}, status=status.HTTP_404_NOT_FOUND)
-        payments.complete_matrimonial(profile, payment_id)
+        profile = payments.complete_matrimonial(profile, payment_id)
         return Response({
             'profile': self.get_serializer(profile).data,
             'receipt': matrimonial_receipt(profile),
@@ -787,6 +812,27 @@ class MatrimonialProfileViewSet(viewsets.ModelViewSet):
     def perform_update(self, serializer):
         # The fee depends on gender, so it can't be changed after creation
         serializer.save(gender=serializer.instance.gender)
+
+    def _review(self, request, approve):
+        if not getattr(request.user, 'is_admin', False):
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        profile = self.get_object()
+        if approve:
+            try:
+                payments.approve_matrimonial(profile)
+            except payments.NotPaid:
+                return Response({'error': 'Only paid profiles can be approved.'}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            payments.reject(profile)
+        return Response(self.get_serializer(profile).data)
+
+    @action(detail=True, methods=['post'])
+    def approve(self, request, pk=None):
+        return self._review(request, approve=True)
+
+    @action(detail=True, methods=['post'])
+    def reject(self, request, pk=None):
+        return self._review(request, approve=False)
 
     @action(detail=True, methods=['post', 'delete'])
     def interest(self, request, pk=None):
@@ -800,6 +846,9 @@ class MatrimonialProfileViewSet(viewsets.ModelViewSet):
         if request.method == 'POST':
             if not from_profile.is_active:
                 return Response({'error': 'Complete the payment for your matrimonial profile to express interest.'}, status=status.HTTP_403_FORBIDDEN)
+            if from_profile.approval_status != 'Approved':
+                return Response({'error': 'Your matrimonial profile is pending admin approval. You can express interest once it is approved.'},
+                                status=status.HTTP_403_FORBIDDEN)
             MatrimonialInterest.objects.get_or_create(from_profile=from_profile, to_profile=to_profile)
             is_match = MatrimonialInterest.objects.filter(
                 from_profile=to_profile, to_profile=from_profile
@@ -818,9 +867,8 @@ class MatrimonialProfileViewSet(viewsets.ModelViewSet):
         sent_ids = list(
             MatrimonialInterest.objects.filter(from_profile=my_profile).values_list('to_profile_id', flat=True)
         )
-        profiles = MatrimonialProfile.objects.filter(
+        profiles = _live_matrimonial_profiles().filter(
             sent_interests__to_profile=my_profile,
-            is_active=True
         ).exclude(id__in=sent_ids)
         serializer = self.get_serializer(profiles, many=True)
         return Response(serializer.data)
@@ -842,7 +890,7 @@ class MatrimonialProfileViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['get'], permission_classes=[permissions.IsAuthenticated])
     def filter_options(self, request):
-        qs = MatrimonialProfile.objects.filter(is_active=True)
+        qs = _live_matrimonial_profiles()
 
         def distinct_vals(field):
             return sorted(filter(None, qs.values_list(field, flat=True).distinct()))
@@ -857,6 +905,42 @@ class MatrimonialProfileViewSet(viewsets.ModelViewSet):
             'manglik': [c[0] for c in MatrimonialProfile.MANGLIK_CHOICES],
             'complexion': [c[0] for c in MatrimonialProfile.COMPLEXION_CHOICES],
         })
+
+# --- Membership Applications (admin review) ---
+class MembershipApplicationViewSet(viewsets.ReadOnlyModelViewSet):
+    """Join page applications for admins to approve; approving creates the member's account."""
+    serializer_class = AdminMembershipApplicationSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, SearchFilter]
+    filterset_fields = ['status', 'approval_status']
+    search_fields = ['name', 'phone', 'city', 'razorpay_payment_id']
+
+    def get_queryset(self):
+        if not getattr(self.request.user, 'is_admin', False):
+            return MembershipApplication.objects.none()
+        return MembershipApplication.objects.select_related('user')
+
+    @action(detail=True, methods=['post'])
+    def approve(self, request, pk=None):
+        application = self.get_object()
+        try:
+            application, _ = payments.approve_membership(application)
+        except payments.NotPaid:
+            return Response({'error': 'Only paid applications can be approved.'}, status=status.HTTP_400_BAD_REQUEST)
+        except payments.PaymentConflict:
+            return Response({'error': f'{application.phone} is already registered to another account.'},
+                            status=status.HTTP_409_CONFLICT)
+        return Response(self.get_serializer(application).data)
+
+    @action(detail=True, methods=['post'])
+    def reject(self, request, pk=None):
+        application = self.get_object()
+        try:
+            payments.reject(application)
+        except ValueError as exc:
+            return Response({'error': str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(self.get_serializer(application).data)
+
 
 # --- Magazine Views ---
 class ArticleViewSet(viewsets.ModelViewSet):
@@ -1061,7 +1145,7 @@ def admin_dashboard_stats(request):
         'members': User.objects.filter(is_active=True).count(),
         'bookings': Booking.objects.count(),
         'events': Event.objects.filter(is_active=True).count(),
-        'matrimonials': MatrimonialProfile.objects.filter(is_active=True).count(),
+        'matrimonials': _live_matrimonial_profiles().count(),
         'jobs': JobListing.objects.filter(is_active=True).count(),
         'articles': Article.objects.filter(is_published=True).count(),
     }
@@ -1120,7 +1204,7 @@ def admin_dashboard_stats(request):
             'timestamp': b.created_at.isoformat(),
         })
 
-    for m in MatrimonialProfile.objects.select_related('user').filter(is_active=True).order_by('-created_at')[:3]:
+    for m in _live_matrimonial_profiles().select_related('user').order_by('-created_at')[:3]:
         activities.append({
             'type': 'matrimonial',
             'title': 'New Matrimonial Profile',

@@ -162,6 +162,14 @@ class Advertisement(models.Model):
     def __str__(self):
         return self.title
 
+# Paid matrimonial profiles and membership applications wait for an admin before going live
+APPROVAL_CHOICES = (
+    ('Pending', 'Pending'),
+    ('Approved', 'Approved'),
+    ('Rejected', 'Rejected'),
+)
+
+
 # --- Matrimonial Models ---
 class MatrimonialProfile(models.Model):
     MARITAL_STATUS_CHOICES = (
@@ -199,12 +207,15 @@ class MatrimonialProfile(models.Model):
     photo = models.FileField(upload_to='matrimonial/', storage=private_storage, max_length=255, null=True, blank=True)
     photo_mimetype = models.CharField(max_length=50, null=True, blank=True)
     bio = models.TextField()
-    # Live once the profile fee is paid; profiles from before paid creation were all made active
+    # Set once the profile fee is paid; profiles from before paid creation were all made active
     is_active = models.BooleanField(default=False)
     amount_paid = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
     razorpay_order_id = models.CharField(max_length=64, blank=True, default='', db_index=True)
     razorpay_payment_id = models.CharField(max_length=64, blank=True, default='')
     paid_at = models.DateTimeField(null=True, blank=True)
+    # Only paid and approved profiles are shown to other users
+    approval_status = models.CharField(max_length=20, choices=APPROVAL_CHOICES, default='Pending', db_index=True)
+    reviewed_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     # One-time profile creation fee by gender (₹)
@@ -381,8 +392,8 @@ class Donation(models.Model):
 
 class MembershipApplication(models.Model):
     """
-    A sign-up from the Join page. The account is only created (as a member) once the
-    membership fee is paid through Razorpay; until then the details wait here.
+    A sign-up from the Join page. The fee is paid through Razorpay, then an admin reviews the
+    application; the account is only created (as a member) once it is approved.
     """
     FEE_CHOICES = [1000, 2500, 5000, 10000, 25000]
     STATUS_CHOICES = (
@@ -405,6 +416,8 @@ class MembershipApplication(models.Model):
     notes = models.TextField(blank=True, default='')
     created_at = models.DateTimeField(auto_now_add=True)
     paid_at = models.DateTimeField(null=True, blank=True)
+    approval_status = models.CharField(max_length=20, choices=APPROVAL_CHOICES, default='Pending', db_index=True)
+    reviewed_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         ordering = ['-created_at']

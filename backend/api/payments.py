@@ -21,6 +21,10 @@ class PaymentConflict(Exception):
     """The fee was paid but the account can't be created (the phone number got registered meanwhile)."""
 
 
+class NotPaid(Exception):
+    """Only paid applications and profiles can be approved."""
+
+
 # --- Marking payments paid / failed ---
 
 def complete_donation(donation, payment_id):
@@ -34,7 +38,7 @@ def complete_donation(donation, payment_id):
 
 
 def complete_membership(application, payment_id):
-    """Marks the fee paid and creates the member's account (once). Returns (application, user)."""
+    """Marks the fee paid. The account is created later, when an admin approves the application."""
     with transaction.atomic():
         application = MembershipApplication.objects.select_for_update().get(pk=application.pk)
         if application.status != 'Paid':
@@ -42,18 +46,11 @@ def complete_membership(application, payment_id):
             application.razorpay_payment_id = payment_id
             application.paid_at = timezone.now()
             application.save(update_fields=['status', 'razorpay_payment_id', 'paid_at'])
-
-        user = application.user
-        if not user:
-            if User.objects.filter(phone=application.phone).exists():
-                raise PaymentConflict(application.phone)
-            user = User.objects.create_user(phone=application.phone, name=application.name, is_member=True)
-            application.user = user
-            application.save(update_fields=['user'])
-    return application, user
+    return application
 
 
 def complete_matrimonial(profile, payment_id):
+    """Marks the fee paid. The profile is shown to others once an admin approves it."""
     if profile.is_active:
         return profile
     profile.is_active = True
@@ -62,6 +59,48 @@ def complete_matrimonial(profile, payment_id):
     profile.paid_at = timezone.now()
     profile.save(update_fields=['is_active', 'amount_paid', 'razorpay_payment_id', 'paid_at'])
     return profile
+
+
+# --- Admin approval ---
+
+def approve_membership(application):
+    """Creates the member's account (once). Returns (application, user)."""
+    with transaction.atomic():
+        application = MembershipApplication.objects.select_for_update().get(pk=application.pk)
+        if application.status != 'Paid':
+            raise NotPaid()
+        user = application.user
+        if not user:
+            if User.objects.filter(phone=application.phone).exists():
+                raise PaymentConflict(application.phone)
+            user = User.objects.create_user(phone=application.phone, name=application.name, is_member=True)
+            application.user = user
+        application.approval_status = 'Approved'
+        application.reviewed_at = timezone.now()
+        application.save(update_fields=['user', 'approval_status', 'reviewed_at'])
+    return application, user
+
+
+def approve_matrimonial(profile):
+    if not profile.is_active:
+        raise NotPaid()
+    _review(profile, 'Approved')
+    return profile
+
+
+def _review(obj, approval_status):
+    obj.approval_status = approval_status
+    obj.reviewed_at = timezone.now()
+    obj.save(update_fields=['approval_status', 'reviewed_at'])
+
+
+def reject(obj):
+    """Rejects a membership application or matrimonial profile. Any refund is done from the Razorpay dashboard."""
+    if obj.approval_status == 'Approved' and isinstance(obj, MembershipApplication):
+        # The account already exists; deactivate it from the Users page instead
+        raise ValueError('An approved membership cannot be rejected.')
+    _review(obj, 'Rejected')
+    return obj
 
 
 def _fail(obj, payment, fields):
@@ -122,11 +161,11 @@ def _membership_row(a):
         'id': f'MEM-{a.id}', 'object_id': a.id, 'type': 'Membership', 'status': status,
         'amount': a.amount, 'method': 'Online', 'description': 'Community membership fee',
         'name': a.name, 'phone': a.phone, 'email': '',
-        # The account only exists once the fee is paid
+        # The account only exists once an admin approves the paid application
         'account': _account(a.user),
         'razorpay_order_id': a.razorpay_order_id, 'razorpay_payment_id': a.razorpay_payment_id,
         'reference': '', 'notes': a.notes, 'recorded_by': None,
-        'details': {'city': a.city, 'aadhaar': f'XXXX XXXX {a.aadhaar_number[-4:]}'},
+        'details': {'city': a.city, 'aadhaar': f'XXXX XXXX {a.aadhaar_number[-4:]}', 'approval': a.approval_status},
         'created_at': a.created_at, 'completed_at': a.paid_at,
     }
 
@@ -144,7 +183,7 @@ def _matrimonial_row(p):
         'account': _account(p.user),
         'razorpay_order_id': p.razorpay_order_id, 'razorpay_payment_id': p.razorpay_payment_id,
         'reference': '', 'notes': '', 'recorded_by': None,
-        'details': {'gender': p.gender, 'city': p.city},
+        'details': {'gender': p.gender, 'city': p.city, 'approval': p.approval_status},
         'created_at': p.created_at, 'completed_at': p.paid_at,
     }
 
@@ -184,16 +223,13 @@ def sync_initiated(max_age_days=30, limit=50):
         captured = next((p for p in attempts if p.get('status') == 'captured'), None)
         obj = _source_object(row)
         if captured:
-            try:
-                if row['type'] == 'Donation':
-                    complete_donation(obj, captured['id'])
-                elif row['type'] == 'Membership':
-                    complete_membership(obj, captured['id'])
-                else:
-                    complete_matrimonial(obj, captured['id'])
-                result['completed'] += 1
-            except PaymentConflict:
-                result['errors'].append(f"{row['id']}: paid, but {row['phone']} is already registered")
+            if row['type'] == 'Donation':
+                complete_donation(obj, captured['id'])
+            elif row['type'] == 'Membership':
+                complete_membership(obj, captured['id'])
+            else:
+                complete_matrimonial(obj, captured['id'])
+            result['completed'] += 1
         elif attempts and all(p.get('status') == 'failed' for p in attempts):
             fail_payment(obj, attempts[0])
             result['failed'] += 1

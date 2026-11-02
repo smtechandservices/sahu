@@ -242,10 +242,10 @@ class MatrimonialProfileSerializer(serializers.ModelSerializer):
             'id', 'user', 'age', 'gender', 'city', 'education', 'occupation', 'family_type',
             'gotra', 'marital_status', 'manglik', 'complexion', 'height_cm', 'annual_income',
             'mother_tongue', 'photo', 'photo_mimetype', 'bio', 'created_at',
-            'user_detail', 'contact_phone', 'payment',
+            'user_detail', 'contact_phone', 'payment', 'approval_status',
             'marital_status_display', 'manglik_display', 'complexion_display',
         ]
-        read_only_fields = ['user', 'created_at']
+        read_only_fields = ['user', 'created_at', 'approval_status']
 
     def get_payment(self, obj):
         # Only the owner sees what they paid
@@ -272,8 +272,8 @@ class AdminMatrimonialProfileSerializer(MatrimonialProfileSerializer):
     user_detail = UserSerializer(source='user', read_only=True)
 
     class Meta(MatrimonialProfileSerializer.Meta):
-        fields = MatrimonialProfileSerializer.Meta.fields + ['amount_paid', 'razorpay_payment_id', 'paid_at']
-        read_only_fields = MatrimonialProfileSerializer.Meta.read_only_fields + ['amount_paid', 'razorpay_payment_id', 'paid_at']
+        fields = MatrimonialProfileSerializer.Meta.fields + ['amount_paid', 'razorpay_payment_id', 'paid_at', 'reviewed_at']
+        read_only_fields = MatrimonialProfileSerializer.Meta.read_only_fields + ['amount_paid', 'razorpay_payment_id', 'paid_at', 'reviewed_at']
 
     def get_contact_phone(self, obj):
         return obj.user.phone
@@ -441,9 +441,9 @@ class MembershipApplicationSerializer(serializers.ModelSerializer):
         model = MembershipApplication
         fields = [
             'id', 'name', 'phone', 'city', 'aadhaar_number', 'aadhaar_masked', 'kyc_document',
-            'amount', 'status', 'razorpay_payment_id', 'created_at', 'paid_at',
+            'amount', 'status', 'razorpay_payment_id', 'created_at', 'paid_at', 'approval_status',
         ]
-        read_only_fields = ['status', 'razorpay_payment_id', 'created_at', 'paid_at']
+        read_only_fields = ['status', 'razorpay_payment_id', 'created_at', 'paid_at', 'approval_status']
 
     def get_aadhaar_masked(self, obj):
         return f'XXXX XXXX {obj.aadhaar_number[-4:]}'
@@ -463,7 +463,7 @@ class MembershipApplicationSerializer(serializers.ModelSerializer):
         value = ''.join(value.split())
         if not is_valid_aadhaar(value):
             raise serializers.ValidationError('Enter a valid 12-digit Aadhaar number.')
-        if MembershipApplication.objects.filter(aadhaar_number=value, status='Paid').exists():
+        if MembershipApplication.objects.filter(aadhaar_number=value, status='Paid').exclude(approval_status='Rejected').exists():
             raise serializers.ValidationError('This Aadhaar number is already registered with a member.')
         return value
 
@@ -482,6 +482,29 @@ class MembershipApplicationSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         validated_data['kyc_document_mimetype'] = validated_data['kyc_document'].content_type
         return super().create(validated_data)
+
+
+class AdminMembershipApplicationSerializer(serializers.ModelSerializer):
+    """Applications as admins review them: full Aadhaar and the KYC document."""
+    kyc_document = serializers.SerializerMethodField()
+
+    class Meta:
+        model = MembershipApplication
+        fields = [
+            'id', 'user', 'name', 'phone', 'city', 'aadhaar_number', 'kyc_document', 'kyc_document_mimetype',
+            'amount', 'status', 'razorpay_order_id', 'razorpay_payment_id', 'notes',
+            'created_at', 'paid_at', 'approval_status', 'reviewed_at',
+        ]
+        read_only_fields = fields
+
+    def get_kyc_document(self, obj):
+        if not obj.kyc_document:
+            return None
+        url = obj.kyc_document.url
+        request = self.context.get('request')
+        if request and url.startswith('/'):
+            url = request.build_absolute_uri(url)
+        return url
 
 
 # --- Donation Serializers ---

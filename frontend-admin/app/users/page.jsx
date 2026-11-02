@@ -267,8 +267,8 @@ export default function UsersManager() {
           <p className="text-gray-400 font-bold">No users found.</p>
         </div>
       ) : (
-        <div className={`bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden transition-opacity ${loading ? 'opacity-60' : ''}`}>
-          <table className="w-full text-sm">
+        <div className={`bg-white rounded-2xl border border-gray-100 shadow-sm overflow-x-auto transition-opacity ${loading ? 'opacity-60' : ''}`}>
+          <table className="w-full text-sm whitespace-nowrap">
             <thead>
               <tr className="border-b border-gray-100 text-left">
                 <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">User</th>

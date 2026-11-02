@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { useLanguage } from '../../context/LanguageContext';
 
 const digitalCommittee = [
-  { name: "Kumar Digvijay (Sunil)", role: ['Digital Committee Member', 'डिजिटल समिति सदस्य'], image: "/assets/digvijay-cropped.jpeg" },
+  { name: "Kumar Digvijay (Sunil)", role: ['Digital Committee Coordinator', 'डिजिटल समिति समन्वयक'], image: "/assets/digvijay-cropped.jpeg" },
   { name: "Sanjiv Shekhar Gupt", role: ['Digital Committee Member', 'डिजिटल समिति सदस्य'], image: "/assets/sanjiv.png", position: "object-top" },
   { name: "Vinay Kumar", role: ['Digital Committee Member', 'डिजिटल समिति सदस्य'], image: "/assets/vinay.png" },
   { name: "Bimal Kishore Bittu", role: ['Digital Committee Member', 'डिजिटल समिति सदस्य'], image: "/assets/bimal-square.jpg" },

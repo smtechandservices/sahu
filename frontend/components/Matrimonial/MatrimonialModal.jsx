@@ -111,7 +111,8 @@ const MatrimonialModal = ({ profile, liked, isMatch, onLike, onClose, isOwn, onE
             </div>
           </section>
 
-          {/* Profile fee — only on your own profile, and only if one was paid */}
+          {/* Approval and profile fee — only on your own profile */}
+          {isOwn && profile.approvalStatus && <ApprovalStatus status={profile.approvalStatus} />}
           {isOwn && profile.payment && <ProfileFee payment={profile.payment} />}
 
           {/* Contact — only for mutual matches */}
@@ -209,6 +210,27 @@ function formatPhone(phone) {
   if (digits.length === 10) return `+91 ${digits.slice(0, 5)} ${digits.slice(5)}`;
   return phone;
 }
+
+const APPROVAL_STYLES = {
+  Approved: 'bg-green-50 border-green-100 text-green-700',
+  Pending: 'bg-amber-50 border-amber-200 text-amber-800',
+  Rejected: 'bg-red-50 border-red-200 text-red-700',
+};
+
+const ApprovalStatus = ({ status }) => {
+  const { t } = useLanguage();
+  const label = {
+    Approved: t('Approved — visible to other members', 'स्वीकृत — अन्य सदस्यों को दिखाई देती है'),
+    Pending: t('Pending admin approval — not visible to others yet', 'एडमिन स्वीकृति लंबित — अभी दूसरों को दिखाई नहीं देती'),
+    Rejected: t('Not approved — please contact the Sabha', 'स्वीकृत नहीं — कृपया सभा से संपर्क करें'),
+  }[status];
+  return (
+    <section>
+      <SectionTitle icon={<ReceiptIcon />}>{t('Profile Status', 'प्रोफ़ाइल स्थिति')}</SectionTitle>
+      <div className={`rounded-xl px-4 py-3 border text-sm font-semibold ${APPROVAL_STYLES[status] || ''}`}>{label}</div>
+    </section>
+  );
+};
 
 const ProfileFee = ({ payment }) => {
   const { t, locale } = useLanguage();

@@ -22,6 +22,9 @@ router.register(r'ads', views.AdvertisementViewSet, basename='ad')
 # Matrimonial
 router.register(r'matrimonial', views.MatrimonialProfileViewSet, basename='matrimonial')
 
+# Membership applications (admin approval)
+router.register(r'membership-applications', views.MembershipApplicationViewSet, basename='membership-application')
+
 # Magazine
 router.register(r'articles', views.ArticleViewSet, basename='article')
 router.register(r'events', views.EventViewSet, basename='event')

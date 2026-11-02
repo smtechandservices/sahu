@@ -47,7 +47,7 @@ export default function ProfileClient() {
       const { fetchApi } = await import('../../lib/api');
       const [bookingsData, matData] = await Promise.all([
         fetchApi('/bookings/'),
-        fetchApi('/matrimonial/').then(res => Array.isArray(res) ? res[0] : res)
+        fetchApi('/matrimonial/').then(res => Array.isArray(res) ? res.find(p => p.user === user.id) : res)
       ]);
       setBookings(bookingsData || []);
       setMatrimonialProfile(matData || null);
