@@ -3,6 +3,7 @@ import mimetypes
 import re
 import uuid
 from django.conf import settings
+from django.contrib.auth import password_validation
 from django.core.files.base import ContentFile
 from django.core.files.uploadedfile import UploadedFile
 from django.db import transaction
@@ -70,11 +71,40 @@ class UserSerializer(serializers.ModelSerializer):
 class AdminUserSerializer(serializers.ModelSerializer):
     profile_photo = Base64FileField(mimetype_field='profile_photo_mimetype', required=False, allow_null=True)
     membership = serializers.SerializerMethodField()
+    password = serializers.CharField(write_only=True, required=False, trim_whitespace=False)
 
     class Meta:
         model = User
-        fields = ['id', 'phone', 'name', 'email', 'profile_photo', 'profile_photo_mimetype', 'is_member', 'is_admin', 'is_active', 'date_joined', 'membership']
-        read_only_fields = ['phone', 'date_joined']
+        fields = ['id', 'phone', 'name', 'email', 'password', 'profile_photo', 'profile_photo_mimetype', 'is_member', 'is_admin', 'is_active', 'date_joined', 'membership']
+        read_only_fields = ['date_joined']
+
+    def get_fields(self):
+        fields = super().get_fields()
+        # Phone and password can only be set when adding an account
+        if self.instance is not None:
+            fields['phone'].read_only = True
+            fields['password'].read_only = True
+        return fields
+
+    def validate_phone(self, value):
+        if not PHONE_REGEX.fullmatch(value):
+            raise serializers.ValidationError('Enter a valid 10-digit mobile number starting with 6, 7, 8 or 9.')
+        # Approving the application would fail once this number has an account
+        if MembershipApplication.objects.filter(phone=value, status='Paid', user__isnull=True, approval_status='Pending').exists():
+            raise serializers.ValidationError('This number has a paid application awaiting review. Approve it under Membership Requests instead.')
+        return value
+
+    def validate_password(self, value):
+        password_validation.validate_password(value)
+        return value
+
+    def validate(self, attrs):
+        if self.instance is None and attrs.get('is_admin') and not attrs.get('password'):
+            raise serializers.ValidationError({'password': 'A password is required for an administrator to log in.'})
+        return attrs
+
+    def create(self, validated_data):
+        return User.objects.create_user(**validated_data)
 
     def get_membership(self, obj):
         """Membership fee paid online from the Join page; None for accounts created before it or offline."""

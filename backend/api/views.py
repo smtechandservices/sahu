@@ -376,6 +376,11 @@ class UserViewSet(viewsets.ModelViewSet):
             return User.objects.none()
         return User.objects.select_related('membership_application').order_by('-date_joined')
 
+    def create(self, request, *args, **kwargs):
+        if not getattr(request.user, 'is_admin', False):
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        return super().create(request, *args, **kwargs)
+
     @action(detail=True, methods=['get'])
     def sessions(self, request, pk=None):
         if not getattr(request.user, 'is_admin', False):

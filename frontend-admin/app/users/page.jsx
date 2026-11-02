@@ -7,7 +7,7 @@ import { useAuth } from '../../context/AuthContext';
 import Pagination from '../../components/Pagination/Pagination';
 import {
   Users, Search, Edit, Trash2, X, Shield, CheckCircle, XCircle, Phone, Mail, Loader2,
-  ShieldCheck, ExternalLink
+  ShieldCheck, ExternalLink, Plus
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Swal from 'sweetalert2';
@@ -15,11 +15,22 @@ import Swal from 'sweetalert2';
 const PAGE_SIZE = 20;
 
 const EMPTY_FORM = {
+  phone: '',
   name: '',
   email: '',
+  password: '',
   is_member: false,
   is_admin: false,
   is_active: true,
+};
+
+// Field errors arrive as a JSON string, e.g. {"phone":["..."]}
+const saveErrorText = (err) => {
+  try {
+    return Object.values(JSON.parse(err.message)).flat().join(' ');
+  } catch {
+    return err.message;
+  }
 };
 
 export default function UsersManager() {
@@ -101,6 +112,12 @@ export default function UsersManager() {
     }
   };
 
+  const openCreate = () => {
+    setEditingUser(null);
+    setForm(EMPTY_FORM);
+    setModalOpen(true);
+  };
+
   const openEdit = (user) => {
     setEditingUser(user);
     setForm({
@@ -125,21 +142,29 @@ export default function UsersManager() {
     e.preventDefault();
     setSaving(true);
     try {
-      await fetchApi(`/users/${editingUser.id}/`, {
-        method: 'PUT',
-        body: JSON.stringify({
-          name: form.name,
-          email: form.email || null,
-          is_member: form.is_member,
-          is_admin: form.is_admin,
-          is_active: form.is_active,
-        }),
-      });
+      const body = {
+        name: form.name,
+        email: form.email || null,
+        is_member: form.is_member,
+        is_admin: form.is_admin,
+        is_active: form.is_active,
+      };
+      if (editingUser) {
+        await fetchApi(`/users/${editingUser.id}/`, { method: 'PUT', body: JSON.stringify(body) });
+      } else {
+        body.phone = form.phone;
+        if (form.is_admin) body.password = form.password;
+        await fetchApi('/users/', { method: 'POST', body: JSON.stringify(body) });
+        // Newest users are listed first: clear the search and go to page 1 to show it
+        setSearchQuery('');
+        setDebouncedSearch('');
+        setPage(1);
+      }
       refreshUsers();
       Swal.fire({
         icon: 'success',
         title: 'Success',
-        text: 'User updated successfully!',
+        text: editingUser ? 'User updated successfully!' : 'User added successfully!',
         confirmButtonColor: '#3b82f6',
       });
       closeModal();
@@ -147,7 +172,7 @@ export default function UsersManager() {
       Swal.fire({
         icon: 'error',
         title: 'Failed to Save',
-        text: err.message || 'Failed to save user',
+        text: saveErrorText(err) || 'Failed to save user',
         confirmButtonColor: '#3b82f6',
       });
     } finally {
@@ -237,11 +262,17 @@ export default function UsersManager() {
           <h1 className="text-3xl font-black text-gray-900">User Management</h1>
           <p className="text-gray-500 font-medium">View, edit roles, and manage community members.</p>
         </div>
-        <div className="flex items-center gap-3 bg-white border border-gray-100 rounded-2xl px-5 py-3 shadow-sm">
-          <Users size={18} className="text-primary" />
-          <span className="text-sm font-bold text-gray-700">
-            {totalCount} {debouncedSearch ? 'Matching' : 'Total'} Users
-          </span>
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex items-center gap-3 bg-white border border-gray-100 rounded-2xl px-5 py-3 shadow-sm">
+            <Users size={18} className="text-primary" />
+            <span className="text-sm font-bold text-gray-700">
+              {totalCount} {debouncedSearch ? 'Matching' : 'Total'} Users
+            </span>
+          </div>
+          <button className="btn-primary" onClick={openCreate}>
+            <Plus size={20} />
+            Add User
+          </button>
         </div>
       </div>
 
@@ -390,7 +421,7 @@ export default function UsersManager() {
         </div>
       )}
 
-      {/* Edit Modal */}
+      {/* Add / Edit Modal */}
       <AnimatePresence>
         {modalOpen && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
@@ -409,17 +440,42 @@ export default function UsersManager() {
             >
               <div className="p-8 border-b border-gray-100 flex justify-between items-center">
                 <div>
-                  <h2 className="text-2xl font-black text-gray-900">Edit User</h2>
-                  <p className="text-sm text-gray-400 font-medium mt-1 flex items-center gap-1">
-                    <Phone size={12} /> {editingUser?.phone}
-                  </p>
+                  <h2 className="text-2xl font-black text-gray-900">{editingUser ? 'Edit User' : 'Add User'}</h2>
+                  {editingUser ? (
+                    <p className="text-sm text-gray-400 font-medium mt-1 flex items-center gap-1">
+                      <Phone size={12} /> {editingUser.phone}
+                    </p>
+                  ) : (
+                    <p className="text-sm text-gray-400 font-medium mt-1">They log in with an OTP sent to this phone number.</p>
+                  )}
                 </div>
                 <button onClick={closeModal} className="w-10 h-10 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400 transition-all">
                   <X size={20} />
                 </button>
               </div>
 
-              <form onSubmit={handleSave} className="flex-1 overflow-y-auto p-8 space-y-6 scrollbar-hide">
+              <form id="user-form" onSubmit={handleSave} className="flex-1 overflow-y-auto p-8 space-y-6 scrollbar-hide">
+                {/* Phone (fixed once the account exists) */}
+                {!editingUser && (
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-1">
+                      <Phone size={14} /> Phone <span className="text-red-400">*</span>
+                    </label>
+                    <input
+                      required
+                      type="tel"
+                      inputMode="numeric"
+                      maxLength={10}
+                      pattern="[6-9][0-9]{9}"
+                      title="10-digit mobile number starting with 6, 7, 8 or 9"
+                      value={form.phone}
+                      onChange={(e) => setForm(f => ({ ...f, phone: e.target.value.replace(/\D/g, '').slice(0, 10) }))}
+                      placeholder="10-digit mobile number"
+                      className="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                    />
+                  </div>
+                )}
+
                 {/* Name */}
                 <div>
                   <label className="block text-sm font-bold text-gray-700 mb-2">Full Name <span className="text-red-400">*</span></label>
@@ -470,7 +526,25 @@ export default function UsersManager() {
                   ))}
                 </div>
 
+                {/* Admins log in to this panel with a password, not an OTP */}
+                {!editingUser && form.is_admin && (
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-2">Admin Password <span className="text-red-400">*</span></label>
+                    <input
+                      required
+                      type="password"
+                      autoComplete="new-password"
+                      minLength={8}
+                      value={form.password}
+                      onChange={(e) => setForm(f => ({ ...f, password: e.target.value }))}
+                      placeholder="At least 8 characters"
+                      className="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                    />
+                  </div>
+                )}
+
                 {/* ── Active Sessions ── */}
+                {editingUser && (
                 <div className="pt-2">
                   <div className="flex items-center justify-between mb-3">
                     <p className="text-sm font-bold text-gray-700 flex items-center gap-2">
@@ -531,6 +605,7 @@ export default function UsersManager() {
                     </div>
                   )}
                 </div>
+                )}
               </form>
 
               <div className="p-8 bg-gray-50 border-t border-gray-100 flex justify-end gap-4">
@@ -538,11 +613,12 @@ export default function UsersManager() {
                   Cancel
                 </button>
                 <button
-                  onClick={handleSave}
+                  type="submit"
+                  form="user-form"
                   disabled={saving}
                   className="btn-primary disabled:opacity-60"
                 >
-                  {saving ? 'Saving...' : 'Save Changes'}
+                  {saving ? 'Saving...' : editingUser ? 'Save Changes' : 'Add User'}
                 </button>
               </div>
             </motion.div>
